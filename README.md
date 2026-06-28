@@ -40,4 +40,34 @@ JavaScript
 Git & GitHub
 A frontend framework (React)
 A backend technology (Node.js, Django, or Spring Boot)
-SQL or MongoDB
+SQL or Moable
+HTML (HyperText Markup Language)
+Definition: HTML is the standard markup language used to create the structure of web pages.
+Uses of HTML
+Creates headings and paragraphs
+Adds images and videos
+Creates links
+Builds tables and forms
+Organizes webpage content
+Basic HTML Structure<!DOCTYPE html>
+<html>
+<head>
+    <title>My First Web Page</title>
+</head>
+<body>
+    <h1>Welcome to My Website</h1>
+    <p>This is my first HTML page.</p>
+</body>
+</html>Common HTML Tags
+<html> – Root element
+<head> – Contains page information
+<title> – Page title
+<body> – Visible content
+<h1> to <h6> – Headings
+<p> – Paragraph
+<a> – Link
+<img> – Image
+<div> – Container
+<ul> / <ol> – Lists
+<table> – Table
+<form> – Form
