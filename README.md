@@ -70,4 +70,40 @@ Basic HTML Structure<!DOCTYPE html>
 <div> – Container
 <ul> / <ol> – Lists
 <table> – Table
-<form> – Form
+<form> – FormHTML Document Structure
+Every HTML page follows a basic structure.
+HTML
+<!DOCTYPE html>
+<html>
+<head>
+    <title>My First Web Page</title>
+</head>
+<body>
+    <h1>Welcome to HTML</h1>
+    <p>This is my first web page.</p>
+</body>
+</html>
+Explanation of Each Tag
+1. <!DOCTYPE html>
+Declares that the document is an HTML5 document.
+Helps the browser display the page correctly.
+2. <html>
+The root element of the HTML document.
+All other HTML elements are placed inside it.
+3. <head>
+Contains information about the webpage.
+This information is not displayed on the page.
+4. <title>
+Sets the title shown on the browser tab.
+Example:
+HTML
+<title>My Website</title>
+5. <body>
+Contains all the content visible to users.
+Such as headings, paragraphs, images, links, tables, and forms.
+Example:
+HTML
+<body>
+    <h1>Hello!</h1>
+    <p>Welcome to my website.</p>
+</body>
