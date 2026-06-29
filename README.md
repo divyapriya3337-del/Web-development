@@ -106,4 +106,55 @@ HTML
 <body>
     <h1>Hello!</h1>
     <p>Welcome to my website.</p>
+</body>HTML Elements and HTML Tags
+What is an HTML Element?
+An HTML element consists of a start tag, content, and an end tag.
+Example:
+HTML
+<p>This is a paragraph.</p>
+<p> → Start tag
+This is a paragraph. → Content
+</p> → End tag
+What is an HTML Tag?
+An HTML tag is a keyword enclosed in angle brackets (< >) that tells the browser how to display content.
+Examples:
+<h1> – Heading
+<p> – Paragraph
+<a> – Link
+<img> – Image
+<br> – Line break
+Common HTML Tags
+Tag
+Purpose
+<h1> to <h6>
+Headings
+<p>
+Paragraph
+<a>
+Hyperlink
+<img>
+Image
+<br>
+Line break
+<hr>
+Horizontal line
+<ul>
+Unordered list
+<ol>
+Ordered list
+<li>
+List item
+<table>
+Table
+<form>
+Form
+Example
+HTML
+<!DOCTYPE html>
+<html>
+<body>
+    <h1>My Website</h1>
+    <p>Welcome to HTML.</p>
+    <a href="https://github.com">Visit GitHub</a>
 </body>
+    </html>
