@@ -158,3 +158,99 @@ HTML
     <a href="https://github.com">Visit GitHub</a>
 </body>
     </html>
+HTML Elements and HTML Tags
+What is an HTML Element?
+An HTML element consists of a start tag, content, and an end tag.
+Example:
+HTML
+<p>This is a paragraph.</p>
+<p> → Start tag
+This is a paragraph. → Content
+</p> → End tag
+What is an HTML Tag?
+An HTML tag is a keyword enclosed in angle brackets (< >) that tells the browser how to display content.
+Examples:
+<h1> – Heading
+<p> – Paragraph
+<a> – Link
+<img> – Image
+<br> – Line break
+Common HTML Tags
+Tag
+Purpose
+<h1> to <h6>
+Headings
+<p>
+Paragraph
+<a>
+Hyperlink
+<img>
+Image
+<br>
+Line break
+<hr>
+Horizontal line
+<ul>
+Unordered list
+<ol>
+Ordered list
+<li>
+List item
+<table>
+Table
+<form>
+Form
+Example
+HTML
+<!DOCTYPE html>
+<html>
+<body>
+    <h1>My Website</h1>
+    <p>Welcome to HTML.</p>
+    <a href="https://github.com">Visit GitHub</a>
+</body>
+</html>HTML Attributes
+What are HTML Attributes?
+HTML attributes provide additional information about HTML elements. They are written inside the opening tag.
+Syntax
+HTML
+<tagname attribute="value">Content</tagname>
+Common HTML Attributes
+1. href
+Used to specify the destination URL of a link.
+HTML
+<a href="https://github.com">Visit GitHub</a>
+2. src
+Used to specify the path of an image.
+HTML
+<img src="image.jpg">
+3. alt
+Displays alternative text if the image cannot be loaded.
+HTML
+<img src="image.jpg" alt="Nature Image">
+4. id
+Gives a unique identifier to an HTML element.
+HTML
+<p id="intro">Welcome!</p>
+5. class
+Groups elements so they can share the same CSS styles.
+HTML
+<p class="text">Hello World</p>
+6. style
+Adds CSS styles directly to an element.
+HTML
+<h1 style="color: blue;">Welcome</h1>
+Example
+HTML
+<!DOCTYPE html>
+<html>
+<body>
+
+<a href="https://github.com">GitHub</a>
+
+<img src="logo.png" alt="Logo">
+
+<h1 style="color:red;">Hello</h1>
+
+</body>
+</html>
