@@ -254,3 +254,70 @@ HTML
 
 </body>
 </html>
+HTML Headings
+Definition
+HTML headings are used to define titles and headings on a webpage. HTML provides six heading levels, from <h1> to <h6>.
+<h1> – Largest and most important heading
+<h2> – Second-level heading
+<h3> – Third-level heading
+<h4> – Fourth-level heading
+<h5> – Fifth-level heading
+<h6> – Smallest and least important heading
+Syntax
+HTML
+<h1>Main Heading</h1>
+<h2>Sub Heading</h2>
+<h3>Section Heading</h3>
+<h4>Sub Section</h4>
+<h5>Small Heading</h5>
+<h6>Smallest Heading</h6>
+Example
+HTML
+<!DOCTYPE html>
+<html>
+<body>
+
+<h1>Welcome to My Website</h1>
+<h2>About Us</h2>
+<h3>Our Services</h3>
+<h4>Contact Information</h4>
+<h5>Support</h5>
+<h6>Thank You</h6>
+
+</body>HTML Paragraphs, Line Break, and Horizontal Rule
+1. HTML Paragraph (<p>)
+Definition
+The <p> tag is used to create a paragraph of text on a webpage.
+Syntax
+HTML
+<p>This is a paragraph.</p>
+Example
+HTML
+<p>Welcome to HTML. HTML is used to create web pages.</p>
+2. HTML Line Break (<br>)
+Definition
+The <br> tag is used to break a line and move the next text to a new line.
+Syntax
+HTML
+Line 1<br>
+Line 2
+Example
+HTML
+<p>Hello!<br>Welcome to my website.</p>
+Output:
+Hello!
+Welcome to my website.
+3. HTML Horizontal Rule (<hr>)
+Definition
+The <hr> tag inserts a horizontal line to separate sections of a webpage.
+Syntax
+HTML
+<hr>
+Example
+HTML
+<h1>About Us</h1>
+<hr>
+<p>We provide web development training.</p>
+</html>
+Interview/Exam Answer
+HTML headings are used to define the titles and headings of a webpage. HTML provides six heading tags, from <h1> (largest) to <h6> (smallest).
