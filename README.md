@@ -319,5 +319,103 @@ HTML
 <hr>
 <p>We provide web development training.</p>
 </html>
-Interview/Exam Answer
 HTML headings are used to define the titles and headings of a webpage. HTML provides six heading tags, from <h1> (largest) to <h6> (smallest).
+HTML Lists
+Definition
+HTML lists are used to display a group of related items in an organized way.
+There are three types of lists in HTML:
+1. Ordered List (<ol>)
+An ordered list displays items with numbers.
+Example:
+HTML
+<ol>
+  <li>HTML</li>
+  <li>CSS</li>
+  <li>JavaScript</li>
+</ol>
+Output:
+HTML
+CSS
+JavaScript
+2. Unordered List (<ul>)
+An unordered list displays items with bullet points.
+Example:
+HTML
+<ul>
+  <li>Apple</li>
+  <li>Banana</li>
+  <li>Mango</li>
+</ul>
+Output:
+Apple
+Banana
+Mango
+3. List Item (<li>)
+The <li> tag is used to define each item in an ordered or unordered list.
+Example:
+HTML
+<li>HTML</li>HTML lists are used to organize and display related items. HTML provides three main list tags:
+<ol> – Ordered (numbered) list
+<ul> – Unordered (bulleted) list
+<li> – List itemHTML Tables
+Definition
+An HTML table is used to display data in rows and columns.
+Main Table Tags
+<table> – Creates a table.
+<tr> – Creates a table row.
+<th> – Creates a table header.
+<td> – Creates a table data (cell).
+Syntax
+HTML
+<table border="1">
+  <tr>
+    <th>Name</th>
+    <th>Age</th>
+  </tr>
+  <tr>
+    <td>Gyan</td>
+    <td>20</td>
+  </tr>
+</table>
+Example
+HTML
+<!DOCTYPE html>
+<html>
+<body>
+
+<h2>Student Details</h2>
+
+<table border="1">
+  <tr>
+    <th>Name</th>
+    <th>Roll No</th>
+    <th>Branch</th>
+  </tr>
+  <tr>
+    <td>Gyan Kishore</td>
+    <td>101</td>
+    <td>CSE</td>
+  </tr>
+  <tr>
+    <td>Rahul</td>
+    <td>102</td>
+    <td>CSE</td>
+  </tr>
+</table>
+
+</body>
+</html>
+Output
+Name
+Roll No
+Branch
+Gyan Kishore
+101
+CSE
+Rahul
+102
+CSEHTML tables are used to display data in rows and columns. The main tags used are:
+<table> – Creates the table
+<tr> – Creates a row
+<th> – Creates a header cell
+<td> – Creates a data cell
