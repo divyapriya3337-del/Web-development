@@ -419,3 +419,94 @@ CSEHTML tables are used to display data in rows and columns. The main tags used 
 <tr> – Creates a row
 <th> – Creates a header cell
 <td> – Creates a data cell
+HTML Forms
+Definition
+An HTML form is used to collect user input, such as a name, email, password, or phone number, and send it to a server for processing.
+Common Form Tags
+<form> – Creates a form.
+<label> – Defines a label for an input field.
+<input> – Creates an input field.
+<textarea> – Creates a multi-line text box.
+<select> – Creates a drop-down list.
+<option> – Defines an item in the drop-down list.
+<button> – Creates a button.
+Example
+HTML
+<!DOCTYPE html>
+<html>
+<body>
+
+<h2>Student Registration Form</h2>
+
+<form>
+  <label for="name">Name:</label><br>
+  <input type="text" id="name" name="name"><br><br>
+
+  <label for="email">Email:</label><br>
+  <input type="email" id="email" name="email"><br><br>
+
+  <label for="password">Password:</label><br>
+  <input type="password" id="password" name="password"><br><br>
+
+  <button type="submit">Submit</button>
+</form>
+
+</body>
+</html>
+Common Input Types
+text – Single-line text
+password – Password field
+email – Email address
+number – Numeric input
+date – Date picker
+radio – Radio button
+checkbox – Checkbox
+file – File upload
+submit – Submit button
+
+HTML Semantic Elements
+Definition
+HTML semantic elements are tags that clearly describe the meaning and purpose of the content they contain. They make web pages easier to understand for browsers, search engines, and developers.
+Common Semantic Elements
+1. <header>
+Represents the header of a webpage or section.
+HTML
+<header>
+  <h1>My Website</h1>
+</header>
+2. <nav>
+Contains navigation links.
+HTML
+<nav>
+  <a href="#">Home</a>
+  <a href="#">About</a>
+  <a href="#">Contact</a>
+</nav>
+3. <section>
+Defines a section of related content.
+HTML
+<section>
+  <h2>About Us</h2>
+  <p>We provide web development training.</p>
+</section>
+4. <article>
+Represents independent content such as a blog post or news article.
+HTML
+<article>
+  <h2>Latest News</h2>
+  <p>HTML is easy to learn.</p>
+</article>
+5. <aside>
+Contains related information, such as a sidebar.
+HTML
+<aside>
+  <p>Related Links</p>
+</aside>
+6. <footer>
+Represents the footer of a webpage.
+HTML
+<footer>
+  <p>&copy; 2026 My Website</p>
+</footer>
+    HTML semantic elements are tags that describe the meaning and purpose of the content they contain. Examples include <header>, <nav>, <section>, <article>, <aside>, and <footer
+HTML forms are used to collect user information and send it to a server. The main form tags are <form>, <input>, <label>, <textarea>, <select>, <option>, and <button>.
