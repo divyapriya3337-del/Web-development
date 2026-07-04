@@ -510,3 +510,97 @@ HTML
 </footer>
     HTML semantic elements are tags that describe the meaning and purpose of the content they contain. Examples include <header>, <nav>, <section>, <article>, <aside>, and <footer
 HTML forms are used to collect user information and send it to a server. The main form tags are <form>, <input>, <label>, <textarea>, <select>, <option>, and <button>.
+HTML5 Features
+Definition
+HTML5 is the latest version of HTML. It introduces new elements, multimedia support, graphics, and APIs that make web development easier and more powerful.
+Features of HTML5
+1. Audio (<audio>)
+Used to play audio files on a web page.
+HTML
+<audio controls>
+  <source src="song.mp3" type="audio/mpeg">
+</audio>
+2. Video (<video>)
+Used to play video files.
+HTML
+<video width="320" controls>
+  <source src="movie.mp4" type="video/mp4">
+</video>
+3. Canvas (<canvas>)
+Used to draw graphics, charts, and animations with JavaScript.
+HTML
+<canvas id="myCanvas" width="200" height="100"></canvas>
+4. SVG (<svg>)
+Used to create scalable vector graphics.
+HTML
+<svg width="100" height="100">
+  <circle cx="50" cy="50" r="40" />
+</svg>
+5. Local Storage
+Stores data in the browser even after it is closed.
+Example:
+localStorage.setItem("name", "Gyan");
+6. Geolocation API
+Gets the user's current location (with permission).
+navigator.geolocation.getCurrentPosition(showPosition);
+Advantages of HTML5
+Supports audio and video without extra plugins.
+Improves performance.
+Supports modern web applications.
+Works well on mobile devices.
+Includes new semantic elements.HTML5 is the latest version of HTML that provides new semantic elements, multimedia support, graphics, browser storage, and APIs to build modern, interactive websites.CSS (Cascading Style Sheets) – Introduction
+What is CSS?
+CSS (Cascading Style Sheets) is a stylesheet language used to style and design HTML web pages. It controls the appearance of elements such as colors, fonts, spacing, layouts, and animations.
+Why is CSS Used?
+Adds colors to web pages.
+Changes font styles and sizes.
+Controls spacing and alignment.
+Creates attractive layouts.
+Makes websites responsive for different screen sizes.
+Features of CSS
+Easy to learn
+Reduces code repetition
+Separates content (HTML) from design (CSS)
+Improves website appearance
+Supports responsive web design
+Basic CSS Syntax
+selector {
+  property: value;
+}
+Example
+h1 {
+  color: blue;
+  font-size: 30px;
+}
+In this example:
+h1 → Selector
+color and font-size → Properties
+blue and 30px → Values
+Complete Example
+HTML
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+h1 {
+  color: blue;
+}
+
+p {
+  color: green;
+  font-size: 18px;
+}
+</style>
+</head>
+<body>
+
+<h1>Welcome to CSS</h1>
+<p>This paragraph is styled using CSS.</p>
+
+</body>
+</html>CSS (Cascading Style Sheets) is a stylesheet language used to control the appearance, layout, and design of HTML web pages.
+Next Topic
+Types of CSS
+Inline CSS
+Internal CSS
+External CSS
