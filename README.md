@@ -604,3 +604,119 @@ Types of CSS
 Inline CSS
 Internal CSS
 External CSS
+Types of CSS
+There are three types of CSS used to style HTML pages.
+1. Inline CSS
+Definition
+Inline CSS is written directly inside an HTML element using the style attribute.
+Example
+HTML
+<h1 style="color: blue;">Welcome to CSS</h1>
+Advantages
+Easy for small changes.
+Styles only one element.
+Disadvantages
+Not suitable for large websites.
+Difficult to maintain.
+2. Internal CSS
+Definition
+Internal CSS is written inside the <style> tag in the <head> section of an HTML document.
+Example
+HTML
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    h1 {
+      color: blue;
+    }
+  </style>
+</head>
+<body>
+  <h1>Welcome to CSS</h1>
+</body>
+</html>
+Advantages
+Styles a single webpage.
+Easy to manage for small projects.
+3. External CSS
+Definition
+External CSS is written in a separate .css file and linked to an HTML page.
+HTML File
+HTML
+<head>
+  <link rel="stylesheet" href="style.css">
+</head>
+CSS File (style.css)
+h1 {
+  color: blue;
+}
+Advantages
+Reusable across multiple webpages.
+Easy to maintain.
+Best for large websites.
+Difference Between the Three Types
+Type
+Location
+Best Use
+Inline CSS
+Inside the HTML element
+Small changes
+Internal CSS
+Inside the <style> tag
+Single webpage
+External CSS
+Separate .css file
+Multiple webpagesInterview/Exam Answer
+CSS can be applied in three ways:
+Inline CSS – Uses the style attribute inside an HTML element.
+Internal CSS – Uses the <style> tag inside the <head> section.
+External CSS – Uses a separate .css file linked with the <link> tag.
+CSS Selectors (Element Selector, Class Selector, ID Selector, Universal Selector, and Group Selector).
+CSS Selectors
+Definition
+CSS selectors are used to select HTML elements so that styles can be applied to them.
+Types of CSS Selectors
+1. Element Selector
+Selects all elements of a particular tag.
+Example:
+p {
+  color: blue;
+}
+This applies the color blue to all <p> elements.
+2. ID Selector (#)
+Selects a single element with a specific id.
+HTML:
+HTML
+<h1 id="title">Welcome</h1>
+CSS:
+#title {
+  color: red;
+}
+3. Class Selector (.)
+Selects all elements with the same class.
+HTML:
+HTML
+<p class="text">Hello</p>
+<p class="text">Welcome</p>
+CSS:
+.text {
+  color: green;
+}
+4. Universal Selector (*)
+Selects all elements on the page.
+* {
+  margin: 0;
+  padding: 0;
+}
+5. Group Selector (,)
+Applies the same style to multiple elements.
+h1, p {
+  color: purple;
+}CSS selectors are patterns used to select HTML elements and apply styles to them.
+Common selectors are:
+Element Selector (p)
+ID Selector (#id)
+Class Selector (.class)
+Universal Selector (*)
+Group Selector (,)
