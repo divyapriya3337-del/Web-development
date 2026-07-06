@@ -720,3 +720,112 @@ ID Selector (#id)
 Class Selector (.class)
 Universal Selector (*)
 Group Selector (,)
+CSS Selectors
+Definition
+CSS selectors are used to select HTML elements so that styles can be applied to them.
+Types of CSS Selectors
+1. Element Selector
+Selects all elements of a particular tag.
+Example:
+p {
+  color: blue;
+}
+This applies the color blue to all <p> elements.
+2. ID Selector (#)
+Selects a single element with a specific id.
+HTML:
+HTML
+<h1 id="title">Welcome</h1>
+CSS:
+#title {
+  color: red;
+}
+3. Class Selector (.)
+Selects all elements with the same class.
+HTML:
+HTML
+<p class="text">Hello</p>
+<p class="text">Welcome</p>
+CSS:
+.text {
+  color: green;
+}
+4. Universal Selector (*)
+Selects all elements on the page.
+* {
+  margin: 0;
+  padding: 0;
+}
+5. Group Selector (,)
+Applies the same style to multiple elements.
+h1, p {
+  color: purple;
+}Common selectors are:
+Element Selector (p)
+ID Selector (#id)
+Class Selector (.class)
+Universal Selector (*)
+Group Selector (,)
+CSS Colors, Backgrounds, and Borders
+1. CSS Colors
+Definition
+The color property is used to change the text color of an HTML element.
+Example
+h1 {
+  color: blue;
+}
+You can use:
+Color names: red, blue, green
+Hex values: #FF0000
+RGB values: rgb(255, 0, 0)
+2. CSS Backgrounds
+Definition
+The background-color property is used to set the background color of an element.
+Example
+body {
+  background-color: lightblue;
+}
+Background Image
+body {
+  background-image: url("background.jpg");
+}
+3. CSS Borders
+Definition
+The border property is used to add a border around an HTML element.
+Example
+p {
+  border: 2px solid black;
+}
+This means:
+2px → Border thickness
+solid → Border style
+black → Border color
+Complete Example
+HTML
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+body {
+  background-color: lightyellow;
+}
+
+h1 {
+  color: blue;
+}
+
+p {
+  border: 2px solid black;
+}
+</style>
+</head>
+<body>
+
+<h1>Welcome to CSS</h1>
+<p>This is a paragraph with a border.</p>
+
+</body>
+</html>
+CSS Colors are used to change the text color of elements.
+CSS Backgrounds are used to set background colors or images.
+CSS Borders are used to add borders around HTML elements.
