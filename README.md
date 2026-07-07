@@ -829,3 +829,150 @@ p {
 CSS Colors are used to change the text color of elements.
 CSS Backgrounds are used to set background colors or images.
 CSS Borders are used to add borders around HTML elements.
+CSS Box Model
+Definition
+The CSS Box Model describes how every HTML element is displayed as a rectangular box. It consists of Content, Padding, Border, and Margin.
+Parts of the Box Model
+1. Content
+The actual text, image, or other content inside the element.
+2. Padding
+The space between the content and the border.
+padding: 20px;
+3. Border
+The line that surrounds the padding and content.
+border: 2px solid black;
+4. Margin
+The space outside the border, separating the element from other elements.
+margin: 20px;
+Diagram
++---------------------------+
+|         Margin            |
+|  +---------------------+  |
+|  |      Border         |  |
+|  |  +---------------+  |  |
+|  |  |   Padding     |  |  |
+|  |  | +-----------+ |  |  |
+|  |  | | Content   | |  |  |
+|  |  | +-----------+ |  |  |
+|  |  +---------------+  |  |
+|  +---------------------+  |
++---------------------------+
+Example
+HTML
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+div {
+  width: 200px;
+  padding: 20px;
+  border: 2px solid blue;
+  margin: 30px;
+}
+</style>
+</head>
+<body>
+
+<div>
+  Welcome to CSS Box Model
+</div>
+
+</body>
+</html>
+The CSS Box Model is a layout model that represents every HTML element as a box consisting of:
+Content – The actual data.
+Padding – Space between the content and the border.
+Border – Surrounds the content and padding.
+Margin – Space outside the border.
+CSS Text Properties
+Definition
+CSS text properties are used to control the appearance of text, such as its color, size, font, alignment, spacing, and decoration.
+Common CSS Text Properties
+1. color
+Changes the text color.
+p {
+  color: blue;
+}
+2. font-size
+Changes the size of the text.
+p {
+  font-size: 20px;
+}
+3. font-family
+Changes the font style.
+p {
+  font-family: Arial, sans-serif;
+}
+4. font-weight
+Makes the text bold or lighter.
+p {
+  font-weight: bold;
+}
+5. text-align
+Aligns the text.
+h1 {
+  text-align: center;
+}
+Values:
+left
+center
+right
+justify
+6. text-decoration
+Adds or removes text decorations.
+a {
+  text-decoration: none;
+}
+Common values:
+underline
+overline
+line-through
+none
+7. text-transform
+Changes the case of the text.
+h1 {
+  text-transform: uppercase;
+}
+Values:
+uppercase
+lowercase
+capitalize
+8. line-height
+Sets the space between lines.
+p {
+  line-height: 1.8;
+}
+Complete Example
+HTML
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+h1 {
+  color: blue;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+p {
+  font-size: 18px;
+  font-family: Arial, sans-serif;
+  line-height: 1.8;
+}
+</style>
+</head>
+<body>
+
+<h1>Welcome to CSS</h1>
+<p>This is an example of CSS text properties.</p>
+CSS text properties are used to control the appearance of text. Common properties include:
+color
+font-size
+font-family
+font-weight
+text-align
+text-decoration
+text-transform
+line-height
+Next Topic
+CSS Positioning (static, relative, absolute, fixed, and sticky) – an important topic for web development.
