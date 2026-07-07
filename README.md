@@ -976,3 +976,143 @@ text-transform
 line-height
 Next Topic
 CSS Positioning (static, relative, absolute, fixed, and sticky) – an important topic for web development.
+CSS Positioning
+Definition
+CSS positioning is used to control where an HTML element appears on a webpage.
+There are five types of positioning:
+1. static
+Default position of all HTML elements.
+The element follows the normal page flow.
+div {
+  position: static;
+}
+2. relative
+The element is positioned relative to its normal position.
+You can move it using top, bottom, left, or right.
+div {
+  position: relative;
+  left: 20px;
+}
+3. absolute
+The element is positioned relative to its nearest positioned parent.
+It is removed from the normal page flow.
+div {
+  position: absolute;
+  top: 50px;
+  left: 100px;
+}
+4. fixed
+The element stays in the same position even when the page is scrolled.
+div {
+  position: fixed;
+  bottom: 10px;
+  right: 10px;
+}
+5. sticky
+The element behaves like relative until a scroll position is reached, then it sticks in place.
+div {
+  position: sticky;
+  top: 0;
+}
+Difference Between Position Types
+Position
+Description
+static
+Default position
+relative
+Moves relative to its original position
+absolute
+Positioned relative to the nearest positioned parent
+fixed
+Stays fixed on the screen while scrolling
+sticky
+Sticks to a position after scrolling
+CSS positioning controls the location of HTML elements on a webpage. The five position values are:
+static
+relative
+absolute
+fixed
+sticky
+CSS Flexbox
+Definition
+CSS Flexbox (Flexible Box Layout) is a layout model used to arrange, align, and distribute elements efficiently inside a container.
+It helps create responsive layouts with less code.
+Important Flexbox Properties
+1. display: flex
+Makes an element a flex container.
+.container {
+  display: flex;
+}
+2. flex-direction
+Sets the direction of flex items.
+.container {
+  flex-direction: row;
+}
+Values:
+row (default)
+column
+row-reverse
+column-reverse
+3. justify-content
+Aligns items horizontally.
+.container {
+  justify-content: center;
+}
+Common values:
+flex-start
+center
+flex-end
+space-between
+space-around
+space-evenly
+4. align-items
+Aligns items vertically.
+.container {
+  align-items: center;
+}
+Common values:
+stretch
+flex-start
+center
+flex-end
+5. gap
+Adds space between flex items.
+.container {
+  gap: 20px;
+}
+Example
+HTML
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+.container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+}
+
+.box {
+  width: 100px;
+  height: 100px;
+  background-color: lightblue;
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="box">1</div>
+  <div class="box">2</div>
+  <div class="box">3</div>
+</div>
+
+</body>
+</html>
+Advantages
+Creates responsive layouts easily.
+Aligns items horizontally and vertically.
+Reduces the need for complex CSS.
+Makes layout design simpler.
+CSS Flexbox is a one-dimensional layout model used to arrange, align, and distribute elements inside a container efficiently. The main properties are display: flex, flex-direction, justify-content, align-items, and gap.
