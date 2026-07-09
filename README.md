@@ -1116,3 +1116,203 @@ Aligns items horizontally and vertically.
 Reduces the need for complex CSS.
 Makes layout design simpler.
 CSS Flexbox is a one-dimensional layout model used to arrange, align, and distribute elements inside a container efficiently. The main properties are display: flex, flex-direction, justify-content, align-items, and gap.
+CSS Grid Layout
+Definition
+CSS Grid Layout is a two-dimensional layout system used to arrange elements in rows and columns. It is ideal for creating complex and responsive webpage layouts.
+Important Grid Properties
+1. display: grid
+Makes an element a grid container.
+.container {
+  display: grid;
+}
+2. grid-template-columns
+Defines the number and width of columns.
+.container {
+  grid-template-columns: 200px 200px 200px;
+}
+Or using equal-width columns:
+.container {
+  grid-template-columns: repeat(3, 1fr);
+}
+3. grid-template-rows
+Defines the height of rows.
+.container {
+  grid-template-rows: 100px 100px;
+}
+4. gap
+Adds space between rows and columns.
+.container {
+  gap: 20px;
+}
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+.container {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.box {
+  background-color: lightblue;
+  padding: 20px;
+  text-align: center;
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="box">1</div>
+  <div class="box">2</div>
+  <div class="box">3</div>
+  <div class="box">4</div>
+  <div class="box">5</div>
+  <div class="box">6</div>
+</div>
+
+</body>
+</html>
+Example
+HTML
+Advantages
+Creates layouts with rows and columns.
+Makes responsive web design easier.
+Organizes webpage content efficiently.
+Reduces complex CSS code.
+Difference Between Flexbox and Grid
+Flexbox
+Grid
+One-dimensional (row or column)
+Two-dimensional (rows and columns)
+Best for aligning items
+Best for complete page layouts
+CSS Grid Layout is a two-dimensional layout system that arranges elements into rows and columns. It is widely used for building responsive and structured webpage layouts.
+Responsive Web Design (RWD)
+Definition
+Responsive Web Design (RWD) is a web design approach that makes a website automatically adjust its layout and content to fit different screen sizes such as mobiles, tablets, laptops, and desktops.
+Why is RWD Important?
+Improves user experience.
+Makes websites mobile-friendly.
+Works on all screen sizes.
+Reduces the need for separate mobile websites.
+1. Viewport
+The viewport tells the browser how to display the webpage on different devices.
+Example
+HTML
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+2. Media Queries
+Media queries apply different CSS styles based on the screen size.
+Example
+@media screen and (max-width: 600px) {
+  body {
+    background-color: lightblue;
+  }
+}
+In this example, the background becomes light blue when the screen width is 600px or less.
+3. Responsive Images
+Images can be made responsive by setting their width to 100%.
+img {
+  max-width: 100%;
+  height: auto;
+}
+Complete Example
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body {
+  font-family: Arial;
+}
+
+@media screen and (max-width: 600px) {
+  body {
+    background-color: lightgray;
+  }
+}
+</style>
+</head>
+<body>
+
+<h1>Responsive Web Design</h1>
+<p>Resize the browser window to see the effect.</p>
+
+</body>
+</html>
+HTML
+Advantages
+Mobile-friendly websites.
+Better user experience.
+Improved SEO.
+One website works on all devices.
+Easier maintenance.
+Responsive Web Design (RWD) is a technique used to create websites that automatically adapt to different screen sizes using viewport settings, flexible layouts, and CSS media queries.
+Bootstrap – Introduction
+Definition
+Bootstrap is a free and open-source CSS framework used to create responsive, mobile-friendly, and attractive websites quickly. It provides pre-designed CSS classes and JavaScript components.
+Why Use Bootstrap?
+Develops websites faster.
+Mobile-first framework.
+Responsive design.
+Easy to use.
+Consistent look across browsers.
+Features of Bootstrap
+Responsive Grid System
+Predefined CSS classes
+Buttons
+Forms
+Navigation bars (Navbar)
+Cards
+Alerts
+Modals
+Carousel
+Icons (Bootstrap Icons)
+How to Use Bootstrap
+Add the Bootstrap CSS link inside the <head> section of your HTML page.
+HTML
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+Example
+HTML
+<!DOCTYPE html>
+<html>
+<head>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+
+<div class="container">
+  <h1 class="text-primary">Welcome to Bootstrap</h1>
+  <button class="btn btn-success">Click Me</button>
+</div>
+
+</body>
+</html>
+Common Bootstrap Classes
+Class
+Purpose
+container
+Creates a responsive container
+row
+Creates a row
+col
+Creates a column
+btn
+Styles a button
+btn-primary
+Blue button
+btn-success
+Green button
+text-primary
+Blue text
+text-center
+Centers text
+Advantages
+Easy to learn
+Saves development time
+Responsive by default
+Large collection of ready-made components
+Works well on different devices
+Bootstrap is a free, open-source CSS framework used to build responsive and mobile-friendly websites quickly using prebuilt CSS classes and UI components.
