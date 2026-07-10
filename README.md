@@ -1316,3 +1316,91 @@ Responsive by default
 Large collection of ready-made components
 Works well on different devices
 Bootstrap is a free, open-source CSS framework used to build responsive and mobile-friendly websites quickly using prebuilt CSS classes and UI components.
+JavaScript – Introduction
+What is JavaScript?
+JavaScript (JS) is a programming language used to make web pages interactive and dynamic. It works together with HTML and CSS.
+HTML → Structure of the webpage
+CSS → Style and design
+JavaScript → Functionality and interactivity
+Why Use JavaScript?
+Respond to button clicks
+Validate forms
+Create animations
+Display alerts and pop-up messages
+Update webpage content without reloading
+Build interactive web applications
+Features of JavaScript
+Easy to learn
+Runs in all modern web browsers
+Object-oriented
+Event-driven
+Lightweight and fast
+Simple Example
+HTML
+<!DOCTYPE html>
+<html>
+<body>
+
+<h2>JavaScript Example</h2>
+
+<button onclick="showMessage()">Click Me</button>
+
+<script>
+function showMessage() {
+  alert("Welcome to JavaScript!");
+}
+</script>
+
+</body>
+</html>
+When the button is clicked, a message box appears with: "Welcome to JavaScript!"
+Applications of JavaScript
+Interactive websites
+Games
+Web applications
+Online forms
+Real-time chat applications
+JavaScript is a scripting/programming language used to make web pages interactive and dynamic. It adds functionality such as form validation, animations, event handling, and dynamic content updates.
+JavaScript Variables
+Definition
+A variable is a named container used to store data such as numbers, text, or Boolean values.
+In JavaScript, variables are declared using:
+var
+let
+const
+1. var
+Used to declare a variable.
+Can be redeclared and updated.
+Example
+var name = "Gyan";
+console.log(name);
+2. let
+Used to declare a block-scoped variable.
+Can be updated, but cannot be redeclared in the same scope.
+Example
+let age = 20;
+age = 21;
+console.log(age);
+3. const
+Used to declare a constant variable.
+Cannot be updated or redeclared.
+Example
+const country = "India";
+console.log(country);
+Difference Between var, let, and const
+var
+let
+const
+Can be redeclared
+Cannot be redeclared in the same scope
+Cannot be redeclared
+Can be updated
+Can be updated
+Cannot be updated
+Function-scoped
+Block-scoped
+Block-scoped
+variable is used to store data in JavaScript.
+var: Can be redeclared and updated.
+let: Can be updated but cannot be redeclared in the same scope.
+const: Cannot be updated or redeclared after it is assigned.
