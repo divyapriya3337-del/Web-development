@@ -1404,3 +1404,207 @@ variable is used to store data in JavaScript.
 var: Can be redeclared and updated.
 let: Can be updated but cannot be redeclared in the same scope.
 const: Cannot be updated or redeclared after it is assigned.
+JavaScript Data Types
+Definition
+Data types define the type of data that a variable can store in JavaScript.
+Types of Data Types
+1. Number
+Stores numeric values.
+let age = 20;
+Example: 10, 25, 3.14
+2. String
+Stores text enclosed in single or double quotes.
+let name = "Gyan";
+Example: "Hello", "JavaScript"
+3. Boolean
+Stores only two values: true or false.
+let isStudent = true;
+4. Undefined
+A variable that has been declared but not assigned a value.
+let x;
+console.log(x);
+Output:
+undefined
+5. Null
+Represents an intentionally empty value.
+let data = null;
+6. Object
+Stores data as key-value pairs.
+let student = {
+  name: "Gyan",
+  age: 20
+};
+7. Array
+Stores multiple values in a single variable.
+let fruits = ["Apple", "Banana", "Mango"];
+Summary Table
+Data Type
+Example
+Number
+100, 3.14
+String
+"Hello"
+Boolean
+true, false
+Undefined
+let x;
+Null
+null
+Object
+{name: "Gyan"}
+Array
+["Apple", "Banana"]
+JavaScript data types specify the kind of data stored in a variable. The main data types are:
+Number
+String
+Boolean
+Undefined
+Null
+Object
+Array
+JavaScript Operators
+Definition
+Operators are special symbols used to perform operations on variables and values.
+Types of JavaScript Operators
+1. Arithmetic Operators
+Used to perform mathematical calculations.
+Operator
+Meaning
+Example
++
+Addition
+10 + 5 = 15
+-
+Subtraction
+10 - 5 = 5
+*
+Multiplication
+10 * 5 = 50
+/
+Division
+10 / 5 = 2
+%
+Modulus (Remainder)
+10 % 3 = 1
+Example:
+let a = 10;
+let b = 5;
+console.log(a + b);
+2. Assignment Operators
+Used to assign values to variables.
+Operator
+Example
+=
+x = 10
++=
+x += 5
+-=
+x -= 5
+*=
+x *= 2
+/=
+x /= 2
+3. Comparison Operators
+Used to compare two values.
+Operator
+Meaning
+==
+Equal to
+===
+Strictly equal
+!=
+Not equal
+>
+Greater than
+<
+Less than
+>=
+Greater than or equal to
+<=
+Less than or equal to
+Example:
+console.log(10 > 5);
+4. Logical Operators
+Used to combine conditions.
+Operator
+Meaning
+&&
+AND
+`
+
+!
+NOT
+Example:
+console.log(true && false);
+5. Increment and Decrement Operators
+++ → Increases a value by 1.
+-- → Decreases a value by 1.
+Example:
+let x = 5;
+x++;
+console.log(x);
+Output:
+6
+JavaScript operators are symbols used to perform operations on variables and values. The main types are:
+Arithmetic Operators
+Assignment Operators
+Comparison Operators
+Logical Operators
+Increment/Decrement Operators
+JavaScript Conditional Statements
+Definition
+Conditional statements are used to make decisions in a JavaScript program. They execute different blocks of code based on whether a condition is true or false.
+1. if Statement
+Executes a block of code only if the condition is true.
+Syntax
+if (condition) {
+  // code
+}
+Example
+let age = 20;
+
+if (age >= 18) {
+  console.log("Eligible to vote");
+}
+2. if...else Statement
+Executes one block if the condition is true, otherwise executes another block.
+Example
+let age = 16;
+
+if (age >= 18) {
+  console.log("Eligible to vote");
+} else {
+  console.log("Not eligible to vote");
+}
+3. else if Statement
+Checks multiple conditions.
+Example
+let marks = 85;
+
+if (marks >= 90) {
+  console.log("Grade A+");
+} else if (marks >= 75) {
+  console.log("Grade A");
+} else {
+  console.log("Grade B");
+}
+4. switch Statement
+Used when there are many possible values for one variable.
+Example
+let day = 2;
+
+switch (day) {
+  case 1:
+    console.log("Monday");
+    break;
+  case 2:
+    console.log("Tuesday");
+    break;
+  default:
+    console.log("Invalid Day");
+}
+Conditional statements are used to make decisions in JavaScript based on conditions. The main conditional statements are:
+if
+if...else
+else if
+switch
