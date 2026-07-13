@@ -1608,3 +1608,217 @@ if
 if...else
 else if
 switch
+JavaScript Loops
+Definition
+Loops are used to execute a block of code repeatedly until a specified condition becomes false.
+Types of Loops
+1. for Loop
+Used when you know how many times the loop should run.
+Syntax
+for (initialization; condition; increment) {
+  // code
+}
+Example
+for (let i = 1; i <= 5; i++) {
+  console.log(i);
+}
+Output:
+1
+2
+3
+4
+5
+2. while Loop
+Executes the code as long as the condition is true.
+Syntax
+while (condition) {
+  // code
+}
+Example
+let i = 1;
+
+while (i <= 5) {
+  console.log(i);
+  i++;
+}
+3. do...while Loop
+Executes the code at least once, then checks the condition.
+Syntax
+do {
+  // code
+} while (condition);
+Example
+let i = 1;
+
+do {
+  console.log(i);
+  i++;
+} while (i <= 5);
+4. break Statement
+Terminates (stops) the loop immediately.
+Example
+for (let i = 1; i <= 5; i++) {
+  if (i === 3) {
+    break;
+  }
+  console.log(i);
+}
+Output:
+1
+2
+5. continue Statement
+Skips the current iteration and continues with the next one.
+Example
+for (let i = 1; i <= 5; i++) {
+  if (i === 3) {
+    continue;
+  }
+  console.log(i);
+}
+Output:
+1
+2
+4
+5
+JavaScript loops are used to execute a block of code repeatedly. The main loops are:
+for
+while
+do...while
+The break statement exits a loop, while the continue statement skips the current iteration and proceeds to the next one.
+JavaScript Functions
+Definition
+A function is a reusable block of code that performs a specific task. Functions help reduce code duplication and make programs easier to maintain.
+1. Function Declaration
+Syntax
+function functionName() {
+  // code
+}
+Example
+function greet() {
+  console.log("Welcome to JavaScript");
+}
+
+greet();
+Output:
+Welcome to JavaScript
+2. Function with Parameters
+Parameters allow you to pass values to a function.
+Example
+function add(a, b) {
+  console.log(a + b);
+}
+
+add(10, 20);
+Output:
+30
+3. Function with Return Value
+The return statement sends a value back from the function.
+Example
+function multiply(a, b) {
+  return a * b;
+}
+
+let result = multiply(5, 4);
+console.log(result);
+Output:
+20
+4. Function Expression
+A function can also be stored in a variable.
+Example
+const greet = function() {
+  console.log("Hello!");
+};
+
+greet();
+5. Arrow Function
+Arrow functions provide a shorter syntax for writing functions.
+Example
+const greet = () => {
+  console.log("Hello!");
+};
+
+greet();
+Advantages of Functions
+Reusable code
+Reduces code duplication
+Easier to test and maintain
+Improves readability
+A function is a reusable block of code that performs a specific task. Functions can accept parameters, return values using the return statement, and can be written as function declarations, function expressions, or arrow functions.
+JavaScript Arrays
+Definition
+A JavaScript array is a special variable used to store multiple values in a single variable.
+1. Creating an Array
+Syntax
+let arrayName = [value1, value2, value3];
+Example
+let fruits = ["Apple", "Banana", "Mango"];
+2. Accessing Array Elements
+Array indexing starts from 0.
+Example
+let fruits = ["Apple", "Banana", "Mango"];
+
+console.log(fruits[0]);
+console.log(fruits[1]);
+Output:
+Apple
+Banana
+3. Changing an Array Element
+let fruits = ["Apple", "Banana", "Mango"];
+fruits[1] = "Orange";
+
+console.log(fruits);
+4. Common Array Methods
+push()
+Adds an element to the end of the array.
+let fruits = ["Apple", "Banana"];
+fruits.push("Mango");
+pop()
+Removes the last element.
+fruits.pop();
+shift()
+Removes the first element.
+fruits.shift();
+unshift()
+Adds an element to the beginning.
+fruits.unshift("Grapes");
+length
+Returns the number of elements.
+console.log(fruits.length);
+5. Loop Through an Array
+Using for Loop
+let fruits = ["Apple", "Banana", "Mango"];
+
+for (let i = 0; i < fruits.length; i++) {
+  console.log(fruits[i]);
+}
+Using forEach()
+fruits.forEach(function(item) {
+  console.log(item);
+});
+6. map() Method
+Creates a new array by applying a function to each element.
+let numbers = [1, 2, 3];
+
+let doubled = numbers.map(num => num * 2);
+
+console.log(doubled);
+Output:
+[2, 4, 6]
+7. filter() Method
+Creates a new array with elements that satisfy a condition.
+let numbers = [10, 20, 30, 40];
+
+let result = numbers.filter(num => num > 20);
+
+console.log(result);
+Output:
+[30, 40]
+A JavaScript array is used to store multiple values in a single variable. Common array methods include:
+push()
+pop()
+shift()
+unshift()
+length
+forEach()
+map()
+filter()
