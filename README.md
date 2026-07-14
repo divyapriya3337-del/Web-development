@@ -1822,3 +1822,113 @@ length
 forEach()
 map()
 filter()
+JavaScript Objects
+Definition
+A JavaScript object is a collection of key-value pairs used to store related data and functions together.
+1. Creating an Object
+Syntax
+let objectName = {
+  key1: value1,
+  key2: value2
+};
+Example
+let student = {
+  name: "divyapriya",
+  age: 18,
+  branch: "CSE"
+};
+2. Accessing Object Properties
+Using Dot Notation
+console.log(student.name);
+Using Bracket Notation
+console.log(student["age"]);
+Output:
+divyapriya
+18
+4. Adding a New Property
+student.college = "ABC College";
+5. Updating a Property
+student.age = 21;
+6. Deleting a Property
+delete student.branch;
+7. Object Methods
+Objects can contain functions called methods.
+let student = {
+  name: "divyapriya",
+  greet: function() {
+    console.log("Hello!");
+  }
+};
+
+student.greet();
+Output:
+Hello!
+7. Looping Through an Object
+Using for...in
+let student = {
+  name: "Gyan",
+  age: 20
+};
+
+for (let key in student) {
+  console.log(key + ": " + student[key]);
+}
+8. Object.keys() and Object.values()
+console.log(Object.keys(student));
+console.log(Object.values(student));
+Output:
+["name", "age"]
+["Gyan", 20]
+JavaScript object is a collection of key-value pairs used to store related data and behavior. Properties are accessed using dot notation (object.property) or bracket notation (object["property"]). Objects can also contain methods (functions).
+JavaScript DOM (Document Object Model)
+Definition
+The Document Object Model (DOM) is a programming interface for HTML documents. It represents a web page as a tree of objects, allowing JavaScript to access, modify, add, or remove HTML elements dynamically.
+Why is DOM Used?
+Change text and HTML content
+Change CSS styles
+Handle user events (click, input, etc.)
+Add or remove HTML elements
+Create interactive web pages
+1. Selecting Elements
+By ID
+document.getElementById("title");
+By Class Name
+document.getElementsByClassName("text");
+By Tag Name
+document.getElementsByTagName("p");
+Using querySelector()
+document.querySelector("#title");
+Using querySelectorAll()
+document.querySelectorAll("p");
+2. Changing HTML Content
+document.getElementById("title").innerHTML = "Welcome to JavaScript";
+3. Changing CSS Styles
+document.getElementById("title").style.color = "blue";
+4. Handling Events
+Example
+HTML
+<button onclick="showMessage()">Click Me</button>
+
+<script>
+function showMessage() {
+  alert("Button Clicked!");
+}
+</script>
+5. Complete Example
+HTML
+<!DOCTYPE html>
+<html>
+<body>
+
+<h1 id="title">Hello</h1>
+<button onclick="changeText()">Click Me</button>
+
+<script>
+function changeText() {
+  document.getElementById("title").innerHTML = "Welcome!";
+}
+</script>
+
+</body>
+</html>
+The DOM (Document Object Model) is a tree-like representation of an HTML document that allows JavaScript to access and modify webpage content, structure, and styles dynamically.
