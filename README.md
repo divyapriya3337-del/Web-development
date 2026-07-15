@@ -1932,3 +1932,139 @@ function changeText() {
 </body>
 </html>
 The DOM (Document Object Model) is a tree-like representation of an HTML document that allows JavaScript to access and modify webpage content, structure, and styles dynamically.
+JavaScript Events
+Definition
+JavaScript events are actions that occur in the browser, such as clicking a button, typing on the keyboard, moving the mouse, or submitting a form. JavaScript can respond to these events by executing code.
+Common JavaScript Events
+1. onclick
+Occurs when a user clicks an element.
+HTML
+<button onclick="showMessage()">Click Me</button>
+
+<script>
+function showMessage() {
+  alert("Button Clicked!");
+}
+</script>
+2. ondblclick
+Occurs when a user double-clicks an element.
+HTML
+<button ondblclick="alert('Double Clicked!')">
+  Double Click
+</button>
+3. onmouseover
+Occurs when the mouse pointer moves over an element.
+HTML
+<p onmouseover="this.style.color='red'">
+  Move the mouse over me.
+</p>
+4. onmouseout
+Occurs when the mouse pointer leaves an element.
+HTML
+<p onmouseout="this.style.color='black'">
+  Move the mouse away.
+</p>
+5. onkeydown
+Occurs when a keyboard key is pressed.
+HTML
+<input type="text" onkeydown="alert('Key Pressed')">
+6. onkeyup
+Occurs when a keyboard key is released.
+HTML
+<input type="text" onkeyup="console.log('Key Released')">
+7. onchange
+Occurs when the value of an input field changes.
+HTML
+<select onchange="alert('Option Changed')">
+  <option>HTML</option>
+  <option>CSS</option>
+</select>
+8. onsubmit
+Occurs when a form is submitted.
+HTML
+<form onsubmit="alert('Form Submitted')">
+  <input type="submit" value="Submit">
+</form>
+JavaScript events are actions performed by the user or browser that trigger JavaScript code. Common events include:
+onclick
+ondblclick
+onmouseover
+onmouseout
+onkeydown
+onkeyup
+onchange
+onsubmit
+JavaScript ES6 Features
+Definition
+ES6 (ECMAScript 2015) is a major update to JavaScript that introduced many new features, making code simpler, cleaner, and easier to write.
+1. let
+Declares a block-scoped variable.
+let age = 20;
+console.log(age);
+2. const
+Declares a constant variable.
+const country = "India";
+console.log(country);
+3. Template Literals
+Used to create strings with embedded variables using backticks (`).
+let name = "Gyan";
+console.log(`Welcome ${name}`);
+Output:
+Welcome Gyan
+4. Destructuring
+Extracts values from arrays or properties from objects.
+Array Example
+let colors = ["Red", "Green", "Blue"];
+let [a, b] = colors;
+
+console.log(a);
+console.log(b);
+5. Spread Operator (...)
+Copies or combines arrays and objects.
+let arr1 = [1, 2];
+let arr2 = [...arr1, 3, 4];
+
+console.log(arr2);
+Output:
+[1, 2, 3, 4]
+6. Rest Operator (...)
+Collects multiple values into a single array.
+function sum(...numbers) {
+  console.log(numbers);
+}
+
+sum(10, 20, 30);
+7. Default Parameters
+Assigns default values to function parameters.
+function greet(name = "Guest") {
+  console.log(name);
+}
+
+greet();
+Output:
+Guest
+8. Promises
+Promises handle asynchronous operations.
+let promise = new Promise((resolve) => {
+  resolve("Success");
+});
+
+promise.then(result => console.log(result));
+9. Async/Await
+Makes asynchronous code easier to read and write.
+async function greet() {
+  return "Hello";
+}
+
+greet().then(console.log);
+ES6 is the 2015 version of JavaScript that introduced modern features such as:
+let
+const
+Template literals
+Destructuring
+Spread operator
+Rest operator
+Default parameters
+Promises
+async/await
+These features make JavaScript code more readable, efficient, and easier to maintain.
