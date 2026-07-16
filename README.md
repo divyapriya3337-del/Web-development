@@ -392,7 +392,7 @@ HTML
     <th>Branch</th>
   </tr>
   <tr>
-    <td>Gyan Kishore</td>
+    <td>divyapriya</td>
     <td>101</td>
     <td>CSE</td>
   </tr>
@@ -409,7 +409,7 @@ Output
 Name
 Roll No
 Branch
-Gyan Kishore
+divyapriya
 101
 CSE
 Rahul
@@ -1372,7 +1372,7 @@ const
 Used to declare a variable.
 Can be redeclared and updated.
 Example
-var name = "Gyan";
+var name = "divyapriya";
 console.log(name);
 2. let
 Used to declare a block-scoped variable.
@@ -1414,7 +1414,7 @@ let age = 20;
 Example: 10, 25, 3.14
 2. String
 Stores text enclosed in single or double quotes.
-let name = "Gyan";
+let name = "divyapriya";
 Example: "Hello", "JavaScript"
 3. Boolean
 Stores only two values: true or false.
@@ -1431,8 +1431,8 @@ let data = null;
 6. Object
 Stores data as key-value pairs.
 let student = {
-  name: "Gyan",
-  age: 20
+  name: "divyapriya",
+  age: 18
 };
 7. Array
 Stores multiple values in a single variable.
@@ -2068,3 +2068,93 @@ Default parameters
 Promises
 async/await
 These features make JavaScript code more readable, efficient, and easier to maintain.
+After JavaScript Events, the next important topic is JavaScript Event Listeners.
+JavaScript Event Listeners
+Definition
+An event listener is a method that waits for an event (such as a click, key press, or mouse movement) and executes a function when that event occurs.
+The most commonly used method is addEventListener().
+Syntax
+element.addEventListener("event", function);
+1. Click Event
+HTML
+<button id="btn">Click Me</button>
+
+<script>
+document.getElementById("btn").addEventListener("click", function() {
+    alert("Button Clicked!");
+});
+</script>
+2. Mouse Over Event
+document.getElementById("btn").addEventListener("mouseover", function() {
+    console.log("Mouse is over the button");
+});
+3. Key Press Event
+document.addEventListener("keydown", function() {
+    console.log("Key Pressed");
+});
+4. Input Event
+HTML
+<input type="text" id="name">
+
+<script>
+document.getElementById("name").addEventListener("input", function() {
+    console.log("Typing...");
+});
+</script>
+Advantages of addEventListener()
+Can attach multiple events to the same element.
+Keeps JavaScript separate from HTML.
+Makes code easier to read and maintain.
+JavaScript Form Validation
+Definition
+Form validation is the process of checking whether the user has entered valid data before the form is submitted.
+Why is Form Validation Used?
+Prevents empty fields.
+Ensures correct email format.
+Checks password length.
+Reduces invalid data.
+Improves security and user experience.
+Example 1: Check Empty Input
+<!DOCTYPE html>
+<html>
+<body>
+
+<form onsubmit="return validateForm()">
+  Name: <input type="text" id="name">
+  <input type="submit" value="Submit">
+</form>
+
+<script>
+function validateForm() {
+  let name = document.getElementById("name").value;
+
+  if (name === "") {
+    alert("Name cannot be empty");
+    return false;
+  }
+
+  return true;
+}
+</script>
+
+</body>
+</html>
+HTML
+Example 2: Email Validation
+let email = document.getElementById("email").value;
+
+if (!email.includes("@")) {
+  alert("Enter a valid email address");
+}
+Example 3: Password Validation
+let password = document.getElementById("password").value;
+
+if (password.length < 8) {
+  alert("Password must be at least 8 characters");
+}
+Common Validation Checks
+Name should not be empty.
+Email should contain @.
+Password should have at least 8 characters.
+Phone number should contain only digits.
+Required fields must be filled.
