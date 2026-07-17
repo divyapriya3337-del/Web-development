@@ -2158,3 +2158,87 @@ Email should contain @.
 Password should have at least 8 characters.
 Phone number should contain only digits.
 Required fields must be filled.
+JavaScript BOM (Browser Object Model)
+Definition
+The Browser Object Model (BOM) allows JavaScript to interact with the browser window. It provides objects and methods to control browser features such as alerts, navigation, screen information, and browser history.
+Main BOM Objects
+1. window
+The window object is the top-level object in the browser. All global JavaScript objects, functions, and variables belong to it.
+Example
+window.alert("Welcome!");
+or simply
+alert("Welcome!");
+2. location
+The location object contains information about the current webpage URL.
+Example
+console.log(location.href);
+Reload the page:
+location.reload();
+3. history
+The history object allows navigation through the browser history.
+Example
+history.back();
+Go to the next page:
+history.forward();
+4. navigator
+The navigator object provides information about the browser.
+Example
+console.log(navigator.userAgent);
+5. screen
+The screen object provides information about the user's screen.
+Example
+console.log(screen.width);
+console.log(screen.height);
+Common BOM Methods
+`alert
+JavaScript Browser Object Model (BOM)
+Definition
+The Browser Object Model (BOM) allows JavaScript to interact with the web browser. It provides objects to control the browser window, access browser information, and perform browser-related operations.
+Main BOM Objects
+1. window
+The window object is the top-level object in the browser. All global JavaScript objects, functions, and variables belong to it.
+Example
+alert("Welcome!");
+or
+window.alert("Welcome!");
+2. location
+The location object contains information about the current webpage URL.
+Example
+console.log(window.location.href);
+To reload the page:
+location.reload();
+3. history
+The history object allows navigation through the browser history.
+Example
+history.back();
+Go to the next page:
+history.forward();
+4. navigator
+The navigator object provides information about the browser.
+Example
+console.log(navigator.userAgent);
+5. screen
+The screen object provides information about the user's screen.
+Example
+console.log(screen.width);
+console.log(screen.height);
+Common BOM Methods
+alert()
+Displays a message box.
+alert("Hello!");
+confirm()
+Displays a confirmation dialog.
+confirm("Are you sure?");
+prompt()
+Displays an input dialog.
+let name = prompt("Enter your name:");
+The Browser Object Model (BOM) is a collection of browser-related objects that allow JavaScript to interact with the browser. Important BOM objects are:
+window
+location
+history
+navigator
+screen
+Common methods include:
+alert()
+confirm()
+prompt()
