@@ -2242,3 +2242,104 @@ Common methods include:
 alert()
 confirm()
 prompt()
+JSON (JavaScript Object Notation)
+Definition
+JSON (JavaScript Object Notation) is a lightweight data-interchange format used to store and exchange data between a client and a server. It is easy for humans to read and write and easy for machines to parse.
+Features of JSON
+Lightweight and simple
+Human-readable
+Language-independent
+Used for data exchange in web applications
+Supports objects and arrays
+JSON Syntax
+JSON stores data as key-value pairs.
+{
+  "name": "divyapriya",
+  "age": 18,
+  "branch": "CSE"
+}
+Rules:
+Keys must be enclosed in double quotes.
+Data is written as key : value.
+Objects are enclosed in { }.
+Arrays are enclosed in [ ].
+JSON Data Types
+JSON supports:
+String
+Number
+Boolean
+Object
+Array
+Null
+JSON.parse()
+Converts a JSON string into a JavaScript object.
+Example
+let jsonData = '{"name":"divyapriya","age":18}';
+
+let obj = JSON.parse(jsonData);
+
+console.log(obj.name);
+Output:
+Gyan
+JSON.stringify()
+Converts a JavaScript object into a JSON string.
+Example
+let student = {
+  name: "divyapriya",
+  age: 18
+};
+
+let jsonString = JSON.stringify(student);
+
+console.log(jsonString);
+Output:
+{"name":"divyapriya","age":18}
+Uses of JSON
+Sending data between client and server
+Web APIs
+Storing configuration data
+Exchanging information between applications
+JSON (JavaScript Object Notation) is a lightweight format used to store and exchange data. It represents data as key-value pairs. JSON.parse() converts a JSON string into a JavaScript object, and JSON.stringify() converts a JavaScript object into a JSON string.
+AJAX (Asynchronous JavaScript and XML)
+Definition
+AJAX (Asynchronous JavaScript and XML) is a technique that allows a web page to send and receive data from a server without reloading the entire page.
+Although AJAX originally used XML, today it commonly uses JSON.
+Why Use AJAX?
+Updates data without refreshing the page.
+Makes websites faster and more interactive.
+Improves user experience.
+Reduces server load.
+How AJAX Works
+User performs an action (clicks a button, submits a form, etc.).
+JavaScript sends a request to the server.
+The server processes the request.
+The server sends back data (usually JSON).
+JavaScript updates the webpage without reloading it.
+AJAX Using XMLHttpRequest
+let xhr = new XMLHttpRequest();
+
+xhr.open("GET", "data.json", true);
+
+xhr.onload = function() {
+    console.log(xhr.responseText);
+};
+
+xhr.send();
+AJAX Using fetch() (Modern Method)
+fetch("data.json")
+  .then(response => response.json())
+  .then(data => console.log(data))
+  .catch(error => console.log(error));
+Advantages of AJAX
+No full page reload.
+Faster response time.
+Better user experience.
+Saves bandwidth.
+Used in modern web applications.
+Applications of AJAX
+Gmail
+Google Maps
+Facebook
+Online shopping websites
+Live search suggestions
+AJAX (Asynchronous JavaScript and XML) is a web development technique that enables JavaScript to communicate with a server asynchronously, allowing parts of a webpage to update without reloading the entire page. Modern AJAX applications commonly use the fetch() API and JSON.
