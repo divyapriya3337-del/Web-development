@@ -2343,3 +2343,90 @@ Facebook
 Online shopping websites
 Live search suggestions
 AJAX (Asynchronous JavaScript and XML) is a web development technique that enables JavaScript to communicate with a server asynchronously, allowing parts of a webpage to update without reloading the entire page. Modern AJAX applications commonly use the fetch() API and JSON.
+JavaScript Fetch API
+Definition
+The Fetch API is a modern JavaScript feature used to send HTTP requests (such as GET, POST, PUT, and DELETE) and receive data from a server. It is promise-based and is commonly used in modern web applications.
+1. GET Request
+A GET request is used to retrieve data from a server.
+Example
+fetch("https://api.example.com/users")
+  .then(response => response.json())
+  .then(data => console.log(data))
+  .catch(error => console.log(error));
+2. POST Request
+A POST request is used to send data to a server.
+Example
+fetch("https://api.example.com/users", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json"
+  },
+  body: JSON.stringify({
+    name: "Gyan",
+    age: 20
+  })
+})
+.then(response => response.json())
+.then(data => console.log(data))
+.catch(error => console.log(error));
+3. Using async and await
+async and await make asynchronous code easier to read.
+Example
+async function getUsers() {
+  try {
+    const response = await fetch("https://api.example.com/users");
+    const data = await response.json();
+    console.log(data);
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+getUsers();
+Advantages of Fetch API
+Easy to use
+Promise-based
+Supports async/await
+Handles network requests efficiently
+Used in modern web applications
+The Fetch API is a modern JavaScript interface used to make HTTP requests to a server. It supports methods like GET, POST, PUT, and DELETE, and works with Promises and async/await for asynchronous programming.
+JavaScript Local Storage and Session Storage
+Definition
+Local Storage and Session Storage are browser storage mechanisms used to store data on the user's browser.
+Local Storage stores data permanently (until it is deleted).
+Session Storage stores data only for the current browser tab/session. The data is removed when the tab or browser is closed.
+1. Local Storage
+Store Data
+localStorage.setItem("name", "Gyan");
+Get Data
+let name = localStorage.getItem("name");
+console.log(name);
+Remove Data
+localStorage.removeItem("name");
+Clear All Data
+localStorage.clear();
+2. Session Storage
+Store Data
+sessionStorage.setItem("user", "Gyan");
+Get Data
+let user = sessionStorage.getItem("user");
+console.log(user);
+Remove Data
+sessionStorage.removeItem("user");
+Clear All Data
+sessionStorage.clear();
+Difference Between Local Storage and Session Storage
+Local Storage
+Session Storage
+Data remains until manually deleted
+Data is deleted when the browser/tab is closed
+Shared across browser tabs of the same origin
+Available only in the current tab
+Suitable for long-term storage
+Suitable for temporary storage
+Advantages
+Easy to store user preferences.
+No server request is needed.
+Improves website performance.
+Simple key-value storage.
+Local Storage stores data permanently in the browser until it is removed manually, while Session Storage stores data only for the current browser session and deletes it when the tab or browser is closed.
