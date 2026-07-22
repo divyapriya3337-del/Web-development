@@ -2430,3 +2430,84 @@ No server request is needed.
 Improves website performance.
 Simple key-value storage.
 Local Storage stores data permanently in the browser until it is removed manually, while Session Storage stores data only for the current browser session and deletes it when the tab or browser is closed.
+Local Storage in JavaScript
+Definition
+Local Storage is a browser storage mechanism used to store data in the user's browser. The data remains available even after the browser is closed, until it is manually removed.
+Main Methods
+1. setItem() – Store Data
+localStorage.setItem("name", "Gyan");
+2. getItem() – Retrieve Data
+let name = localStorage.getItem("name");
+console.log(name);
+Output:
+Gyan
+3. removeItem() – Remove One Item
+localStorage.removeItem("name");
+4. clear() – Remove All Items
+localStorage.clear();
+Simple Example
+HTML
+<!DOCTYPE html>
+<html>
+<body>
+
+<h2>Local Storage Example</h2>
+
+<script>
+localStorage.setItem("name", "Gyan");
+
+let name = localStorage.getItem("name");
+
+document.write("Name: " + name);
+</script>
+
+</body>
+</html>
+Output
+Name: Gyan
+Local Storage is a web storage mechanism that allows websites to store data in the browser as key-value pairs. The main methods are setItem(), getItem(), removeItem(), and clear().
+Session Storage in JavaScript
+Definition
+Session Storage is a browser storage mechanism used to store data temporarily. The data is available only during the current browser tab/session and is generally removed when that tab is closed.
+Main Methods
+1. setItem() – Store Data
+sessionStorage.setItem("name", "Gyan");
+2. getItem() – Retrieve Data
+let name = sessionStorage.getItem("name");
+console.log(name);
+Output:
+Gyan
+3. removeItem() – Remove One Item
+sessionStorage.removeItem("name");
+4. clear() – Remove All Data
+sessionStorage.clear();
+Simple Example
+HTML
+<!DOCTYPE html>
+<html>
+<body>
+
+<h2>Session Storage Example</h2>
+
+<script>
+sessionStorage.setItem("name", "Gyan");
+
+let name = sessionStorage.getItem("name");
+
+document.write("Name: " + name);
+</script>
+
+</body>
+</html>
+Output
+Name: Gyan
+Local Storage vs Session Storage
+Local Storage
+Session Storage
+Data remains until manually deleted
+Data is temporary
+Data generally remains after browser restart
+Data generally ends when the tab/session is closed
+Can be used for long-term browser data
+Used for temporary session data
+Session Storage is used to store data temporarily in the browser. It provides methods such as setItem(), getItem(), removeItem(), and clear().
