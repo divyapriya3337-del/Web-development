@@ -1866,8 +1866,8 @@ Hello!
 7. Looping Through an Object
 Using for...in
 let student = {
-  name: "Gyan",
-  age: 20
+  name: "divyapriya"
+  age: 18
 };
 
 for (let key in student) {
@@ -1878,7 +1878,7 @@ console.log(Object.keys(student));
 console.log(Object.values(student));
 Output:
 ["name", "age"]
-["Gyan", 20]
+["divyapriya", 18]
 JavaScript object is a collection of key-value pairs used to store related data and behavior. Properties are accessed using dot notation (object.property) or bracket notation (object["property"]). Objects can also contain methods (functions).
 JavaScript DOM (Document Object Model)
 Definition
@@ -1999,7 +1999,7 @@ Definition
 ES6 (ECMAScript 2015) is a major update to JavaScript that introduced many new features, making code simpler, cleaner, and easier to write.
 1. let
 Declares a block-scoped variable.
-let age = 20;
+let age = 18;
 console.log(age);
 2. const
 Declares a constant variable.
@@ -2007,10 +2007,10 @@ const country = "India";
 console.log(country);
 3. Template Literals
 Used to create strings with embedded variables using backticks (`).
-let name = "Gyan";
+let name = "divyapriya";
 console.log(`Welcome ${name}`);
 Output:
-Welcome Gyan
+Welcome divyapriya
 4. Destructuring
 Extracts values from arrays or properties from objects.
 Array Example
@@ -2362,8 +2362,8 @@ fetch("https://api.example.com/users", {
     "Content-Type": "application/json"
   },
   body: JSON.stringify({
-    name: "Gyan",
-    age: 20
+    name: "divyapriya",
+    age: 18
   })
 })
 .then(response => response.json())
@@ -2511,3 +2511,91 @@ Data generally ends when the tab/session is closed
 Can be used for long-term browser data
 Used for temporary session data
 Session Storage is used to store data temporarily in the browser. It provides methods such as setItem(), getItem(), removeItem(), and clear().
+JavaScript Error Handling
+Definition
+Error handling is the process of detecting and handling errors in a JavaScript program so that the program can respond properly instead of stopping unexpectedly.
+Main Keywords
+1. try
+Contains the code that may produce an error.
+2. catch
+Handles the error if one occurs.
+3. finally
+Executes whether an error occurs or not.
+4. throw
+Used to create a custom error.
+Example
+try {
+  let result = 10 / 0;
+  console.log(result);
+} catch (error) {
+  console.log("An error occurred");
+} finally {
+  console.log("Program completed");
+}
+Example with throw
+let age = 15;
+
+try {
+  if (age < 18) {
+    throw new Error("Age must be 18 or above");
+  }
+} catch (error) {
+  console.log(error.message);
+}
+Output:
+Age must be 18 or above
+Advantages
+Prevents unexpected program termination.
+Helps identify errors.
+Improves application reliability.
+Makes debugging easier.
+JavaScript error handling is used to detect and handle errors in a program. The main keywords are try, catch, finally, and throw.
+JavaScript Promises
+Definition
+A Promise is an object in JavaScript that represents the eventual result of an asynchronous operation. It can either succeed or fail.
+For example, fetching data from a server may take some time. A Promise helps handle the result when the operation finishes.
+Promise States
+A Promise has three states:
+Pending – The operation is still in progress.
+Fulfilled – The operation completed successfully.
+Rejected – The operation failed.
+Creating a Promise
+let promise = new Promise((resolve, reject) => {
+  let success = true;
+
+  if (success) {
+    resolve("Operation successful");
+  } else {
+    reject("Operation failed");
+  }
+});
+Using .then() and .catch()
+.then() → Handles a successful result.
+.catch() → Handles an error.
+promise
+  .then(result => {
+    console.log(result);
+  })
+  .catch(error => {
+    console.log(error);
+  });
+Output:
+Operation successful
+Using async and await
+Promises are commonly used with async and await.
+async function getData() {
+  try {
+    let result = await promise;
+    console.log(result);
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+getData();
+Advantages of Promises
+Handles asynchronous operations.
+Makes code easier to manage.
+Helps avoid deeply nested callbacks.
+Works with .then(), .catch(), and async/await.
+Promise is a JavaScript object that represents the result of an asynchronous operation. It has three states: Pending, Fulfilled, and Rejected. Promises can be handled using .then(), .catch(), and async/await.
