@@ -2599,3 +2599,102 @@ Makes code easier to manage.
 Helps avoid deeply nested callbacks.
 Works with .then(), .catch(), and async/await.
 Promise is a JavaScript object that represents the result of an asynchronous operation. It has three states: Pending, Fulfilled, and Rejected. Promises can be handled using .then(), .catch(), and async/await.
+JavaScript Async/Await
+Definition
+Async/Await is a modern JavaScript feature used to handle asynchronous operations in a simpler and more readable way. It works with Promises.
+1. async
+The async keyword is used before a function. An async function always returns a Promise.
+Example
+async function greet() {
+  return "Hello World";
+}
+
+greet().then(result => {
+  console.log(result);
+});
+Output:
+Hello World
+2. await
+The await keyword pauses the execution of an async function until the Promise is completed.
+Example
+async function getData() {
+  let result = await Promise.resolve("Data received");
+  console.log(result);
+}
+
+getData();
+Output:
+Data received
+3. Async/Await with try...catch
+try...catch is used to handle errors.
+async function getData() {
+  try {
+    let result = await Promise.resolve("Success");
+    console.log(result);
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+getData();
+4. Async/Await with Fetch API
+A common use is getting data from a server.
+async function getUsers() {
+  try {
+    const response = await fetch("https://api.example.com/users");
+    const data = await response.json();
+
+    console.log(data);
+  } catch (error) {
+    console.log("Error:", error);
+  }
+}
+
+getUsers();
+Advantages
+Easy to read and understand.
+Makes asynchronous code look like normal sequential code.
+Works with Promises.
+Error handling is easy using try...catch.
+Async/Await is a modern JavaScript feature used to handle asynchronous operations. The async keyword defines an asynchronous function, while await waits for a Promise to complete. It makes asynchronous code easier to read and maintain.
+JavaScript Modules
+Definition
+JavaScript Modules allow us to divide a large JavaScript program into separate, reusable files. This makes code easier to organize, maintain, and reuse.
+There are two main keywords:
+export
+import
+1. Export
+The export keyword is used to make a variable, function, or class available to another JavaScript file.
+math.js
+export function add(a, b) {
+  return a + b;
+}
+2. Import
+The import keyword is used to use exported code from another file.
+main.js
+import { add } from "./math.js";
+
+console.log(add(10, 20));
+Output:
+30
+3. Using Modules in HTML
+Use type="module" in the <script> tag.
+HTML
+<script type="module" src="main.js"></script>
+4. Default Export
+A module can have one default export.
+message.js
+export default function greet() {
+  console.log("Hello!");
+}
+main.js
+import greet from "./message.js";
+
+greet();
+Advantages of JavaScript Modules
+Organizes code into separate files.
+Makes code reusable.
+Easier to maintain large projects.
+Reduces code duplication.
+Helps manage complex applications.
+JavaScript Modules are used to divide code into separate files and reuse it when needed. The export keyword makes code available to other modules, and the import keyword brings that code into another module
