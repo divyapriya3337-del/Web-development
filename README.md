@@ -2698,3 +2698,165 @@ Easier to maintain large projects.
 Reduces code duplication.
 Helps manage complex applications.
 JavaScript Modules are used to divide code into separate files and reuse it when needed. The export keyword makes code available to other modules, and the import keyword brings that code into another module
+JavaScript Object-Oriented Programming (OOP)
+Definition
+Object-Oriented Programming (OOP) is a programming approach that organizes code using objects and classes.
+JavaScript supports important OOP concepts such as:
+Class
+Object
+Constructor
+Encapsulation
+Inheritance
+Polymorphism
+1. Class
+A class is a blueprint or template for creating objects.
+class Student {
+  constructor(name, age) {
+    this.name = name;
+    this.age = age;
+  }
+}
+2. Object
+An object is an instance of a class.
+let student1 = new Student("Gyan", 20);
+
+console.log(student1.name);
+Output:
+Gyan
+3. Constructor
+A constructor is a special method that automatically runs when an object is created.
+class Student {
+  constructor(name) {
+    this.name = name;
+  }
+}
+4. Method
+A method is a function defined inside a class.
+class Student {
+  constructor(name) {
+    this.name = name;
+  }
+
+  greet() {
+    console.log("Hello " + this.name);
+  }
+}
+
+let student = new Student("Gyan");
+student.greet();
+Output:
+Hello divaypriya
+5. Inheritance
+Inheritance allows one class to acquire properties and methods from another class.
+class Student {
+  study() {
+    console.log("Student is studying");
+  }
+}
+
+class CollegeStudent extends Student {
+  code() {
+    console.log("Student is coding");
+  }
+}
+
+let s = new CollegeStudent();
+
+s.study();
+s.code();
+6. Encapsulation
+Encapsulation means keeping data and the methods that operate on it together inside a class and controlling access to internal data.
+7. Polymorphism
+Polymorphism means the same method name can behave differently in different classes.
+OOP in JavaScript is a programming approach based on objects and classes. The major concepts are classes, objects, constructors, encapsulation, inheritance, and polymorphism.
+JavaScript Classes in Detail
+1. What is a Class?
+A class is a blueprint or template used to create objects.
+Syntax
+class ClassName {
+  constructor() {
+    // properties
+  }
+
+  method() {
+    // code
+  }
+}
+2. Constructor
+The constructor() method is automatically called when a new object is created.
+class Student {
+  constructor(name, age) {
+    this.name = name;
+    this.age = age;
+  }
+}
+Here:
+name and age are properties.
+this refers to the current object.
+3. Creating an Object
+Use the new keyword to create an object.
+let student1 = new Student("Gyan", 20);
+
+console.log(student1.name);
+console.log(student1.age);
+Output:
+divyapriya
+18
+4. Methods in a Class
+A method is a function defined inside a class.
+class Student {
+  constructor(name) {
+    this.name = name;
+  }
+
+  greet() {
+    console.log("Hello " + this.name);
+  }
+}
+
+let student = new Student("divyapriya");
+
+student.greet();
+Output:
+Hello divyapriya
+5. Inheritance with extends
+The extends keyword allows one class to inherit from another class.
+class Student {
+  study() {
+    console.log("Student is studying");
+  }
+}
+
+class CollegeStudent extends Student {
+  code() {
+    console.log("Student is coding");
+  }
+}
+Now CollegeStudent can use the study() method from Student.
+let student = new CollegeStudent();
+
+student.study();
+student.code();
+6. super() Keyword
+The super() keyword is used to call the constructor of the parent class.
+class Student {
+  constructor(name) {
+    this.name = name;
+  }
+}
+
+class CollegeStudent extends Student {
+  constructor(name, branch) {
+    super(name);
+    this.branch = branch;
+  }
+}
+
+let student = new CollegeStudent("divyapriya", "CSE");
+
+console.log(student.name);
+console.log(student.branch);
+Output:
+divyapriya
+CSE
+A JavaScript class is a blueprint for creating objects. The constructor() initializes object properties, methods define object behavior, extends is used for inheritance, and super() calls the parent class constructor
