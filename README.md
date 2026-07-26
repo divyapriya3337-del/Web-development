@@ -2860,3 +2860,139 @@ Output:
 divyapriya
 CSE
 A JavaScript class is a blueprint for creating objects. The constructor() initializes object properties, methods define object behavior, extends is used for inheritance, and super() calls the parent class constructor
+JavaScript OOP Concepts in Detail
+JavaScript OOP mainly has 4 important concepts:
+Encapsulation
+Inheritance
+Polymorphism
+Abstraction
+1. Encapsulation
+Encapsulation means keeping data and methods together inside a class and controlling access to the data.
+Example:
+class Student {
+  #marks = 90;
+
+  getMarks() {
+    return this.#marks;
+  }
+}
+
+let student = new Student();
+
+console.log(student.getMarks());
+Output:
+90
+Here, #marks is a private property.
+2. Inheritance
+Inheritance allows a child class to use properties and methods of a parent class.
+Example:
+class Animal {
+  eat() {
+    console.log("Animal is eating");
+  }
+}
+
+class Dog extends Animal {
+  bark() {
+    console.log("Dog is barking");
+  }
+}
+
+let dog = new Dog();
+
+dog.eat();
+dog.bark();
+Output:
+Animal is eating
+Dog is barking
+Here, Dog inherits the eat() method from Animal.
+3. Polymorphism
+Polymorphism means "many forms." The same method can have different implementations in different classes.
+Example:
+class Animal {
+  sound() {
+    console.log("Animal makes a sound");
+  }
+}
+
+class Dog extends Animal {
+  sound() {
+    console.log("Dog barks");
+  }
+}
+
+class Cat extends Animal {
+  sound() {
+    console.log("Cat meows");
+  }
+}
+
+let dog = new Dog();
+let cat = new Cat();
+
+dog.sound();
+cat.sound();
+Output:
+Dog barks
+Cat meows
+4. Abstraction
+Abstraction means showing only the necessary information and hiding unnecessary implementation details.
+For example, when you use a car, you use the steering wheel and pedals without needing to know every internal detail of how the engine works.
+In JavaScript, abstraction can be achieved using classes, methods, and controlled access to data.
+Quick Summary
+Concept
+Meaning
+Encapsulation
+Protect and control data
+Inheritance
+Reuse properties and methods
+Polymorphism
+Same method, different behavior
+Abstraction
+Hide unnecessary implementation details
+The four major OOP concepts are Encapsulation, Inheritance, Polymorphism, and Abstraction. They help developers create reusable, organized, and maintainable code.
+JavaScript Prototype and Prototypal Inheritance
+1. What is a Prototype?
+In JavaScript, every object can have a prototype. A prototype is another object from which an object can inherit properties and methods.
+This is called prototypal inheritance.
+2. Simple Example
+let student = {
+  name: "divyapriya"
+};
+
+console.log(student.toString());
+Here, toString() is not directly defined inside student. JavaScript can access it through the object's prototype chain.
+3. Prototype with Constructor Function
+function Student(name) {
+  this.name = name;
+}
+
+Student.prototype.greet = function() {
+  console.log("Hello " + this.name);
+};
+
+let student1 = new Student("Gyan");
+
+student1.greet();
+Output
+Hello divyapriya
+The greet() method is stored on Student.prototype and can be used by objects created using Student.
+4. Prototype Chain
+When JavaScript looks for a property or method:
+It first checks the object itself.
+If it doesn't find it, it checks the object's prototype.
+It continues searching up the prototype chain.
+If nothing is found, it returns undefined or produces an error depending on the operation.
+5. Class and Prototypes
+JavaScript class syntax internally uses prototypes.
+class Student {
+  constructor(name) {
+    this.name = name;
+  }
+
+  greet() {
+    console.log("Hello " + this.name);
+  }
+}
+The greet() method is available through the class's prototype.
+A prototype is an object from which other JavaScript objects can inherit properties and methods. Prototypal inheritance allows objects to reuse functionality through the prototype chain. JavaScript classes also use prototypes internally.
