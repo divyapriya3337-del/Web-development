@@ -2996,3 +2996,118 @@ class Student {
 }
 The greet() method is available through the class's prototype.
 A prototype is an object from which other JavaScript objects can inherit properties and methods. Prototypal inheritance allows objects to reuse functionality through the prototype chain. JavaScript classes also use prototypes internally.
+JavaScript this Keyword
+Definition
+The this keyword refers to the object that is associated with the current execution context. Its value depends on how a function is called.
+1. this Inside an Object
+When a regular method is called through an object, this refers to that object.
+let student = {
+  name: "divyapriya",
+
+  greet: function() {
+    console.log("Hello " + this.name);
+  }
+};
+
+student.greet();
+Output:
+Hello divyapriya
+Here, this.name refers to student.name.
+2. this Inside a Class
+In a class method, this refers to the current object.
+class Student {
+  constructor(name) {
+    this.name = name;
+  }
+
+  greet() {
+    console.log("Hello " + this.name);
+  }
+}
+
+let student = new Student("divyapriya");
+student.greet();
+Output:
+Hello divyapriya
+3. this in Arrow Functions
+Arrow functions do not have their own this. They use this from their surrounding scope.
+let student = {
+  name: "divyapriya",
+
+  greet: () => {
+    console.log(this.name);
+  }
+};
+For object methods, a regular function is generally preferred when you want this to refer to the object.
+4. this with call()
+The call() method can explicitly set the value of this.
+function greet() {
+  console.log("Hello " + this.name);
+}
+
+let student = {
+  name: "divyapriya"
+};
+
+greet.call(student);
+Output:
+Hello divyapriya
+Simple Summary
+Situation
+Meaning of this
+Object method
+The object that called the method
+Class method
+The current object
+Arrow function
+Inherits this from surrounding scope
+call()
+Can explicitly set this
+The this keyword in JavaScript refers to the object associated with the current execution context. Its value depends on how a function is called. In object methods and class methods, this commonly refers to the current object.
+JavaScript Closures
+Definition
+A closure is a function that remembers and can access variables from its outer (surrounding) function, even after the outer function has finished executing.
+Simple Example
+function outer() {
+  let message = "Hello";
+
+  function inner() {
+    console.log(message);
+  }
+
+  return inner;
+}
+
+let result = outer();
+
+result();
+Output
+Hello
+Here, the inner() function remembers the message variable from the outer() function. This is called a closure.
+Another Example
+function counter() {
+  let count = 0;
+
+  return function() {
+    count++;
+    console.log(count);
+  };
+}
+
+let myCounter = counter();
+
+myCounter();
+myCounter();
+myCounter();
+Output
+1
+2
+3
+The inner function remembers the count variable. Each time it is called, the value is updated.
+Uses of Closures
+Data privacy
+Maintaining state
+Creating function factories
+Callbacks
+Event handlers
+A closure is created when an inner function remembers and accesses variables from its outer function's scope, even after the outer function has completed execution.
