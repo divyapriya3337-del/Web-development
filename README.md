@@ -3111,3 +3111,105 @@ Creating function factories
 Callbacks
 Event handlers
 A closure is created when an inner function remembers and accesses variables from its outer function's scope, even after the outer function has completed execution.
+JavaScript Higher-Order Functions
+Definition
+A Higher-Order Function (HOF) is a function that does at least one of these:
+Takes another function as an argument.
+Returns another function as a result.
+1. Function as an Argument
+function greet(name) {
+  console.log("Hello " + name);
+}
+
+function processUser(callback) {
+  callback("Gyan");
+}
+
+processUser(greet);
+Output
+Hello Gyan
+Here, greet is passed as an argument to processUser().
+2. map()
+map() is a Higher-Order Function. It applies a function to every element of an array.
+let numbers = [1, 2, 3];
+
+let result = numbers.map(function(num) {
+  return num * 2;
+});
+
+console.log(result);
+Output
+[2, 4, 6]
+3. filter()
+filter() creates a new array containing elements that satisfy a condition.
+let numbers = [10, 20, 30, 40];
+
+let result = numbers.filter(function(num) {
+  return num > 20;
+});
+
+console.log(result);
+Output
+[30, 40]
+4. reduce()
+reduce() processes all elements and returns a single value.
+let numbers = [1, 2, 3, 4];
+
+let sum = numbers.reduce(function(total, num) {
+  return total + num;
+}, 0);
+
+console.log(sum);
+Output
+10
+Common Higher-Order Functions
+map()
+filter()
+reduce()
+forEach()
+find()
+some()
+every()
+A Higher-Order Function is a function that accepts another function as an argument or returns a function as a result. Common examples include map(), filter(), and reduce().
+JavaScript Callback Functions
+Definition
+A callback function is a function that is passed as an argument to another function and is executed later.
+Simple Example
+function greet(name) {
+  console.log("Hello " + name);
+}
+
+function processUser(callback) {
+  callback("divyapriya");
+}
+
+processUser(greet);
+Output
+Hello divyapriya
+Here, greet is passed to processUser() as a callback function.
+Callback with setTimeout()
+Callbacks are commonly used for asynchronous operations.
+setTimeout(function() {
+  console.log("Hello after 2 seconds");
+}, 2000);
+The function runs after approximately 2 seconds.
+Callback with Array Methods
+Using forEach()
+let fruits = ["Apple", "Banana", "Mango"];
+
+fruits.forEach(function(fruit) {
+  console.log(fruit);
+});
+Output
+Apple
+Banana
+Mango
+The function passed to forEach() is a callback function.
+Callback vs Higher-Order Function
+Callback Function
+Higher-Order Function
+A function passed to another function
+A function that accepts or returns another function
+Example: function passed to forEach()
+Example: forEach(), map(), filter()
+A callback function is a function passed as an argument to another function and executed when required. Callbacks are commonly used in event handling, asynchronous programming, setTimeout(), and array methods.
