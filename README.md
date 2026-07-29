@@ -3213,3 +3213,98 @@ A function that accepts or returns another function
 Example: function passed to forEach()
 Example: forEach(), map(), filter()
 A callback function is a function passed as an argument to another function and executed when required. Callbacks are commonly used in event handling, asynchronous programming, setTimeout(), and array methods.
+JavaScript Callback Hell
+Definition
+Callback Hell happens when multiple callbacks are nested inside each other, making the code difficult to read, understand, and maintain.
+It is also called the Pyramid of Doom.
+Example
+doTask1(function() {
+  doTask2(function() {
+    doTask3(function() {
+      doTask4(function() {
+        console.log("All tasks completed");
+      });
+    });
+  });
+});
+As the number of nested callbacks increases, the code becomes harder to manage.
+Problems with Callback Hell
+Code becomes difficult to read.
+Difficult to debug.
+Difficult to maintain.
+Error handling becomes complicated.
+Code structure becomes deeply nested.
+Solution: Promises
+Promises provide a cleaner way to handle asynchronous operations.
+doTask1()
+  .then(() => doTask2())
+  .then(() => doTask3())
+  .then(() => doTask4())
+  .then(() => console.log("All tasks completed"))
+  .catch(error => console.log(error));
+Another Solution: Async/Await
+async/await makes asynchronous code easier to read.
+async function runTasks() {
+  try {
+    await doTask1();
+    await doTask2();
+    await doTask3();
+    await doTask4();
+
+    console.log("All tasks completed");
+  } catch (error) {
+    console.log(error);
+  }
+}
+Callback Hell is a situation where multiple asynchronous callbacks are nested inside one another, making the code difficult to read and maintain. It can be avoided by using Promises and async/await.
+JavaScript Event Loop
+Definition
+The Event Loop is a mechanism in JavaScript that allows it to handle asynchronous operations even though JavaScript is single-threaded.
+It helps JavaScript manage tasks like:
+setTimeout()
+API requests
+User events
+Promises
+Main Components
+1. Call Stack
+Executes JavaScript code one task at a time.
+2. Web APIs
+Browser features that handle asynchronous operations such as timers and network requests.
+3. Callback Queue
+Stores callback functions that are ready to be executed.
+4. Microtask Queue
+Stores Promise callbacks such as .then() and .catch().
+5. Event Loop
+Checks whether the Call Stack is empty and moves waiting tasks to it for execution.
+Simple Example
+console.log("Start");
+
+setTimeout(function() {
+  console.log("Timeout");
+}, 0);
+
+console.log("End");
+Output
+Start
+End
+Timeout
+Why?
+"Start" executes first.
+setTimeout() is handled asynchronously.
+"End" executes next.
+After the Call Stack is empty, the callback runs.
+"Timeout" is printed last.
+Promise Example
+console.log("Start");
+
+Promise.resolve().then(function() {
+  console.log("Promise");
+});
+
+console.log("End");
+Output
+Start
+End
+Promise
+The Promise callback is placed in the Microtask Queue and runs after the synchronous code finishes.
+The JavaScript Event Loop is responsible for handling asynchronous operations. It continuously checks the Call Stack and queues, allowing JavaScript to execute asynchronous callbacks when the Call Stack becomes empty.
