@@ -3308,3 +3308,134 @@ End
 Promise
 The Promise callback is placed in the Microtask Queue and runs after the synchronous code finishes.
 The JavaScript Event Loop is responsible for handling asynchronous operations. It continuously checks the Call Stack and queues, allowing JavaScript to execute asynchronous callbacks when the Call Stack becomes empty.
+JavaScript Regular Expressions (RegEx)
+Definition
+A Regular Expression (RegEx) is a pattern used to search, match, and validate text in JavaScript.
+RegEx is commonly used for:
+Email validation
+Phone number validation
+Password validation
+Searching text
+Replacing text
+1. Creating a Regular Expression
+Using / /
+let pattern = /hello/;
+This pattern searches for the word hello.
+2. test() Method
+The test() method checks whether a pattern exists in a string. It returns true or false.
+let pattern = /hello/;
+
+console.log(pattern.test("hello world"));
+Output
+true
+3. match() Method
+Used to find matching text.
+let text = "I love JavaScript";
+
+console.log(text.match(/JavaScript/));
+4. replace() Method
+Used to replace matching text.
+let text = "Hello World";
+
+let result = text.replace(/World/, "JavaScript");
+
+console.log(result);
+Output
+Hello JavaScript
+5. Common RegEx Symbols
+Symbol
+Meaning
+^
+Start of string
+$
+End of string
+.
+Any character
+*
+Zero or more times
++
+One or more times
+?
+Zero or one time
+[a-z]
+Lowercase letters
+[0-9]
+Digits
+Example: Check Only Numbers
+let pattern = /^[0-9]+$/;
+
+console.log(pattern.test("12345"));
+Output
+true
+Example: Simple Email Validation
+let email = "student@example.com";
+
+let pattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+console.log(pattern.test(email));
+Output
+true
+A Regular Expression (RegEx) is a sequence of characters that defines a search pattern. In JavaScript, RegEx is used for pattern matching, searching, replacing, and input validation.
+JavaScript Map and Set
+JavaScript provides Map and Set as built-in data structures for storing and managing data.
+1. JavaScript Set
+Definition
+A Set is a collection of unique values. It does not allow duplicate values.
+Creating a Set
+let numbers = new Set([1, 2, 3, 3, 4]);
+
+console.log(numbers);
+The duplicate 3 is stored only once.
+Common Set Methods
+add()
+Adds a new value.
+numbers.add(5);
+has()
+Checks whether a value exists.
+console.log(numbers.has(3));
+Output:
+true
+delete()
+Removes a value.
+numbers.delete(3);
+size
+Returns the number of unique values.
+console.log(numbers.size);
+2. JavaScript Map
+Definition
+A Map stores data as key-value pairs.
+Creating a Map
+let student = new Map();
+
+student.set("name", "divyapriya");
+student.set("age", 18);
+Common Map Methods
+set()
+Adds or updates a key-value pair.
+student.set("branch", "CSE");
+get()
+Retrieves a value using its key.
+console.log(student.get("name"));
+Output:
+divyapriya
+has()
+Checks whether a key exists.
+console.log(student.has("age"));
+delete()
+Removes a key-value pair.
+student.delete("age");
+size
+Returns the number of key-value pairs.
+console.log(student.size);
+Map vs Set
+Map
+Set
+Stores key-value pairs
+Stores only values
+Keys are unique
+Values are unique
+Uses set() and get()
+Uses add()
+Example: name → divyapriya
+Example: 1, 2, 3
+A Set is a collection of unique values, while a Map is a collection of key-value pairs. Both are useful for efficiently storing and managing data in JavaScript.
