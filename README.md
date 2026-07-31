@@ -3439,3 +3439,100 @@ Uses add()
 Example: name → divyapriya
 Example: 1, 2, 3
 A Set is a collection of unique values, while a Map is a collection of key-value pairs. Both are useful for efficiently storing and managing data in JavaScript.
+JavaScript Memory Management and Garbage Collection
+Definition
+Memory Management is the process of allocating and freeing memory while a JavaScript program runs.
+JavaScript automatically manages memory using a process called Garbage Collection.
+1. Memory Allocation
+When you create variables, objects, or arrays, JavaScript allocates memory for them.
+Example
+let name = "Gyan";
+
+let student = {
+  age: 20
+};
+Memory is allocated to store these values.
+2. Garbage Collection
+Garbage Collection automatically identifies and removes data that is no longer accessible or needed by the program.
+Example
+let student = {
+  name: "Gyan"
+};
+
+student = null;
+After assigning null, the original object may become unreachable. JavaScript's garbage collector can eventually free the memory used by that object.
+3. Memory Leak
+A memory leak occurs when a program unnecessarily keeps references to data that it no longer needs, causing memory usage to increase.
+Common causes include:
+Unused global variables
+Unremoved event listeners
+Timers that are not cleared
+Unnecessary references to objects
+4. setTimeout() and clearTimeout()
+A timer can be cancelled using clearTimeout().
+let timer = setTimeout(() => {
+  console.log("Hello");
+}, 5000);
+
+clearTimeout(timer);
+5. setInterval() and clearInterval()
+An interval can be stopped using clearInterval().
+let interval = setInterval(() => {
+  console.log("Running");
+}, 1000);
+
+clearInterval(interval);
+Memory management is the process of allocating and releasing memory during program execution. JavaScript automatically manages memory using Garbage Collection, which removes objects that are no longer reachable or needed.
+JavaScript Web APIs
+Definition
+Web APIs are features provided by the browser that allow JavaScript to interact with the browser and perform tasks such as accessing webpage elements, making network requests, storing data, and using device features.
+1. DOM API
+Used to access and modify HTML elements.
+document.getElementById("title").innerText = "Hello";
+2. Fetch API
+Used to communicate with servers and retrieve data.
+fetch("https://example.com/data")
+  .then(response => response.json())
+  .then(data => console.log(data));
+3. Web Storage API
+Used to store data in the browser.
+Local Storage
+localStorage.setItem("name", "divyapriya");
+Session Storage
+sessionStorage.setItem("user", "divyapriya");
+4. Timer API
+Used to execute code after a specific time or repeatedly.
+setTimeout()
+setTimeout(() => {
+  console.log("Hello");
+}, 2000);
+setInterval()
+setInterval(() => {
+  console.log("Running");
+}, 1000);
+5. Geolocation API
+Used to request the user's geographical location, subject to permission.
+navigator.geolocation.getCurrentPosition(position => {
+  console.log(position.coords.latitude);
+  console.log(position.coords.longitude);
+});
+6. Console API
+Used mainly for debugging and displaying information.
+console.log("Hello");
+console.error("An error occurred");
+Common Web APIs
+Web API
+Purpose
+DOM API
+Manipulate HTML
+Fetch API
+Communicate with servers
+Web Storage API
+Store browser data
+Timer API
+Handle timers
+Geolocation API
+Access location with permission
+Console API
+Debugging
+Web APIs are browser-provided interfaces that allow JavaScript programs to interact with browser features and perform tasks such as DOM manipulation, network communication, data storage, timers, and geolocation.
