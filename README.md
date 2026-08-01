@@ -3536,3 +3536,97 @@ Access location with permission
 Console API
 Debugging
 Web APIs are browser-provided interfaces that allow JavaScript programs to interact with browser features and perform tasks such as DOM manipulation, network communication, data storage, timers, and geolocation.
+JavaScript Web Workers
+Definition
+A Web Worker allows JavaScript code to run in a background thread, separate from the main webpage thread. It helps keep the user interface responsive during heavy computations.
+Why Use Web Workers?
+Performs heavy calculations in the background.
+Prevents the webpage from becoming unresponsive.
+Improves performance for CPU-intensive tasks.
+1. Create a Worker File
+Create a file called worker.js:
+self.onmessage = function(event) {
+  let result = event.data * 2;
+  self.postMessage(result);
+};
+2. Create the Main JavaScript File
+let worker = new Worker("worker.js");
+
+worker.postMessage(10);
+
+worker.onmessage = function(event) {
+  console.log("Result:", event.data);
+};
+Output
+Result: 20
+How It Works
+The main JavaScript creates a Web Worker.
+postMessage() sends data to the worker.
+The worker performs the task.
+postMessage() sends the result back.
+onmessage receives the result.
+Important Methods
+Method
+Purpose
+new Worker()
+Creates a worker
+postMessage()
+Sends data
+onmessage
+Receives data
+terminate()
+Stops the worker
+Stop a Worker
+worker.terminate();
+A Web Worker allows JavaScript to execute tasks in a background thread without blocking the main webpage. It is useful for heavy computations and helps keep the user interface responsive.
+JavaScript Service Workers and Progressive Web Apps (PWA)
+1. Service Worker
+A Service Worker is a JavaScript file that runs in the background, separately from the webpage. It can help with caching, offline support, and handling network requests.
+Basic Example
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("sw.js")
+    .then(() => {
+      console.log("Service Worker Registered");
+    })
+    .catch(error => {
+      console.log("Registration Failed", error);
+    });
+}
+2. Progressive Web App (PWA)
+A PWA is a web application that provides an app-like experience using modern web technologies.
+Features of PWA
+Works offline or with limited connectivity.
+Can be installed on supported devices.
+Can load quickly.
+Can use caching for better performance.
+Provides an app-like user experience.
+3. Main Components of a PWA
+Service Worker
+Handles background tasks and caching.
+Web App Manifest
+Provides information about the app, such as its name and icons.
+HTTPS
+PWAs generally require a secure HTTPS connection for important features.
+4. Simple Manifest Example
+Create a file named manifest.json:
+{
+  "name": "My Web App",
+  "short_name": "MyApp",
+  "start_url": "/",
+  "display": "standalone"
+}
+Link it in HTML:
+HTML
+<link rel="manifest" href="manifest.json">
+Service Worker vs Web Worker
+Service Worker
+Web Worker
+Used for caching and network-related tasks
+Used for background computations
+Can support offline functionality
+Helps avoid blocking the main thread
+Can work without an active webpage in some scenarios
+Usually works while its associated page is active
+Important for PWAs
+Useful for CPU-intensive tasks
+A Service Worker is a background JavaScript script that can handle tasks such as caching and network requests. A Progressive Web App (PWA) is a web application that provides an app-like experience and can offer features such as offline support and installation.
