@@ -3630,3 +3630,107 @@ Usually works while its associated page is active
 Important for PWAs
 Useful for CPU-intensive tasks
 A Service Worker is a background JavaScript script that can handle tasks such as caching and network requests. A Progressive Web App (PWA) is a web application that provides an app-like experience and can offer features such as offline support and installation.
+JavaScript Testing and Debugging
+1. What is Testing?
+Testing is the process of checking whether a JavaScript program works correctly and produces the expected output.
+2. What is Debugging?
+Debugging is the process of finding and fixing errors or bugs in a program.
+3. Using console.log()
+console.log() is commonly used to check values while debugging.
+let a = 10;
+let b = 20;
+
+console.log(a + b);
+Output:
+30
+4. Browser Developer Tools
+You can open Developer Tools in Chrome or Edge by pressing:
+F12 or Ctrl + Shift + I
+Common tabs include:
+Console – View errors and output.
+Sources – View and debug JavaScript files.
+Network – Monitor network requests.
+Elements – Inspect and modify HTML and CSS.
+5. Breakpoints
+A breakpoint pauses program execution at a specific line so you can examine variables and program flow.
+Example:
+let x = 10;
+let y = 20;
+
+let result = x + y;
+
+console.log(result);
+You can set a breakpoint on the result line using the browser's Sources panel.
+6. Unit Testing
+Unit testing checks individual parts or functions of a program separately.
+Example function:
+function add(a, b) {
+  return a + b;
+}
+Expected result:
+add(2, 3) === 5
+Popular JavaScript testing tools include:
+Jest
+Vitest
+Mocha
+7. Types of Testing
+Type
+Meaning
+Unit Testing
+Tests individual functions or components
+Integration Testing
+Tests how different parts work together
+End-to-End Testing
+Tests the complete application flow
+JavaScript testing is used to verify that code works as expected, while debugging is the process of finding and fixing errors. Browser Developer Tools, console.log(), breakpoints, and testing frameworks such as Jest are commonly used.
+JavaScript JSON
+Definition
+JSON (JavaScript Object Notation) is a lightweight format used to store and exchange data between applications, especially between a frontend and backend.
+JSON is easy for both humans and computers to read.
+1. JSON Example
+{
+  "name": "divyapriya",
+  "age": 18,
+  "branch": "CSE"
+}
+Here:
+"name" is a key.
+"divyapriya"  is its value.
+Data is stored as key-value pairs.
+3. JSON.stringify()
+Converts a JavaScript object into a JSON string.
+let student = {
+  name: "divyapriya",
+  age: 18
+};
+
+let jsonData = JSON.stringify(student);
+
+console.log(jsonData);
+Output
+{"name":"divyapriya","age":18}
+3. JSON.parse()
+Converts a JSON string into a JavaScript object.
+let jsonData = '{"name":"Gyan","age":20}';
+
+let student = JSON.parse(jsonData);
+
+console.log(student.name);
+Output
+Gyan
+4. JSON with Fetch API
+JSON is commonly used to receive data from a server.
+fetch("https://example.com/data")
+  .then(response => response.json())
+  .then(data => {
+    console.log(data);
+  });
+Here, response.json() converts the server response into a JavaScript object.
+JSON Rules
+Data is written using key-value pairs.
+Keys must use double quotes.
+Strings must use double quotes.
+Objects use { }.
+Arrays use [ ].
+Functions are not valid JSON values.
+JSON (JavaScript Object Notation) is a lightweight data format used to exchange data between a client and a server. In JavaScript, JSON.stringify() converts an object into a JSON string, while JSON.parse() converts a JSON string into an object.
