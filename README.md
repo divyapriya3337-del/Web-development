@@ -3734,3 +3734,112 @@ Objects use { }.
 Arrays use [ ].
 Functions are not valid JSON values.
 JSON (JavaScript Object Notation) is a lightweight data format used to exchange data between a client and a server. In JavaScript, JSON.stringify() converts an object into a JSON string, while JSON.parse() converts a JSON string into an object.
+JavaScript DOM (Document Object Model)
+Definition
+DOM stands for Document Object Model. It represents an HTML document as a tree of objects.
+JavaScript uses the DOM to access, change, add, and remove HTML elements dynamically.
+1. Selecting an Element by ID
+HTML:
+HTML
+<h1 id="title">Hello</h1>
+JavaScript:
+let heading = document.getElementById("title");
+
+console.log(heading);
+2. Changing HTML Content
+document.getElementById("title").innerText = "Welcome to JavaScript";
+The text inside the <h1> changes.
+3. Selecting Elements by Class
+let items = document.getElementsByClassName("item");
+4. Using querySelector()
+Selects the first matching element.
+let heading = document.querySelector("#title");
+For a class:
+let item = document.querySelector(".item");
+5. Using querySelectorAll()
+Selects all matching elements.
+let items = document.querySelectorAll(".item");
+6. Changing CSS
+document.getElementById("title").style.fontSize = "30px";
+7. Changing Attributes
+document.getElementById("myImage").src = "image.jpg";
+8. Creating a New Element
+let paragraph = document.createElement("p");
+
+paragraph.innerText = "This is a new paragraph.";
+
+document.body.appendChild(paragraph);
+9. Removing an Element
+let element = document.getElementById("title");
+
+element.remove();
+Common DOM Methods
+Method
+Purpose
+getElementById()
+Select element by ID
+getElementsByClassName()
+Select elements by class
+querySelector()
+Select first matching element
+querySelectorAll()
+Select all matching elements
+createElement()
+Create a new element
+appendChild()
+Add an element
+remove()
+Remove an element
+The DOM (Document Object Model) is a programming interface that represents an HTML document as a tree of objects. JavaScript uses the DOM to dynamically access, modify, create, and remove HTML elements.
+JavaScript DOM Events
+Definition
+A DOM Event is an action or occurrence that happens in a webpage. JavaScript can detect these events and execute a function in response.
+Common Events
+click → User clicks an element
+dblclick → User double-clicks
+mouseover → Mouse moves over an element
+mouseout → Mouse leaves an element
+keydown → A keyboard key is pressed
+keyup → A keyboard key is released
+submit → A form is submitted
+change → Input value changes
+1. Using onclick
+HTML
+HTML
+<button onclick="showMessage()">Click Me</button>
+JavaScript
+function showMessage() {
+  alert("Button clicked!");
+}
+2. Using addEventListener()
+addEventListener() is a commonly preferred way to attach event handlers.
+HTML
+HTML
+<button id="btn">Click Me</button>
+JavaScript
+let button = document.getElementById("btn");
+
+button.addEventListener("click", function() {
+  alert("Button clicked!");
+});
+3. Keyboard Event
+document.addEventListener("keydown", function(event) {
+  console.log("Key pressed:", event.key);
+});
+When a key is pressed, its name is displayed in the console.
+4. Form Submit Event
+let form = document.getElementById("myForm");
+
+form.addEventListener("submit", function(event) {
+  event.preventDefault();
+  console.log("Form submitted");
+});
+event.preventDefault() prevents the browser's default form submission behavior.
+5. Event Object
+The event object contains information about the event.
+button.addEventListener("click", function(event) {
+  console.log(event.type);
+});
+Output:
+click
+DOM Events are actions that occur on webpage elements, such as clicks, keyboard input, mouse movement, and form submission. JavaScript can respond to these events using event handlers such as onclick or the addEventListener() method.
