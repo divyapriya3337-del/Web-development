@@ -3843,3 +3843,103 @@ button.addEventListener("click", function(event) {
 Output:
 click
 DOM Events are actions that occur on webpage elements, such as clicks, keyboard input, mouse movement, and form submission. JavaScript can respond to these events using event handlers such as onclick or the addEventListener() method.
+JavaScript Event Bubbling and Event Capturing
+When an event occurs on an HTML element, it travels through the DOM tree. This process is called Event Propagation.
+There are two main phases:
+Event Capturing
+Event Bubbling
+1. Event Bubbling
+In Event Bubbling, the event starts from the target element and moves upward toward its parent elements.
+Example
+HTML
+<div id="parent">
+  <button id="child">Click Me</button>
+</div>
+document.getElementById("parent").addEventListener("click", function() {
+  console.log("Parent clicked");
+});
+
+document.getElementById("child").addEventListener("click", function() {
+  console.log("Button clicked");
+});
+When the button is clicked, the output is generally:
+Button clicked
+Parent clicked
+The event moves from the button → parent.
+2. Event Capturing
+In Event Capturing, the event travels from the outer parent toward the target element.
+To enable capturing, use true as the third argument.
+document.getElementById("parent").addEventListener("click", function() {
+  console.log("Parent clicked");
+}, true);
+The event travels from:
+Parent → Child
+3. stopPropagation()
+The stopPropagation() method prevents the event from continuing to propagate through the DOM.
+document.getElementById("child").addEventListener("click", function(event) {
+  event.stopPropagation();
+  console.log("Button clicked");
+});
+The parent event listener will not receive the event through propagation.
+4. Event Delegation
+Event Delegation is a technique where we attach one event listener to a parent element to handle events from its child elements.
+Example
+document.getElementById("parent").addEventListener("click", function(event) {
+  if (event.target.id === "child") {
+    console.log("Button clicked");
+  }
+});
+This is useful when working with many child elements or dynamically added elements.
+Difference
+Event Bubbling
+Event Capturing
+Target → Parent
+Parent → Target
+Default event propagation phase
+Must be enabled when adding the listener
+Moves upward
+Moves downward
+Event Bubbling is the process in which an event travels from the target element toward its parent elements. Event Capturing is the process in which an event travels from the parent elements toward the target element. Both are parts of DOM Event Propagation.
+JavaScript Event Delegation
+Definition
+Event Delegation is a technique where we add one event listener to a parent element instead of adding separate event listeners to every child element.
+It works using Event Bubbling.
+Simple Example
+HTML
+HTML
+<ul id="items">
+  <li>Apple</li>
+  <li>Banana</li>
+  <li>Mango</li>
+</ul>
+JavaScript
+document.getElementById("items").addEventListener("click", function(event) {
+  if (event.target.tagName === "LI") {
+    console.log("You clicked: " + event.target.innerText);
+  }
+});
+If you click Apple, the output is:
+You clicked: Apple
+If you click Banana:
+You clicked: Banana
+How It Works
+The user clicks a child element.
+The event bubbles up to the parent.
+The parent's event listener receives the event.
+event.target identifies the element that was clicked.
+The required action is performed.
+Advantages
+Uses fewer event listeners.
+Improves performance for large lists.
+Works well with dynamically added elements.
+Makes code simpler and easier to maintain.
+Example with Dynamic Elements
+let list = document.getElementById("items");
+
+list.addEventListener("click", function(event) {
+  if (event.target.matches("li")) {
+    alert(event.target.innerText);
+  }
+});
+Even if new <li> elements are added later, the parent listener can handle their clicks.
+Event Delegation is a technique of attaching a single event listener to a parent element to handle events from its child elements. It uses event bubbling and is useful for improving performance and handling dynamically created elements.
