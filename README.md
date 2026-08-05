@@ -3943,3 +3943,126 @@ list.addEventListener("click", function(event) {
 });
 Even if new <li> elements are added later, the parent listener can handle their clicks.
 Event Delegation is a technique of attaching a single event listener to a parent element to handle events from its child elements. It uses event bubbling and is useful for improving performance and handling dynamically created elements.
+JavaScript Forms and Form Validation
+Definition
+Form Validation is the process of checking whether the user has entered valid and complete data before submitting a form.
+1. Simple HTML Form
+HTML
+<form id="myForm">
+  Name: <input type="text" id="name"><br><br>
+  <input type="submit" value="Submit">
+</form>
+2. JavaScript Form Validation
+document.getElementById("myForm").addEventListener("submit", function(event) {
+
+  let name = document.getElementById("name").value;
+
+  if (name === "") {
+    alert("Name is required");
+    event.preventDefault();
+  }
+});
+Output
+If the name field is empty:
+Name is required
+If the name is entered, the form is submitted.
+3. Email Validation
+let email = document.getElementById("email").value;
+
+if (!email.includes("@")) {
+  alert("Enter a valid email");
+}
+4. Password Validation
+let password = document.getElementById("password").value;
+
+if (password.length < 8) {
+  alert("Password must be at least 8 characters");
+}
+5. Prevent Form Submission
+event.preventDefault();
+This method stops the form from submitting if the input is invalid.
+Types of Validation
+Required field validation
+Email validation
+Password validation
+Phone number validation
+Number validation
+Advantages
+Prevents invalid data submission.
+Improves user experience.
+Reduces server-side errors.
+Ensures data accuracy.
+Form Validation is the process of checking user input before submitting a form. JavaScript validates fields such as name, email, password, and phone number to ensure the entered data is correct and complete.
+JavaScript ES6 Features
+Definition
+ES6 (ECMAScript 2015) is a major version of JavaScript that introduced many new features to make code simpler, cleaner, and more powerful.
+1. let
+let is used to declare a variable. Its scope is limited to the block in which it is declared.
+let age = 20;
+console.log(age);
+2. const
+const is used to declare a constant. Its value cannot be reassigned.
+const PI = 3.14;
+console.log(PI);
+3. Arrow Function (=>)
+Arrow functions provide a shorter syntax for writing functions.
+const add = (a, b) => a + b;
+
+console.log(add(10, 20));
+Output:
+30
+4. Template Literals
+Template literals use backticks ( ) and allow string interpolation.
+let name = "divyapriya";
+
+console.log(`Hello ${name}`);
+Output:
+Hello divyapriya
+5. Destructuring
+Destructuring extracts values from arrays or objects.
+let person = {
+  name: "divyapriya",
+  age: 18
+};
+
+let { name, age } = person;
+
+console.log(name);
+console.log(age);
+6. Spread Operator (...)
+The spread operator expands an array or object.
+let arr1 = [1, 2, 3];
+let arr2 = [...arr1, 4, 5];
+
+console.log(arr2);
+Output:
+[1, 2, 3, 4, 5]
+7. Rest Operator (...)
+The rest operator collects multiple values into a single array.
+function sum(...numbers) {
+  console.log(numbers);
+}
+
+sum(10, 20, 30);
+Output:
+[10, 20, 30]
+8. Default Parameters
+Default parameters provide a default value if no argument is passed.
+function greet(name = "Guest") {
+  console.log("Hello " + name);
+}
+
+greet();
+Output:
+Hello Guest
+9. Modules
+ES6 introduced export and import to organize code into separate files.
+// math.js
+export function add(a, b) {
+  return a + b;
+}
+// main.js
+import { add } from "./math.js";
+
+console.log(add(5, 10));
+ES6 (ECMAScript 2015) introduced modern JavaScript features such as let, const, arrow functions, template literals, destructuring, spread operator, rest operator, default parameters, and modules. These features make JavaScript code more readable, reusable, and maintainable.
