@@ -4066,3 +4066,115 @@ import { add } from "./math.js";
 
 console.log(add(5, 10));
 ES6 (ECMAScript 2015) introduced modern JavaScript features such as let, const, arrow functions, template literals, destructuring, spread operator, rest operator, default parameters, and modules. These features make JavaScript code more readable, reusable, and maintainable.
+JavaScript BOM (Browser Object Model)
+Definition
+BOM (Browser Object Model) allows JavaScript to interact with the browser window and browser features.
+The main BOM objects are:
+window
+navigator
+location
+history
+screen
+1. Window Object
+The window object is the top-level object in the browser.
+Example
+alert("Welcome to JavaScript");
+or
+window.alert("Welcome to JavaScript");
+2. Navigator Object
+The navigator object provides information about the browser.
+Example
+console.log(navigator.appName);
+console.log(navigator.userAgent);
+3. Location Object
+The location object provides information about the current webpage URL.
+Example
+console.log(location.href);
+To reload the page:
+location.reload();
+4. History Object
+The history object is used to navigate browser history.
+Go Back
+history.back();
+Go Forward
+history.forward();
+5. Screen Object
+The screen object provides information about the user's screen.
+Example
+console.log(screen.width);
+console.log(screen.height);
+BOM Objects Summary
+Object
+Purpose
+window
+Controls the browser window
+navigator
+Provides browser information
+location
+Provides URL information
+history
+Navigates browser history
+screen
+Provides screen information
+Advantages of BOM
+Interacts with the browser.
+Gets browser and screen information.
+Controls page navigation.
+Manages browser windows.
+BOM (Browser Object Model) is a collection of browser objects that enables JavaScript to interact with the browser. The main BOM objects are window, navigator, location, history, and screen.
+JavaScript AJAX (Asynchronous JavaScript and XML)
+Definition
+AJAX (Asynchronous JavaScript and XML) is a technique used to send and receive data from a server without reloading the entire web page.
+Although AJAX originally used XML, modern applications commonly use JSON for data exchange.
+Why Use AJAX?
+Updates web pages without refreshing.
+Faster user experience.
+Reduces server load.
+Retrieves data in the background.
+1. AJAX using XMLHttpRequest
+let xhr = new XMLHttpRequest();
+
+xhr.open("GET", "data.json", true);
+
+xhr.onload = function() {
+    if (xhr.status == 200) {
+        console.log(xhr.responseText);
+    }
+};
+
+xhr.send();
+2. AJAX using Fetch API (Modern Method)
+fetch("data.json")
+  .then(response => response.json())
+  .then(data => console.log(data))
+  .catch(error => console.log(error));
+3. AJAX using Async/Await
+async function getData() {
+    try {
+        let response = await fetch("data.json");
+        let data = await response.json();
+        console.log(data);
+    } catch (error) {
+        console.log(error);
+    }
+}
+
+getData();
+AJAX Flow
+User performs an action.
+JavaScript sends a request to the server.
+The server processes the request.
+The server sends data back.
+JavaScript updates the webpage without reloading it.
+Advantages
+No full page refresh.
+Faster performance.
+Better user experience.
+Saves bandwidth.
+Supports real-time updates.
+Disadvantages
+Depends on JavaScript being enabled.
+More complex than simple page loads.
+Debugging can be more difficult.
+
+AJAX (Asynchronous JavaScript and XML) is a technique that allows JavaScript to communicate with a server and update parts of a webpage without reloading the entire page. Modern AJAX applications commonly use the Fetch API and JSON.
