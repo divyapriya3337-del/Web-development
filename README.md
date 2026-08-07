@@ -4178,3 +4178,151 @@ More complex than simple page loads.
 Debugging can be more difficult.
 
 AJAX (Asynchronous JavaScript and XML) is a technique that allows JavaScript to communicate with a server and update parts of a webpage without reloading the entire page. Modern AJAX applications commonly use the Fetch API and JSON.
+JavaScript Fetch API
+Definition
+The Fetch API is a modern JavaScript API used to send HTTP requests and receive responses from a server. It is promise-based and is commonly used to communicate with REST APIs.
+HTTP Methods
+GET → Retrieve data
+POST → Send new data
+PUT → Update existing data
+DELETE → Delete data
+1. GET Request
+Used to retrieve data from a server.
+fetch("https://jsonplaceholder.typicode.com/users")
+  .then(response => response.json())
+  .then(data => console.log(data))
+  .catch(error => console.log(error));
+2. POST Request
+Used to send new data to a server.
+fetch("https://jsonplaceholder.typicode.com/posts", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json"
+  },
+  body: JSON.stringify({
+    title: "JavaScript",
+    body: "Fetch API Example"
+  })
+})
+.then(response => response.json())
+.then(data => console.log(data));
+3. PUT Request
+Used to update existing data.
+fetch("https://jsonplaceholder.typicode.com/posts/1", {
+  method: "PUT",
+  headers: {
+    "Content-Type": "application/json"
+  },
+  body: JSON.stringify({
+    title: "Updated Title"
+  })
+})
+.then(response => response.json())
+.then(data => console.log(data));
+4. DELETE Request
+Used to delete data.
+fetch("https://jsonplaceholder.typicode.com/posts/1", {
+  method: "DELETE"
+})
+.then(response => console.log("Data Deleted"));
+5. Fetch API using Async/Await
+async function getUsers() {
+  try {
+    const response = await fetch("https://jsonplaceholder.typicode.com/users");
+    const data = await response.json();
+    console.log(data);
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+getUsers();
+Advantages of Fetch API
+Modern and easy to use.
+Promise-based.
+Supports Async/Await.
+Supports all HTTP methods.
+Better than XMLHttpRequest for many use cases.
+The Fetch API is a modern JavaScript API used to send HTTP requests and receive responses from a server. It supports methods such as GET, POST, PUT, and DELETE and works with Promises and Async/Await.
+REST API
+Definition
+REST API (Representational State Transfer Application Programming Interface) is a set of rules that allows two applications (such as a frontend and a backend) to communicate over the internet using HTTP.
+For example:
+A website requests user data from a server.
+The server sends the data back in JSON format.
+REST API Architecture
+Client (Browser)
+       │
+       │ HTTP Request
+       ▼
+REST API Server
+       │
+       │ JSON Response
+       ▼
+Client (Browser)
+HTTP Methods
+1. GET
+Used to retrieve data.
+Example:
+GET /users
+2. POST
+Used to create new data.
+Example:
+POST /users
+3. PUT
+Used to update existing data.
+Example:
+PUT /users/1
+4. DELETE
+Used to delete data.
+Example:
+DELETE /users/1
+Request Structure
+A request contains:
+URL (Endpoint)
+HTTP Method
+Headers
+Body (for POST/PUT requests)
+Example:
+POST /users
+Content-Type: application/json
+
+{
+  "name": "Gyan",
+  "age": 20
+}
+Response Structure
+The server sends:
+Status Code
+Headers
+Body (usually JSON)
+Example:
+{
+  "id": 1,
+  "name": "Gyan",
+  "age": 20
+}
+Common HTTP Status Codes
+Status Code
+Meaning
+200 OK
+Request successful
+201 Created
+Resource created successfully
+400 Bad Request
+Invalid request
+401 Unauthorized
+Authentication required
+403 Forbidden
+Access denied
+404 Not Found
+Resource not found
+500 Internal Server Error
+Server error
+Advantages of REST API
+Fast and lightweight.
+Uses JSON for data exchange.
+Platform independent.
+Easy to integrate with web and mobile applications.
+Widely used in modern web development.
+A REST API is an interface that allows applications to communicate over HTTP. It uses methods such as GET, POST, PUT, and DELETE to perform operations on resources and commonly exchanges data in JSON format.
