@@ -4326,3 +4326,160 @@ Platform independent.
 Easy to integrate with web and mobile applications.
 Widely used in modern web development.
 A REST API is an interface that allows applications to communicate over HTTP. It uses methods such as GET, POST, PUT, and DELETE to perform operations on resources and commonly exchanges data in JSON format.
+Node.js Introduction
+1. What is Node.js?
+Node.js is a JavaScript runtime environment that allows us to run JavaScript outside the browser.
+Normally, JavaScript runs in a browser like Chrome. With Node.js, we can use JavaScript to build backend/server-side applications.
+Simple idea
+Browser
+   ↓
+Frontend → HTML + CSS + JavaScript
+   ↓
+Backend → Node.js
+   ↓
+Database → MongoDB / MySQL
+2. Why Use Node.js?
+Node.js is commonly used to build:
+Web servers
+REST APIs
+Backend applications
+Real-time applications
+Chat applications
+Full-stack applications
+3. Important Features
+Single-threaded
+Node.js uses a single main JavaScript thread with an event-driven architecture.
+Non-blocking
+It can handle many I/O operations without waiting for each one to finish before handling other work.
+Event-driven
+Node.js uses events and callbacks/promises to handle asynchronous operations.
+Fast
+Node.js uses Google's V8 JavaScript engine.
+NPM
+Node.js comes with npm (Node Package Manager), which allows developers to install and manage packages.
+4. Check Node.js Installation
+Open VS Code → Terminal and type:
+node --version
+Example:
+v22.x.x
+Then check npm:
+npm --version
+5. Create Your First Node.js Program
+Create a file called:
+app.js
+Write:
+console.log("Hello Node.js");
+Run it in the terminal:
+node app.js
+Output
+Hello Node.js
+6. Create a Node.js Project
+Open your project folder in VS Code and run:
+npm init -y
+This creates:
+package.json
+The package.json file contains information about your Node.js project and its dependencies/scripts.
+7. Simple Node.js Server
+Create server.js:
+const http = require("http");
+
+const server = http.createServer((req, res) => {
+    res.end("Hello from Node.js Server");
+});
+
+server.listen(3000, () => {
+    console.log("Server running on port 3000");
+});
+Run:
+node server.js
+You should see:
+Server running on port 3000
+Now open your browser and enter:
+http://localhost:3000
+You should see:
+Hello from Node.js Server
+
+Node.js is an open-source, cross-platform JavaScript runtime environment that allows JavaScript to run outside the browser. It uses the V8 engine and is commonly used for building servers, REST APIs, and backend applications.
+
+NPM (Node Package Manager)
+1. What is NPM?
+NPM stands for Node Package Manager. It is the default package manager for Node.js.
+It is used to:
+Install packages
+Manage dependencies
+Run project scripts
+Share JavaScript packages
+2. Check NPM Version
+Open the VS Code terminal and type:
+npm --version
+Example output:
+10.x.x
+3. Create a Node.js Project
+Create a folder for your project and open it in VS Code.
+Then run:
+npm init -y
+This creates a file called:
+package.json
+4. What is package.json?
+package.json contains important information about your Node.js project.
+Example:
+{
+  "name": "my-project",
+  "version": "1.0.0",
+  "main": "app.js"
+}
+It can also contain:
+Project name
+Version
+Scripts
+Dependencies
+Development dependencies
+5. Install a Package
+For example, install Express:
+npm install express
+After installation, you will normally see:
+node_modules
+package-lock.json
+package.json
+6. node_modules
+node_modules contains the packages installed for your project and their dependencies.
+⚠️ Usually, you do not manually edit files inside node_modules.
+7. package-lock.json
+package-lock.json records the specific dependency versions installed for the project.
+It helps make installations more consistent across environments.
+8. Install a Development Dependency
+Some packages are needed mainly during development.
+Example:
+npm install --save-dev nodemon
+This adds the package under devDependencies in package.json.
+9. Uninstall a Package
+npm uninstall express
+This removes the package from the project.
+10. Useful NPM Commands
+Command
+Purpose
+npm init -y
+Create a Node.js project
+npm install express
+Install Express
+npm uninstall express
+Remove Express
+npm install
+Install dependencies from package.json
+npm install --save-dev nodemon
+Install a development dependency
+npm --version
+Check npm version
+Simple Flow
+Create Folder
+     ↓
+npm init -y
+     ↓
+package.json
+     ↓
+npm install package-name
+     ↓
+node_modules
+     ↓
+Use package in your program
+NPM (Node Package Manager) is the package manager for Node.js. It is used to install, update, remove, and manage packages and project dependencies. Important files include package.json, package-lock.json, and the node_modules folder.
