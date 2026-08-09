@@ -4483,3 +4483,154 @@ node_modules
      ↓
 Use package in your program
 NPM (Node Package Manager) is the package manager for Node.js. It is used to install, update, remove, and manage packages and project dependencies. Important files include package.json, package-lock.json, and the node_modules folder.
+Node.js Modules
+1. What is a Module?
+A module is a separate file containing reusable code.
+Instead of putting an entire application into one file, we can divide it into multiple files and reuse the required code.
+Example
+project/
+│
+├── app.js
+└── math.js
+2. CommonJS Modules
+Node.js traditionally uses CommonJS modules with:
+module.exports
+require()
+Step 1: Create math.js
+function add(a, b) {
+  return a + b;
+}
+
+module.exports = add;
+Step 2: Use it in app.js
+const add = require("./math");
+
+console.log(add(10, 20));
+Output
+30
+3. Exporting Multiple Functions
+math.js
+function add(a, b) {
+  return a + b;
+}
+
+function subtract(a, b) {
+  return a - b;
+}
+
+module.exports = {
+  add,
+  subtract
+};
+app.js
+const math = require("./math");
+
+console.log(math.add(10, 20));
+console.log(math.subtract(20, 10));
+Output
+30
+10
+4. ES Modules
+Modern JavaScript also supports ES Modules, using:
+export
+import
+math.js
+export function add(a, b) {
+  return a + b;
+}
+app.js
+import { add } from "./math.js";
+
+console.log(add(10, 20));
+For Node.js to treat .js files as ES modules, you can configure package.json with:
+{
+  "type": "module"
+}
+5. Why Use Modules?
+Modules help you:
+Reuse code
+Organize large projects
+Reduce code duplication
+Make programs easier to maintain
+Separate different responsibilities
+CommonJS vs ES Modules
+CommonJS
+ES Modules
+require()
+import
+module.exports
+export
+Traditional Node.js module system
+Modern JavaScript module system
+A Node.js module is a separate file containing reusable code. Node.js supports CommonJS modules using require() and module.exports, as well as ES Modules using import and export
+Node.js File System (fs) Module
+1. What is the fs Module?
+The File System (fs) module is a built-in Node.js module used to work with files and folders.
+It can be used to:
+Create files
+Read files
+Write files
+Update files
+Delete files
+Rename files
+You don't need to install it separately.
+2. Import the fs Module
+CommonJS
+const fs = require("fs");
+3. Write to a File
+writeFile() creates a file or replaces its contents.
+const fs = require("fs");
+
+fs.writeFile("message.txt", "Hello Node.js", (err) => {
+  if (err) throw err;
+  console.log("File written successfully");
+});
+After running the program, message.txt will contain:
+Hello Node.js
+4. Read a File
+const fs = require("fs");
+
+fs.readFile("message.txt", "utf8", (err, data) => {
+  if (err) throw err;
+  console.log(data);
+});
+Output
+Hello Node.js
+5. Add Data to a File
+Use appendFile() to add content without replacing the existing content.
+const fs = require("fs");
+
+fs.appendFile("message.txt", "\nWelcome!", (err) => {
+  if (err) throw err;
+  console.log("Data added");
+});
+6. Delete a File
+Use unlink().
+const fs = require("fs");
+
+fs.unlink("message.txt", (err) => {
+  if (err) throw err;
+  console.log("File deleted");
+});
+7. Rename a File
+Use rename().
+const fs = require("fs");
+
+fs.rename("old.txt", "new.txt", (err) => {
+  if (err) throw err;
+  console.log("File renamed");
+});
+Common fs Methods
+Method
+Purpose
+writeFile()
+Create/write a file
+readFile()
+Read a file
+appendFile()
+Add data
+unlink()
+Delete a file
+rename()
+Rename a file
+The Node.js fs module is a built-in module used to interact with the file system. It provides methods such as readFile(), writeFile(), appendFile(), unlink(), and rename().
