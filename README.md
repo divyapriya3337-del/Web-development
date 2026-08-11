@@ -4634,3 +4634,218 @@ Delete a file
 rename()
 Rename a file
 The Node.js fs module is a built-in module used to interact with the file system. It provides methods such as readFile(), writeFile(), appendFile(), unlink(), and rename().
+Express.js Introduction
+1. What is Express.js?
+Express.js is a lightweight and popular web framework for Node.js. It makes it easier to build:
+Web servers
+REST APIs
+Backend applications
+Routes
+Middleware
+Instead of writing lots of code using Node's basic http module, Express provides simpler methods.
+2. Install Express
+First create a Node.js project:
+npm init -y
+Then install Express:
+npm install express
+3. Create Your First Express Server
+Create a file:
+server.js
+Write:
+const express = require("express");
+
+const app = express();
+
+app.get("/", (req, res) => {
+  res.send("Hello Express.js");
+});
+
+app.listen(3000, () => {
+  console.log("Server running on port 3000");
+});
+4. Run the Server
+Open the VS Code terminal:
+node server.js
+You should see:
+Server running on port 3000
+Open your browser:
+http://localhost:3000
+Output:
+Hello Express.js
+5. Creating Routes
+Routes define how the server responds to different URLs.
+app.get("/", (req, res) => {
+  res.send("Home Page");
+});
+
+app.get("/about", (req, res) => {
+  res.send("About Page");
+});
+
+app.get("/contact", (req, res) => {
+  res.send("Contact Page");
+});
+Now:
+/          → Home Page
+/about     → About Page
+/contact   → Contact Page
+6. HTTP Methods in Express
+Express supports common HTTP methods:
+app.get("/users", (req, res) => {
+  res.send("Get Users");
+});
+
+app.post("/users", (req, res) => {
+  res.send("Create User");
+});
+
+app.put("/users/1", (req, res) => {
+  res.send("Update User");
+});
+
+app.delete("/users/1", (req, res) => {
+  res.send("Delete User");
+});
+7. req and res
+req
+req represents the client's request.
+req.params
+req.query
+req.body
+res
+res represents the server's response.
+res.send()
+res.json()
+res.status()
+Example:
+app.get("/hello", (req, res) => {
+  res.send("Hello!");
+});
+8. Why Express?
+Node.js HTTP
+Express.js
+More manual code
+Simpler syntax
+Basic HTTP functionality
+Routing and middleware support
+More work for larger APIs
+Easier API development
+Built into Node.js
+Installed as a package
+Express.js is a web framework for Node.js used to build web servers and REST APIs easily. It provides convenient features such as routing, middleware, request handling, and response handling.
+Express.js Middleware
+1. What is Middleware?
+Middleware is a function that runs between the incoming request and the final response.
+It can:
+Check requests
+Log information
+Modify request/response objects
+Perform authentication/authorization checks
+Handle errors
+Pass control to the next middleware or route
+Basic Flow
+Client
+  ↓
+Request
+  ↓
+Middleware
+  ↓
+Route Handler
+  ↓
+Response
+  ↓
+Client
+2. app.use()
+app.use() is commonly used to register middleware.
+const express = require("express");
+
+const app = express();
+
+app.use((req, res, next) => {
+  console.log("Middleware executed");
+  next();
+});
+
+app.get("/", (req, res) => {
+  res.send("Home Page");
+});
+
+app.listen(3000);
+What is next()?
+next() tells Express:
+"This middleware has finished. Continue to the next middleware or route."
+3. Logger Middleware
+A simple middleware can log requests.
+app.use((req, res, next) => {
+  console.log(req.method, req.url);
+  next();
+});
+If you visit:
+http://localhost:3000/about
+You might see:
+GET /about
+4. Built-in Middleware
+Express provides some built-in middleware.
+express.json()
+Used to parse incoming JSON request bodies.
+app.use(express.json());
+For example, a client can send:
+{
+  "name": "Gyan",
+  "branch": "CSE"
+}
+Then in a route:
+app.post("/users", (req, res) => {
+  console.log(req.body);
+  res.json(req.body);
+});
+5. Static Middleware
+Used to serve files such as HTML, CSS, JavaScript, and images.
+app.use(express.static("public"));
+If your project contains:
+project/
+│
+├── server.js
+└── public/
+    └── index.html
+Express can serve files from the public folder.
+6. Multiple Middleware Functions
+You can use multiple middleware functions.
+app.use((req, res, next) => {
+  console.log("First middleware");
+  next();
+});
+
+app.use((req, res, next) => {
+  console.log("Second middleware");
+  next();
+});
+
+app.get("/", (req, res) => {
+  res.send("Home");
+});
+7. Middleware with a Specific Route
+Middleware can also be applied to a particular route.
+function checkUser(req, res, next) {
+  console.log("Checking user");
+  next();
+}
+
+app.get("/profile", checkUser, (req, res) => {
+  res.send("Profile Page");
+});
+Types of Middleware
+Type
+Example
+Application-level
+app.use()
+Router-level
+router.use()
+Built-in
+express.json()
+Third-party
+cors, morgan
+Error-handling
+(err, req, res, next)
+Express middleware is a function that executes during the request-response cycle. It can perform tasks such as logging, parsing JSON, authentication, and error handling. Middleware uses the next() function to pass control to the next middleware or route.
+
