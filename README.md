@@ -4849,3 +4849,226 @@ Error-handling
 (err, req, res, next)
 Express middleware is a function that executes during the request-response cycle. It can perform tasks such as logging, parsing JSON, authentication, and error handling. Middleware uses the next() function to pass control to the next middleware or route.
 
+Express.js Routing in Detail
+Routing means defining how an Express application responds to different URLs and HTTP methods.
+1. Basic Route
+app.get("/", (req, res) => {
+  res.send("Home Page");
+});
+Here:
+GET → HTTP method
+/ → route/path
+req → request
+res → response
+2. Route Parameters
+Route parameters are values included directly in the URL.
+app.get("/users/:id", (req, res) => {
+  res.send("User ID: " + req.params.id);
+});
+If you open:
+http://localhost:3000/users/101
+Output:
+User ID: 101
+You can access it using:
+req.params.id
+3. Multiple Route Parameters
+app.get("/users/:userId/posts/:postId", (req, res) => {
+  res.json({
+    user: req.params.userId,
+    post: req.params.postId
+  });
+});
+URL:
+/users/10/posts/25
+4. Query Parameters
+Query parameters come after ? in a URL.
+Example:
+/users?name=Gyan&branch=CSE
+Access them using:
+app.get("/users", (req, res) => {
+  console.log(req.query.name);
+  console.log(req.query.branch);
+
+  res.send("Data received");
+});
+Output:
+Gyan
+CSE
+Difference
+/users/101
+101 → Route parameter
+/users?name=Gyan
+name=Gyan → Query parameter
+5. Request Body
+For POST requests, data is commonly sent in the request body.
+First:
+app.use(express.json());
+Then:
+app.post("/users", (req, res) => {
+  console.log(req.body);
+
+  res.json({
+    message: "User created",
+    user: req.body
+  });
+});
+Example JSON sent by the client:
+{
+  "name": "Gyan",
+  "branch": "CSE"
+}
+6. Route Status Code
+app.get("/users", (req, res) => {
+  res.status(200).json({
+    message: "Users retrieved"
+  });
+});
+For creating data:
+res.status(201).json({
+  message: "User created"
+});
+7. Router
+For larger applications, routes can be separated into different files.
+Example:
+project/
+│
+├── server.js
+└── routes/
+    └── userRoutes.js
+userRoutes.js
+const express = require("express");
+
+const router = express.Router();
+
+router.get("/", (req, res) => {
+  res.send("All Users");
+});
+
+router.get("/:id", (req, res) => {
+  res.send("User ID: " + req.params.id);
+});
+
+module.exports = router;
+server.js
+const express = require("express");
+const userRoutes = require("./routes/userRoutes");
+
+const app = express();
+
+app.use("/users", userRoutes);
+
+app.listen(3000, () => {
+  console.log("Server running");
+});
+Now:
+/users       → All Users
+/users/101   → User ID: 101
+Express routing defines how an application responds to different URLs and HTTP methods. Express supports GET, POST, PUT, DELETE, route parameters using req.params, query parameters using req.query, and request-body data using req.body.
+Express.js CRUD Operations
+CRUD stands for:
+C → Create
+R → Read
+U → Update
+D → Delete
+CRUD is one of the most important concepts when building REST APIs.
+1. Create → POST
+Used to create new data.
+app.post("/users", (req, res) => {
+  const user = req.body;
+
+  res.status(201).json({
+    message: "User created",
+    user: user
+  });
+});
+2. Read → GET
+Used to retrieve data.
+app.get("/users", (req, res) => {
+  res.json({
+    message: "All users"
+  });
+});
+To get one user:
+app.get("/users/:id", (req, res) => {
+  res.json({
+    userId: req.params.id
+  });
+});
+3. Update → PUT
+Used to update existing data.
+app.put("/users/:id", (req, res) => {
+  const id = req.params.id;
+  const updatedUser = req.body;
+
+  res.json({
+    message: "User updated",
+    id: id,
+    user: updatedUser
+  });
+});
+4. Delete → DELETE
+Used to delete data.
+app.delete("/users/:id", (req, res) => {
+  const id = req.params.id;
+
+  res.json({
+    message: "User deleted",
+    id: id
+  });
+});
+Complete CRUD Example
+const express = require("express");
+
+const app = express();
+
+app.use(express.json());
+
+app.post("/users", (req, res) => {
+  res.status(201).json({
+    message: "User created",
+    user: req.body
+  });
+});
+
+app.get("/users", (req, res) => {
+  res.json({
+    message: "Users retrieved"
+  });
+});
+
+app.put("/users/:id", (req, res) => {
+  res.json({
+    message: "User updated",
+    id: req.params.id,
+    user: req.body
+  });
+});
+
+app.delete("/users/:id", (req, res) => {
+  res.json({
+    message: "User deleted",
+    id: req.params.id
+  });
+});
+
+app.listen(3000, () => {
+  console.log("Server running on port 3000");
+});
+CRUD Summary
+Operation
+HTTP Method
+Example
+Create
+POST
+/users
+Read
+GET
+/users
+Update
+PUT
+/users/101
+Delete
+DELETE
+/users/101
+Important Point
+This example only demonstrates the API structure. The data isn't permanently stored yet.
