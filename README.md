@@ -5072,3 +5072,207 @@ DELETE
 /users/101
 Important Point
 This example only demonstrates the API structure. The data isn't permanently stored yet.
+MongoDB Introduction
+1. What is MongoDB?
+MongoDB is a NoSQL database used to store and manage data.
+Unlike traditional databases such as MySQL, MongoDB stores data in documents rather than rows and columns.
+Simple Full-Stack Flow
+Frontend
+   ↓
+JavaScript
+   ↓
+Express.js
+   ↓
+Node.js
+   ↓
+MongoDB
+2. MongoDB Document
+MongoDB stores data in a format similar to JSON.
+Example:
+{
+  "name": "Gyan",
+  "age": 20,
+  "branch": "CSE"
+}
+MongoDB actually stores documents in BSON, a binary representation of JSON-like data.
+3. Database
+A database is a container for collections.
+Example:
+collegeDB
+4. Collection
+A collection is similar to a table in a relational database.
+Example:
+collegeDB
+   └── students
+5. Document
+A document is similar to a row in a relational database.
+Example:
+{
+  "name": "Gyan",
+  "branch": "CSE",
+  "year": 3
+}
+6. MongoDB vs MySQL
+MongoDB
+MySQL
+NoSQL database
+Relational database
+Collection
+Table
+Document
+Row
+Field
+Column
+BSON/JSON-like documents
+Tables with rows and columns
+Flexible schema
+Structured schema
+7. Basic MongoDB Operations
+MongoDB uses CRUD operations.
+Insert
+db.students.insertOne({
+  name: "Gyan",
+  branch: "CSE"
+});
+Find
+db.students.find();
+Update
+db.students.updateOne(
+  { name: "Gyan" },
+  { $set: { branch: "IT" } }
+);
+Delete
+db.students.deleteOne({
+  name: "Gyan"
+});
+8. Important MongoDB Terms
+Database
+Stores collections.
+Collection
+Stores documents.
+Document
+Stores individual records.
+Field
+A key-value pair inside a document.
+_id
+MongoDB automatically gives each document a unique identifier called _id.
+Example:
+{
+  "_id": "unique-id",
+  "name": "Gyan"
+}
+9. MongoDB Compass
+MongoDB Compass is a graphical user interface (GUI) for MongoDB.
+You can use it to:
+Create databases
+Create collections
+Insert documents
+View documents
+Update documents
+Delete documents
+Run queries
+MongoDB is a popular NoSQL database that stores data as flexible, JSON-like documents. A MongoDB database contains collections, and collections contain documents. MongoDB supports CRUD operations and is commonly used with Node.js and Express.js.
+MongoDB Installation & Compass — Step by Step
+Since you're learning Node.js + Express + MongoDB, let's set up MongoDB first.
+1. Download MongoDB
+Go to the official MongoDB website:
+https://www.mongodb.com/try/download/community⁠�
+Choose:
+Version: Current stable version
+Platform: Windows
+Package: MSI
+Download the installer.
+2. Install MongoDB
+Open the downloaded .msi file.
+Follow these steps:
+Click Next.
+Accept the license agreement.
+Click Next.
+Select Complete installation.
+Keep the default installation settings.
+If you see Install MongoD as a Service, keep it selected.
+Click Next.
+Click Install.
+Wait for installation to finish.
+Click Finish.
+3. Install MongoDB Compass
+During MongoDB installation, you may see an option to install MongoDB Compass.
+Keep it selected and continue.
+Compass gives you a graphical interface to work with MongoDB.
+4. Open MongoDB Compass
+Open Windows Search and type:
+MongoDB Compass
+Open it.
+You will see a connection screen.
+For a local MongoDB server, the connection is commonly:
+mongodb://localhost:27017
+Click Connect.
+5. Create Your First Database
+In MongoDB Compass:
+Click Create Database.
+Enter database name:
+collegeDB
+Enter collection name:
+students
+Click Create Database.
+Now you have:
+collegeDB
+   └── students
+6. Insert a Document
+Open:
+collegeDB → students
+Click Add Data → Insert Document.
+Enter:
+{
+  "name": "Gyan",
+  "age": 20,
+  "branch": "CSE"
+}
+Click Insert.
+7. View the Document
+After inserting it, Compass will display your document.
+MongoDB will automatically add an _id field.
+Example:
+{
+  "_id": "...",
+  "name": "Gyan",
+  "age": 20,
+  "branch": "CSE"
+}
+8. Check MongoDB from Terminal
+Open Command Prompt or PowerShell.
+Try:
+mongosh
+If MongoDB Shell is installed and available, you should enter the MongoDB shell.
+Then:
+show dbs
+To use your database:
+use collegeDB
+To see collections:
+show collections
+You should see:
+students
+9. Find Documents
+Run:
+db.students.find()
+You should see the student document you inserted.
+10. Basic MongoDB Commands
+show dbs
+Shows databases.
+use collegeDB
+Selects a database.
+show collections
+Shows collections.
+db.students.find()
+Shows documents.
+Complete Structure
+MongoDB
+   │
+   └── collegeDB
+          │
+          └── students
+                 │
+                 ├── Document 1
+                 ├── Document 2
+                 └── Document 3
+MongoDB Compass is a graphical user interface for MongoDB. It allows developers to connect to MongoDB, create databases and collections, and perform CRUD operations without using only the command line.
