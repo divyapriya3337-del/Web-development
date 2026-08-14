@@ -5276,3 +5276,274 @@ MongoDB
                  ├── Document 2
                  └── Document 3
 MongoDB Compass is a graphical user interface for MongoDB. It allows developers to connect to MongoDB, create databases and collections, and perform CRUD operations without using only the command line.
+Connecting MongoDB with Node.js & Express
+Now we'll connect the Express backend to MongoDB. A popular library for this is Mongoose.
+1. Install Mongoose
+Open your project folder in VS Code Terminal:
+npm install mongoose
+2. Project Structure
+Create this structure:
+my-project/
+│
+├── server.js
+├── package.json
+└── node_modules/
+3. Import Mongoose
+In server.js:
+const express = require("express");
+const mongoose = require("mongoose");
+
+const app = express();
+
+app.use(express.json());
+4. Connect to MongoDB
+For a local MongoDB server:
+mongoose.connect("mongodb://127.0.0.1:27017/collegeDB")
+  .then(() => {
+    console.log("MongoDB connected");
+  })
+  .catch((error) => {
+    console.log("Connection failed:", error);
+  });
+Here:
+127.0.0.1 → Your computer
+27017      → MongoDB's default port
+collegeDB  → Database name
+5. Create a Mongoose Schema
+A Schema describes the structure of the documents your application expects.
+const studentSchema = new mongoose.Schema({
+  name: String,
+  age: Number,
+  branch: String
+});
+6. Create a Model
+A Model is used to interact with MongoDB documents.
+const Student = mongoose.model("Student", studentSchema);
+7. Create a POST API
+app.post("/students", async (req, res) => {
+  try {
+    const student = new Student(req.body);
+
+    const savedStudent = await student.save();
+
+    res.status(201).json(savedStudent);
+  } catch (error) {
+    res.status(500).json({
+      message: "Error creating student"
+    });
+  }
+});
+You can send:
+{
+  "name": "Gyan",
+  "age": 20,
+  "branch": "CSE"
+}
+8. Create a GET API
+app.get("/students", async (req, res) => {
+  try {
+    const students = await Student.find();
+
+    res.json(students);
+  } catch (error) {
+    res.status(500).json({
+      message: "Error getting students"
+    });
+  }
+});
+This retrieves students from MongoDB.
+9. Start the Server
+At the bottom of server.js:
+app.listen(3000, () => {
+  console.log("Server running on port 3000");
+});
+Run:
+node server.js
+You should see:
+MongoDB connected
+Server running on port 3000
+10. Complete Example
+const express = require("express");
+const mongoose = require("mongoose");
+
+const app = express();
+
+app.use(express.json());
+
+mongoose.connect("mongodb://127.0.0.1:27017/collegeDB")
+  .then(() => console.log("MongoDB connected"))
+  .catch(error => console.log(error));
+
+const studentSchema = new mongoose.Schema({
+  name: String,
+  age: Number,
+  branch: String
+});
+
+const Student = mongoose.model("Student", studentSchema);
+
+app.post("/students", async (req, res) => {
+  try {
+    const student = new Student(req.body);
+    const savedStudent = await student.save();
+
+    res.status(201).json(savedStudent);
+  } catch (error) {
+    res.status(500).json({ message: "Error creating student" });
+  }
+});
+
+app.get("/students", async (req, res) => {
+  try {
+    const students = await Student.find();
+    res.json(students);
+  } catch (error) {
+    res.status(500).json({ message: "Error getting students" });
+  }
+});
+
+app.listen(3000, () => {
+  console.log("Server running on port 3000");
+});
+Overall Flow
+Client
+  ↓
+Express.js
+  ↓
+Mongoose
+  ↓
+MongoDB
+  ↓
+Database
+Important Terms
+Mongoose → Helps Node.js applications work with MongoDB.
+Schema → Defines the expected document structure.
+Model → Provides methods to create, read, update, and delete documents.
+MongoDB → Stores the actual data.
+Mongoose CRUD Operations
+Now let's learn how to perform Create, Read, Update, and Delete (CRUD) operations using Mongoose + Express + MongoDB.
+1. Create — POST
+Create a new student.
+app.post("/students", async (req, res) => {
+  try {
+    const student = await Student.create(req.body);
+
+    res.status(201).json(student);
+  } catch (error) {
+    res.status(500).json({
+      message: "Error creating student"
+    });
+  }
+});
+Request Body
+{
+  "name": "Gyan",
+  "age": 20,
+  "branch": "CSE"
+}
+2. Read — GET
+Get All Students
+app.get("/students", async (req, res) => {
+  try {
+    const students = await Student.find();
+
+    res.json(students);
+  } catch (error) {
+    res.status(500).json({
+      message: "Error getting students"
+    });
+  }
+});
+Get One Student
+app.get("/students/:id", async (req, res) => {
+  try {
+    const student = await Student.findById(req.params.id);
+
+    res.json(student);
+  } catch (error) {
+    res.status(500).json({
+      message: "Error getting student"
+    });
+  }
+});
+The :id comes from the URL.
+Example:
+/students/64abc123...
+Access it using:
+req.params.id
+3. Update — PUT
+Update an existing student.
+app.put("/students/:id", async (req, res) => {
+  try {
+    const student = await Student.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      { new: true }
+    );
+
+    res.json(student);
+  } catch (error) {
+    res.status(500).json({
+      message: "Error updating student"
+    });
+  }
+});
+Why { new: true }?
+It tells Mongoose to return the updated document.
+4. Delete — DELETE
+Delete a student.
+app.delete("/students/:id", async (req, res) => {
+  try {
+    await Student.findByIdAndDelete(req.params.id);
+
+    res.json({
+      message: "Student deleted successfully"
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Error deleting student"
+    });
+  }
+});
+Complete CRUD Flow
+             MongoDB
+                ↑
+                │
+             Mongoose
+                ↑
+                │
+             Express
+                ↑
+                │
+              Client
+API Endpoints
+Operation
+Method
+Endpoint
+Create
+POST
+/students
+Read all
+GET
+/students
+Read one
+GET
+/students/:id
+Update
+PUT
+/students/:id
+Delete
+DELETE
+/students/:id
+Important Mongoose Methods
+Student.create()
+Creates a document.
+Student.find()
+Finds multiple documents.
+Student.findById()
+Finds one document by ID.
+Student.findByIdAndUpdate()
+Updates a document.
+Student.findByIdAndDelete()
+Deletes a document.
+Mongoose CRUD operations allow a Node.js/Express application to interact with MongoDB. create() is used to insert data, find() and findById() retrieve data, findByIdAndUpdate() modifies data, and findByIdAndDelete() removes data.
