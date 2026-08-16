@@ -1,6 +1,6 @@
 # Web Development Learning
 
-Welcome to my web development learning repository.
+Welcome to my web devolopment learning repository.
 
 ## Topics
 - HTML
@@ -5547,3 +5547,209 @@ Updates a document.
 Student.findByIdAndDelete()
 Deletes a document.
 Mongoose CRUD operations allow a Node.js/Express application to interact with MongoDB. create() is used to insert data, find() and findById() retrieve data, findByIdAndUpdate() modifies data, and findByIdAndDelete() removes data.
+REST API Testing with Postman
+Postman is a tool used to test APIs without creating a frontend.
+You can test your Node.js + Express + MongoDB backend using Postman.
+1. Install Postman
+Go to:
+https://www.postman.com/downloads/⁠�
+Download and install Postman for your computer.
+2. Start Your Backend
+Open your project in VS Code.
+Run:
+node server.js
+You should see something like:
+MongoDB connected
+Server running on port 3000
+Your API base URL is:
+http://localhost:3000
+3. Test GET Request
+Open Postman.
+Select:
+GET
+Enter:
+http://localhost:3000/students
+Click Send.
+If your API is working, you should receive JSON data.
+Example:
+[
+  {
+    "_id": "123",
+    "name": "Gyan",
+    "age": 20,
+    "branch": "CSE"
+  }
+]
+4. Test POST Request
+Select:
+POST
+Enter:
+http://localhost:3000/students
+Go to:
+Body → raw → JSON
+Enter:
+{
+  "name": "Gyan",
+  "age": 20,
+  "branch": "CSE"
+}
+Click Send.
+You should receive the newly created document.
+5. Test PUT Request
+Suppose the student ID is:
+123
+Select:
+PUT
+URL:
+http://localhost:3000/students/123
+Body:
+{
+  "name": "Gyan",
+  "age": 21,
+  "branch": "IT"
+}
+Click Send.
+The student information should be updated.
+6. Test DELETE Request
+Select:
+DELETE
+URL:
+http://localhost:3000/students/123
+Click Send.
+If successful, you might receive:
+{
+  "message": "Student deleted successfully"
+}
+7. CRUD Testing Summary
+Operation
+Method
+URL
+Create
+POST
+/students
+Read
+GET
+/students
+Read one
+GET
+/students/:id
+Update
+PUT
+/students/:id
+Delete
+DELETE
+/students/:id
+8. Common Problems
+Cannot GET /students
+Check:
+Server is running.
+URL is correct.
+HTTP method is correct.
+Route is defined correctly.
+ECONNREFUSED
+Usually means your server isn't running or you're using the wrong port.
+Check:
+node server.js
+MongoDB connection error
+Check:
+MongoDB is running.
+Connection URL is correct.
+Port is correct.
+Example:
+mongodb://127.0.0.1:27017/collegeDB
+API Testing Flow
+Postman
+   ↓
+HTTP Request
+   ↓
+Express Route
+   ↓
+Mongoose
+   ↓
+MongoDB
+   ↓
+Response
+   ↓
+Postman
+Postman is an API testing tool used to send HTTP requests and inspect server responses. It can be used to test REST API operations such as GET, POST, PUT, and DELETE without building a frontend.
+   Environment Variables with .env
+When building Node.js applications, we often have configuration values such as:
+MongoDB connection URL
+Server port
+API keys
+Application settings
+Instead of writing these directly in the source code, we can store them in environment variables.
+1. What is .env?
+.env is a file commonly used to store configuration values.
+Example:
+PORT=3000
+MONGODB_URI=mongodb://127.0.0.1:27017/collegeDB
+2. Install dotenv
+In your project terminal:
+npm install dotenv
+3. Create .env
+Your project can look like:
+my-project/
+│
+├── server.js
+├── .env
+├── package.json
+└── node_modules/
+Inside .env:
+PORT=3000
+MONGODB_URI=mongodb://127.0.0.1:27017/collegeDB
+4. Load Environment Variables
+In server.js:
+require("dotenv").config();
+Then access them through:
+process.env.PORT
+and:
+process.env.MONGODB_URI
+5. Complete Example
+const express = require("express");
+const mongoose = require("mongoose");
+require("dotenv").config();
+
+const app = express();
+
+app.use(express.json());
+
+mongoose.connect(process.env.MONGODB_URI)
+  .then(() => {
+    console.log("MongoDB connected");
+  })
+  .catch((error) => {
+    console.log("MongoDB connection error:", error);
+  });
+
+app.get("/", (req, res) => {
+  res.send("Server is working");
+});
+
+const PORT = process.env.PORT || 3000;
+
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
+6. Why Use .env?
+Instead of:
+mongoose.connect("mongodb://127.0.0.1:27017/collegeDB");
+you can use:
+mongoose.connect(process.env.MONGODB_URI);
+This makes configuration easier to change between environments.
+7. Important Security Rule
+Don't commit sensitive .env files to a public GitHub repository.
+Create a .gitignore file:
+node_modules/
+.env
+This tells Git to ignore those files.
+⚠️ Never put real passwords, private API keys, or database credentials directly into publicly shared source code.
+Flow
+.env
+ ↓
+dotenv
+ ↓
+process.env
+ ↓
+Node.js Application
+An environment variable is a configuration value provided outside the application code. In Node.js, the dotenv package can load variables from a .env file, and they can be accessed using process.env. This is commonly used for ports, database URLs, and other configuration values.
