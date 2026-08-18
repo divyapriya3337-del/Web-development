@@ -5983,3 +5983,415 @@ For authentication:
 401 → Authentication required/invalid credentials
 403 → Authenticated but not allowed to access the resource
 Authentication verifies the identity of a user, while authorization determines what that authenticated user is allowed to access. In Node.js applications, passwords are securely hashed using tools such as bcrypt, and JWT is commonly used for token-based authentication.
+JWT Login & Registration System
+Now let's understand how a typical registration + login system works using:
+Node.js + Express + MongoDB + Mongoose + bcrypt + JWT
+1. Overall Flow
+Registration
+User
+ ↓
+Email + Password
+ ↓
+Hash Password
+ ↓
+MongoDB
+Login
+User
+ ↓
+Email + Password
+ ↓
+Find User
+ ↓
+Compare Password
+ ↓
+Generate JWT
+ ↓
+Send Token
+2. Install Required Packages
+Inside your Node.js project:
+npm install express mongoose bcrypt jsonwebtoken dotenv
+3. User Schema
+Create a model such as User.js:
+const mongoose = require("mongoose");
+
+const userSchema = new mongoose.Schema({
+  name: {
+    type: String,
+    required: true
+  },
+
+  email: {
+    type: String,
+    required: true,
+    unique: true
+  },
+
+  password: {
+    type: String,
+    required: true
+  }
+});
+
+module.exports = mongoose.model("User", userSchema);
+4. Registration
+The registration process:
+Name + Email + Password
+          ↓
+      Hash password
+          ↓
+      Save in MongoDB
+Example:
+const bcrypt = require("bcrypt");
+
+app.post("/register", async (req, res) => {
+  try {
+    const { name, email, password } = req.body;
+
+    const existingUser = await User.findOne({ email });
+
+    if (existingUser) {
+      return res.status(409).json({
+        message: "User already exists"
+      });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const user = await User.create({
+      name,
+      email,
+      password: hashedPassword
+    });
+
+    res.status(201).json({
+      message: "Registration successful",
+      userId: user._id
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      message: "Server error"
+    });
+  }
+});
+Notice that the original password isn't stored directly.
+5. Login
+During login, we find the user and compare the entered password with the stored hash.
+const jwt = require("jsonwebtoken");
+
+app.post("/login", async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(401).json({
+        message: "Invalid email or password"
+      });
+    }
+
+    const passwordMatch = await bcrypt.compare(
+      password,
+      user.password
+    );
+
+    if (!passwordMatch) {
+      return res.status(401).json({
+        message: "Invalid email or password"
+      });
+    }
+
+    const token = jwt.sign(
+      { userId: user._id },
+      process.env.JWT_SECRET,
+      { expiresIn: "1h" }
+    );
+
+    res.json({
+      message: "Login successful",
+      token
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      message: "Server error"
+    });
+  }
+});
+6. .env
+Create a .env file:
+MONGODB_URI=mongodb://127.0.0.1:27017/collegeDB
+JWT_SECRET=replace-with-a-long-random-secret
+PORT=3000
+Load it:
+require("dotenv").config();
+For a real application, keep secrets out of source control and don't publish your .env file.
+7. Protected Route
+After login, the client can send the JWT when requesting protected resources.
+A common format is:
+Authorization: Bearer YOUR_TOKEN
+Middleware:
+function authenticateToken(req, res, next) {
+  const authHeader = req.headers.authorization;
+  const token = authHeader?.split(" ")[1];
+
+  if (!token) {
+    return res.status(401).json({
+      message: "Authentication required"
+    });
+  }
+
+  try {
+    const user = jwt.verify(
+      token,
+      process.env.JWT_SECRET
+    );
+
+    req.user = user;
+    next();
+
+  } catch (error) {
+    return res.status(403).json({
+      message: "Invalid or expired token"
+    });
+  }
+}
+Protected route:
+app.get("/profile", authenticateToken, (req, res) => {
+  res.json({
+    message: "Protected profile",
+    userId: req.user.userId
+  });
+});
+8. Testing in Postman
+Register
+POST
+http://localhost:3000/register
+Body → raw → JSON:
+{
+  "name": "Student",
+  "email": "student@example.com",
+  "password": "example-password"
+}
+Login
+POST
+http://localhost:3000/login
+Body:
+{
+  "email": "student@example.com",
+  "password": "example-password"
+}
+The response contains a JWT.
+For a protected request:
+GET
+http://localhost:3000/profile
+Header:
+Authorization: Bearer YOUR_TOKEN
+A JWT-based authentication system typically works by registering a user, securely hashing the password, storing the user in MongoDB, verifying credentials during login, generating a JWT, and verifying that token on protected routes.
+JWT Login & Registration System
+Now let's understand how a typical registration + login system works using:
+Node.js + Express + MongoDB + Mongoose + bcrypt + JWT
+1. Overall Flow
+Registration
+User
+ ↓
+Email + Password
+ ↓
+Hash Password
+ ↓
+MongoDB
+Login
+User
+ ↓
+Email + Password
+ ↓
+Find User
+ ↓
+Compare Password
+ ↓
+Generate JWT
+ ↓
+Send Token
+2. Install Required Packages
+Inside your Node.js project:
+npm install express mongoose bcrypt jsonwebtoken dotenv
+3. User Schema
+Create a model such as User.js:
+const mongoose = require("mongoose");
+
+const userSchema = new mongoose.Schema({
+  name: {
+    type: String,
+    required: true
+  },
+
+  email: {
+    type: String,
+    required: true,
+    unique: true
+  },
+
+  password: {
+    type: String,
+    required: true
+  }
+});
+
+module.exports = mongoose.model("User", userSchema);
+4. Registration
+The registration process:
+Name + Email + Password
+          ↓
+      Hash password
+          ↓
+      Save in MongoDB
+Example:
+const bcrypt = require("bcrypt");
+
+app.post("/register", async (req, res) => {
+  try {
+    const { name, email, password } = req.body;
+
+    const existingUser = await User.findOne({ email });
+
+    if (existingUser) {
+      return res.status(409).json({
+        message: "User already exists"
+      });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const user = await User.create({
+      name,
+      email,
+      password: hashedPassword
+    });
+
+    res.status(201).json({
+      message: "Registration successful",
+      userId: user._id
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      message: "Server error"
+    });
+  }
+});
+Notice that the original password isn't stored directly.
+5. Login
+During login, we find the user and compare the entered password with the stored hash.
+const jwt = require("jsonwebtoken");
+
+app.post("/login", async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(401).json({
+        message: "Invalid email or password"
+      });
+    }
+
+    const passwordMatch = await bcrypt.compare(
+      password,
+      user.password
+    );
+
+    if (!passwordMatch) {
+      return res.status(401).json({
+        message: "Invalid email or password"
+      });
+    }
+
+    const token = jwt.sign(
+      { userId: user._id },
+      process.env.JWT_SECRET,
+      { expiresIn: "1h" }
+    );
+
+    res.json({
+      message: "Login successful",
+      token
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      message: "Server error"
+    });
+  }
+});
+6. .env
+Create a .env file:
+MONGODB_URI=mongodb://127.0.0.1:27017/collegeDB
+JWT_SECRET=replace-with-a-long-random-secret
+PORT=3000
+Load it:
+require("dotenv").config();
+For a real application, keep secrets out of source control and don't publish your .env file.
+7. Protected Route
+After login, the client can send the JWT when requesting protected resources.
+A common format is:
+Authorization: Bearer YOUR_TOKEN
+Middleware:
+function authenticateToken(req, res, next) {
+  const authHeader = req.headers.authorization;
+  const token = authHeader?.split(" ")[1];
+
+  if (!token) {
+    return res.status(401).json({
+      message: "Authentication required"
+    });
+  }
+
+  try {
+    const user = jwt.verify(
+      token,
+      process.env.JWT_SECRET
+    );
+
+    req.user = user;
+    next();
+
+  } catch (error) {
+    return res.status(403).json({
+      message: "Invalid or expired token"
+    });
+  }
+}
+Protected route:
+app.get("/profile", authenticateToken, (req, res) => {
+  res.json({
+    message: "Protected profile",
+    userId: req.user.userId
+  });
+});
+8. Testing in Postman
+Register
+POST
+http://localhost:3000/register
+Body → raw → JSON:
+{
+  "name": "Student",
+  "email": "student@example.com",
+  "password": "example-password"
+}
+Login
+POST
+http://localhost:3000/login
+Body:
+{
+  "email": "student@example.com",
+  "password": "example-password"
+}
+The response contains a JWT.
+For a protected request:
+GET
+http://localhost:3000/profile
+Header:
+Authorization: Bearer YOUR_TOKEN
+A JWT-based authentication system typically works by registering a user, securely hashing the password, storing the user in MongoDB, verifying credentials during login, generating a JWT, and verifying that token on protected routes.
