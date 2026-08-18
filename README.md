@@ -5753,3 +5753,233 @@ process.env
  ↓
 Node.js Application
 An environment variable is a configuration value provided outside the application code. In Node.js, the dotenv package can load variables from a .env file, and they can be accessed using process.env. This is commonly used for ports, database URLs, and other configuration values.
+Authentication and Authorization
+These are important concepts in backend development.
+1. Authentication
+Authentication means checking who the user is.
+Example:
+User enters:
+Email + Password
+       ↓
+Server verifies details
+       ↓
+Correct → User authenticated
+Example: Logging into a website.
+2. Authorization
+Authorization means checking what an authenticated user is allowed to do.
+Example:
+User → Logged in
+       ↓
+Is user an Admin?
+       ↓
+Yes → Can access admin page
+No  → Access denied
+Simple Difference
+Authentication
+Authorization
+Who are you?
+What can you access?
+Happens during login
+Happens when accessing resources
+Verifies identity
+Checks permissions
+3. Passwords
+Passwords should not be stored as plain text in a database.
+❌ Bad:
+{
+  "email": "user@example.com",
+  "password": "mypassword"
+}
+Instead, applications normally store a secure password hash.
+A common Node.js package is:
+npm install bcrypt
+Example:
+const bcrypt = require("bcrypt");
+
+const hashedPassword = await bcrypt.hash("mypassword", 10);
+
+console.log(hashedPassword);
+When logging in, bcrypt.compare() can check a password against its stored hash.
+4. JWT
+JWT (JSON Web Token) is commonly used to represent authenticated user information between a client and server.
+Install:
+npm install jsonwebtoken
+Create a token:
+const jwt = require("jsonwebtoken");
+
+const token = jwt.sign(
+  { userId: "123" },
+  process.env.JWT_SECRET,
+  { expiresIn: "1h" }
+);
+
+console.log(token);
+The secret should be stored securely, for example in .env:
+JWT_SECRET=your-secret-value
+5. JWT Authentication Flow
+User
+ ↓
+Login
+ ↓
+Server verifies credentials
+ ↓
+JWT generated
+ ↓
+Client stores token
+ ↓
+Client sends token with protected requests
+ ↓
+Server verifies token
+ ↓
+Access granted / denied
+6. Protected Route
+A middleware can verify a JWT before allowing access.
+function authenticateToken(req, res, next) {
+  const authHeader = req.headers.authorization;
+
+  const token = authHeader && authHeader.split(" ")[1];
+
+  if (!token) {
+    return res.status(401).json({
+      message: "Authentication required"
+    });
+  }
+
+  try {
+    const user = jwt.verify(token, process.env.JWT_SECRET);
+
+    req.user = user;
+    next();
+  } catch (error) {
+    return res.status(403).json({
+      message: "Invalid or expired token"
+    });
+  }
+}
+Then protect a route:
+app.get("/profile", authenticateToken, (req, res) => {
+  res.json({
+    message: "Welcome to your profile",
+    user: req.user
+  });
+});
+7. HTTP Status Codes
+For authentication:
+401 → Authentication required/invalid credentials
+403 → Authenticated but not allowed to access the resource
+Authentication verifies the identity of a user, while authorization determines what that authenticated user is allowed to access. In Node.js applications, passwords are securely hashed using tools such as bcrypt, and JWT is commonly used for token-based authentication.
+Authentication and Authorization
+These are important concepts in backend development.
+1. Authentication
+Authentication means checking who the user is.
+Example:
+User enters:
+Email + Password
+       ↓
+Server verifies details
+       ↓
+Correct → User authenticated
+Example: Logging into a website.
+2. Authorization
+Authorization means checking what an authenticated user is allowed to do.
+Example:
+User → Logged in
+       ↓
+Is user an Admin?
+       ↓
+Yes → Can access admin page
+No  → Access denied
+Simple Difference
+Authentication
+Authorization
+Who are you?
+What can you access?
+Happens during login
+Happens when accessing resources
+Verifies identity
+Checks permissions
+3. Passwords
+Passwords should not be stored as plain text in a database.
+❌ Bad:
+{
+  "email": "user@example.com",
+  "password": "mypassword"
+}
+Instead, applications normally store a secure password hash.
+A common Node.js package is:
+npm install bcrypt
+Example:
+const bcrypt = require("bcrypt");
+
+const hashedPassword = await bcrypt.hash("mypassword", 10);
+
+console.log(hashedPassword);
+When logging in, bcrypt.compare() can check a password against its stored hash.
+4. JWT
+JWT (JSON Web Token) is commonly used to represent authenticated user information between a client and server.
+Install:
+npm install jsonwebtoken
+Create a token:
+const jwt = require("jsonwebtoken");
+
+const token = jwt.sign(
+  { userId: "123" },
+  process.env.JWT_SECRET,
+  { expiresIn: "1h" }
+);
+
+console.log(token);
+The secret should be stored securely, for example in .env:
+JWT_SECRET=your-secret-value
+5. JWT Authentication Flow
+User
+ ↓
+Login
+ ↓
+Server verifies credentials
+ ↓
+JWT generated
+ ↓
+Client stores token
+ ↓
+Client sends token with protected requests
+ ↓
+Server verifies token
+ ↓
+Access granted / denied
+6. Protected Route
+A middleware can verify a JWT before allowing access.
+function authenticateToken(req, res, next) {
+  const authHeader = req.headers.authorization;
+
+  const token = authHeader && authHeader.split(" ")[1];
+
+  if (!token) {
+    return res.status(401).json({
+      message: "Authentication required"
+    });
+  }
+
+  try {
+    const user = jwt.verify(token, process.env.JWT_SECRET);
+
+    req.user = user;
+    next();
+  } catch (error) {
+    return res.status(403).json({
+      message: "Invalid or expired token"
+    });
+  }
+}
+Then protect a route:
+app.get("/profile", authenticateToken, (req, res) => {
+  res.json({
+    message: "Welcome to your profile",
+    user: req.user
+  });
+});
+7. HTTP Status Codes
+For authentication:
+401 → Authentication required/invalid credentials
+403 → Authenticated but not allowed to access the resource
+Authentication verifies the identity of a user, while authorization determines what that authenticated user is allowed to access. In Node.js applications, passwords are securely hashed using tools such as bcrypt, and JWT is commonly used for token-based authentication.
