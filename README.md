@@ -6838,3 +6838,248 @@ Delete
 DELETE
 /api/students/:id
 Next Topic: CORS in Node.js/Express — why frontend and backend sometimes get CORS errors and how to configure CORS correctly.
+CORS in Node.js & Express
+1. What is CORS?
+CORS stands for Cross-Origin Resource Sharing.
+It controls whether a browser allows a webpage from one origin to request resources from another origin.
+Example
+Your frontend:
+http://localhost:5173
+Your backend:
+http://localhost:3000
+These are different origins, so the browser may block requests unless the backend allows the frontend origin.
+2. Install CORS
+Open the VS Code terminal:
+npm install cors
+3. Import CORS
+In server.js:
+const cors = require("cors");
+4. Enable CORS
+Add:
+app.use(cors());
+Example:
+const express = require("express");
+const cors = require("cors");
+
+const app = express();
+
+app.use(cors());
+app.use(express.json());
+
+app.listen(3000, () => {
+  console.log("Server running on port 3000");
+});
+Now the server sends the appropriate CORS headers for cross-origin requests.
+5. Allow a Specific Frontend
+For a real project, you can allow only your frontend origin:
+app.use(cors({
+  origin: "http://localhost:5173"
+}));
+This means your backend is configured to allow requests from that origin.
+6. CORS with Your Student API
+Your server.js can look like:
+const express = require("express");
+const mongoose = require("mongoose");
+const cors = require("cors");
+
+require("dotenv").config();
+
+const studentRoutes = require("./routes/studentRoutes");
+
+const app = express();
+
+app.use(cors());
+app.use(express.json());
+
+mongoose.connect(process.env.MONGODB_URI)
+  .then(() => {
+    console.log("MongoDB connected");
+  })
+  .catch((error) => {
+    console.log("MongoDB error:", error);
+  });
+
+app.use("/api/students", studentRoutes);
+
+app.get("/", (req, res) => {
+  res.send("Student API is running");
+});
+
+app.listen(process.env.PORT, () => {
+  console.log(`Server running on port ${process.env.PORT}`);
+});
+7. Why Does CORS Error Occur?
+Suppose:
+Frontend
+localhost:5173
+     ↓
+     ↓ Request
+     ↓
+Backend
+localhost:3000
+The browser checks whether the backend permits the frontend origin.
+If the required CORS headers aren't present, the browser can show a CORS policy error.
+8. Important Point
+CORS is primarily a browser security mechanism.
+For example, Postman is not subject to browser CORS enforcement in the same way, so an API may work in Postman while a browser-based frontend gets a CORS error.
+9. Simple Interview Answer
+CORS (Cross-Origin Resource Sharing) is a browser security mechanism that controls requests between different origins. In Express, the cors package can be used to configure which origins are allowed to access the backend.
+Connecting Frontend to Backend
+Now we'll connect a simple HTML + JavaScript frontend to your Node.js + Express + MongoDB backend.
+1. Basic Architecture
+HTML + CSS + JavaScript
+          ↓
+       fetch()
+          ↓
+     Express API
+          ↓
+       Mongoose
+          ↓
+       MongoDB
+2. Create Frontend
+Create a folder:
+frontend/
+│
+├── index.html
+└── script.js
+3. Create index.html
+HTML
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Student Management</title>
+</head>
+
+<body>
+
+  <h1>Student Management</h1>
+
+  <input id="name" placeholder="Enter name">
+  <input id="age" type="number" placeholder="Enter age">
+  <input id="branch" placeholder="Enter branch">
+
+  <button onclick="addStudent()">
+    Add Student
+  </button>
+
+  <h2>Students</h2>
+
+  <button onclick="getStudents()">
+    Get Students
+  </button>
+
+  <div id="students"></div>
+
+  <script src="script.js"></script>
+
+</body>
+</html>
+4. Create script.js
+GET Request
+async function getStudents() {
+  const response = await fetch(
+    "http://localhost:3000/api/students"
+  );
+
+  const students = await response.json();
+
+  console.log(students);
+
+  document.getElementById("students").innerHTML =
+    JSON.stringify(students, null, 2);
+}
+When you click Get Students, JavaScript sends a GET request to your Express backend.
+5. POST Request
+Add this function to script.js:
+async function addStudent() {
+
+  const name = document.getElementById("name").value;
+  const age = document.getElementById("age").value;
+  const branch = document.getElementById("branch").value;
+
+  const response = await fetch(
+    "http://localhost:3000/api/students",
+    {
+      method: "POST",
+
+      headers: {
+        "Content-Type": "application/json"
+      },
+
+      body: JSON.stringify({
+        name: name,
+        age: Number(age),
+        branch: branch
+      })
+    }
+  );
+
+  const data = await response.json();
+
+  console.log(data);
+
+  alert("Student added successfully");
+}
+6. How POST Works
+When you enter:
+Name: Gyan
+Age: 20
+Branch: CSE
+JavaScript creates:
+{
+  "name": "Gyan",
+  "age": 20,
+  "branch": "CSE"
+}
+Then:
+Frontend
+   ↓
+fetch()
+   ↓
+POST /api/students
+   ↓
+Express
+   ↓
+Controller
+   ↓
+Mongoose
+   ↓
+MongoDB
+7. Run the Backend
+In your backend project:
+node server.js
+You should see:
+MongoDB connected
+Server running on port 3000
+8. Open the Frontend
+Open index.html in your browser.
+Enter student information and click:
+Add Student
+Then click:
+Get Students
+You should see the data retrieved from MongoDB.
+9. Important fetch() Syntax
+GET
+fetch("http://localhost:3000/api/students");
+POST
+fetch("http://localhost:3000/api/students", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json"
+  },
+  body: JSON.stringify(data)
+});
+10. Frontend ↔ Backend
+Frontend
+Backend
+HTML
+Express
+JavaScript
+Node.js
+fetch()
+API route
+JSON
+Request/Response
+User input
+MongoDB data
+Frontend-backend integration means allowing the frontend to communicate with the backend through APIs. JavaScript's fetch() function can send HTTP requests such as GET and POST to an Express server, which processes the request and communicates with MongoDB.
