@@ -6395,3 +6395,446 @@ http://localhost:3000/profile
 Header:
 Authorization: Bearer YOUR_TOKEN
 A JWT-based authentication system typically works by registering a user, securely hashing the password, storing the user in MongoDB, verifying credentials during login, generating a JWT, and verifying that token on protected routes.
+MVC Architecture in Node.js & Express
+MVC stands for:
+M → Model
+V → View
+C → Controller
+It is a way of organizing application code into separate responsibilities.
+For a REST API, the structure is commonly:
+Client
+  ↓
+Routes
+  ↓
+Controllers
+  ↓
+Models
+  ↓
+MongoDB
+1. Model
+The Model defines the structure of data and interacts with the database.
+Example: models/Student.js
+const mongoose = require("mongoose");
+
+const studentSchema = new mongoose.Schema({
+  name: {
+    type: String,
+    required: true
+  },
+
+  age: {
+    type: Number,
+    required: true
+  },
+
+  branch: {
+    type: String,
+    required: true
+  }
+});
+
+module.exports = mongoose.model("Student", studentSchema);
+2. Controller
+The Controller contains the application logic.
+Example:
+controllers/studentController.js
+const Student = require("../models/Student");
+
+const getStudents = async (req, res) => {
+  try {
+    const students = await Student.find();
+
+    res.json(students);
+  } catch (error) {
+    res.status(500).json({
+      message: "Error getting students"
+    });
+  }
+};
+
+module.exports = {
+  getStudents
+};
+3. Routes
+Routes define the API endpoints and connect them to controllers.
+Example:
+routes/studentRoutes.js
+const express = require("express");
+const router = express.Router();
+
+const { getStudents } =
+  require("../controllers/studentController");
+
+router.get("/students", getStudents);
+
+module.exports = router;
+4. Server File
+server.js connects everything together.
+const express = require("express");
+
+const app = express();
+
+app.use(express.json());
+
+const studentRoutes =
+  require("./routes/studentRoutes");
+
+app.use("/api", studentRoutes);
+
+app.listen(3000, () => {
+  console.log("Server running on port 3000");
+});
+Now the API is:
+GET http://localhost:3000/api/students
+5. Project Structure
+A real project can look like:
+my-project/
+│
+├── server.js
+├── package.json
+│
+├── models/
+│   └── Student.js
+│
+├── controllers/
+│   └── studentController.js
+│
+├── routes/
+│   └── studentRoutes.js
+│
+├── middleware/
+│   └── authMiddleware.js
+│
+└── .env
+6. Why MVC?
+Without MVC:
+One huge server.js
+        ↓
+Hard to understand
+Hard to maintain
+With MVC:
+Routes
+  ↓
+Controllers
+  ↓
+Models
+  ↓
+Database
+Each part has a clear responsibility.
+Advantages
+Clean project structure
+Easier debugging
+Code is easier to maintain
+Easier teamwork
+Better code organization
+Easier to add new features
+7. Simple Real-Life Example
+Think of an online college system:
+Student Request
+      ↓
+Route
+      ↓
+Controller
+      ↓
+Student Model
+      ↓
+MongoDB
+      ↓
+Response
+For example:
+GET /api/students
+Route: receives the request.
+Controller: decides what should happen.
+Model: gets student data from MongoDB.
+Response: sends the data back to the client.
+MVC (Model-View-Controller) is an architectural pattern that separates an application into different responsibilities. Models handle data and database operations, Controllers contain application logic, and Views handle the user interface. In Express REST APIs, routes commonly connect incoming requests to controllers, which use models to access the database.
+Complete Node.js + Express Backend Project
+Now let's combine everything you've learned into a simple Student Management API.
+1. Technologies Used
+Node.js
+Express.js
+MongoDB
+Mongoose
+dotenv
+Postman
+2. Create Project
+Open VS Code.
+Create a folder:
+student-api
+Open the folder in VS Code.
+Open Terminal → New Terminal.
+Run:
+npm init -y
+Install packages:
+npm install express mongoose dotenv
+3. Create Folder Structure
+Create:
+student-api/
+│
+├── server.js
+├── .env
+│
+├── models/
+│   └── Student.js
+│
+├── controllers/
+│   └── studentController.js
+│
+└── routes/
+    └── studentRoutes.js
+4. Create .env
+PORT=3000
+MONGODB_URI=mongodb://127.0.0.1:27017/collegeDB
+Don't publish .env to GitHub if it contains private credentials.
+5. Create Model
+models/Student.js
+const mongoose = require("mongoose");
+
+const studentSchema = new mongoose.Schema({
+  name: {
+    type: String,
+    required: true
+  },
+
+  age: {
+    type: Number,
+    required: true
+  },
+
+  branch: {
+    type: String,
+    required: true
+  }
+});
+
+module.exports = mongoose.model("Student", studentSchema);
+6. Create Controller
+controllers/studentController.js
+const Student = require("../models/Student");
+
+const createStudent = async (req, res) => {
+  try {
+    const student = await Student.create(req.body);
+
+    res.status(201).json(student);
+  } catch (error) {
+    res.status(400).json({
+      message: error.message
+    });
+  }
+};
+
+const getStudents = async (req, res) => {
+  try {
+    const students = await Student.find();
+
+    res.json(students);
+  } catch (error) {
+    res.status(500).json({
+      message: error.message
+    });
+  }
+};
+
+const getStudent = async (req, res) => {
+  try {
+    const student = await Student.findById(req.params.id);
+
+    if (!student) {
+      return res.status(404).json({
+        message: "Student not found"
+      });
+    }
+
+    res.json(student);
+  } catch (error) {
+    res.status(500).json({
+      message: error.message
+    });
+  }
+};
+
+const updateStudent = async (req, res) => {
+  try {
+    const student = await Student.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      { new: true }
+    );
+
+    if (!student) {
+      return res.status(404).json({
+        message: "Student not found"
+      });
+    }
+
+    res.json(student);
+  } catch (error) {
+    res.status(400).json({
+      message: error.message
+    });
+  }
+};
+
+const deleteStudent = async (req, res) => {
+  try {
+    const student = await Student.findByIdAndDelete(
+      req.params.id
+    );
+
+    if (!student) {
+      return res.status(404).json({
+        message: "Student not found"
+      });
+    }
+
+    res.json({
+      message: "Student deleted successfully"
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: error.message
+    });
+  }
+};
+
+module.exports = {
+  createStudent,
+  getStudents,
+  getStudent,
+  updateStudent,
+  deleteStudent
+};
+7. Create Routes
+routes/studentRoutes.js
+const express = require("express");
+
+const router = express.Router();
+
+const {
+  createStudent,
+  getStudents,
+  getStudent,
+  updateStudent,
+  deleteStudent
+} = require("../controllers/studentController");
+
+router.post("/", createStudent);
+router.get("/", getStudents);
+router.get("/:id", getStudent);
+router.put("/:id", updateStudent);
+router.delete("/:id", deleteStudent);
+
+module.exports = router;
+8. Create Server
+server.js
+const express = require("express");
+const mongoose = require("mongoose");
+require("dotenv").config();
+
+const studentRoutes = require("./routes/studentRoutes");
+
+const app = express();
+
+app.use(express.json());
+
+mongoose.connect(process.env.MONGODB_URI)
+  .then(() => {
+    console.log("MongoDB connected");
+  })
+  .catch((error) => {
+    console.log("MongoDB error:", error);
+  });
+
+app.use("/api/students", studentRoutes);
+
+app.get("/", (req, res) => {
+  res.send("Student API is running");
+});
+
+app.listen(process.env.PORT, () => {
+  console.log(
+    `Server running on port ${process.env.PORT}`
+  );
+});
+9. Start the Project
+In VS Code Terminal:
+node server.js
+You should see:
+MongoDB connected
+Server running on port 3000
+10. Test in Browser
+Open:
+http://localhost:3000
+You should see:
+Student API is running
+11. Test POST in Postman
+Method:
+POST
+URL:
+http://localhost:3000/api/students
+Body → raw → JSON
+{
+  "name": "Gyan",
+  "age": 20,
+  "branch": "CSE"
+}
+Click Send.
+12. Get Students
+Method:
+GET
+URL:
+http://localhost:3000/api/students
+Click Send.
+13. Update Student
+Copy the student's _id.
+Example:
+64abc123...
+Use:
+PUT http://localhost:3000/api/students/64abc123...
+Body:
+{
+  "name": "Gyan",
+  "age": 21,
+  "branch": "IT"
+}
+14. Delete Student
+Use:
+DELETE http://localhost:3000/api/students/64abc123...
+Click Send.
+Complete Backend Flow
+                 CLIENT
+                   ↓
+                Postman
+                   ↓
+                Express
+                   ↓
+                 Routes
+                   ↓
+              Controllers
+                   ↓
+                 Model
+                   ↓
+               Mongoose
+                   ↓
+                MongoDB
+CRUD APIs
+Action
+Method
+URL
+Create
+POST
+/api/students
+Read all
+GET
+/api/students
+Read one
+GET
+/api/students/:id
+Update
+PUT
+/api/students/:id
+Delete
+DELETE
+/api/students/:id
+Next Topic: CORS in Node.js/Express — why frontend and backend sometimes get CORS errors and how to configure CORS correctly.
