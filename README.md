@@ -7083,3 +7083,429 @@ Request/Response
 User input
 MongoDB data
 Frontend-backend integration means allowing the frontend to communicate with the backend through APIs. JavaScript's fetch() function can send HTTP requests such as GET and POST to an Express server, which processes the request and communicates with MongoDB.
+Fetch API — GET, POST, PUT & DELETE
+Now we'll learn how the frontend can perform all CRUD operations using JavaScript fetch().
+1. GET — Read Students
+async function getStudents() {
+  const response = await fetch(
+    "http://localhost:3000/api/students"
+  );
+
+  const students = await response.json();
+
+  console.log(students);
+}
+Flow
+Frontend
+   ↓
+GET /api/students
+   ↓
+Express
+   ↓
+MongoDB
+   ↓
+Students data
+2. POST — Create Student
+async function addStudent() {
+  const student = {
+    name: "Gyan",
+    age: 20,
+    branch: "CSE"
+  };
+
+  const response = await fetch(
+    "http://localhost:3000/api/students",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(student)
+    }
+  );
+
+  const data = await response.json();
+
+  console.log(data);
+}
+Important
+JSON.stringify() converts JavaScript data into JSON text for the request body.
+3. PUT — Update Student
+Suppose the student ID is:
+64abc123...
+async function updateStudent(id) {
+  const updatedStudent = {
+    name: "Gyan",
+    age: 21,
+    branch: "IT"
+  };
+
+  const response = await fetch(
+    `http://localhost:3000/api/students/${id}`,
+    {
+      method: "PUT",
+
+      headers: {
+        "Content-Type": "application/json"
+      },
+
+      body: JSON.stringify(updatedStudent)
+    }
+  );
+
+  const data = await response.json();
+
+  console.log(data);
+}
+4. DELETE — Delete Student
+async function deleteStudent(id) {
+  const response = await fetch(
+    `http://localhost:3000/api/students/${id}`,
+    {
+      method: "DELETE"
+    }
+  );
+
+  const data = await response.json();
+
+  console.log(data);
+}
+5. Complete Fetch CRUD
+const API_URL = "http://localhost:3000/api/students";
+
+// GET
+async function getStudents() {
+  const response = await fetch(API_URL);
+  const data = await response.json();
+
+  console.log(data);
+}
+
+// POST
+async function addStudent() {
+  const student = {
+    name: "Gyan",
+    age: 20,
+    branch: "CSE"
+  };
+
+  const response = await fetch(API_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(student)
+  });
+
+  const data = await response.json();
+
+  console.log(data);
+}
+
+// PUT
+async function updateStudent(id) {
+  const student = {
+    name: "Gyan",
+    age: 21,
+    branch: "IT"
+  };
+
+  const response = await fetch(`${API_URL}/${id}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(student)
+  });
+
+  const data = await response.json();
+
+  console.log(data);
+}
+
+// DELETE
+async function deleteStudent(id) {
+  const response = await fetch(`${API_URL}/${id}`, {
+    method: "DELETE"
+  });
+
+  const data = await response.json();
+
+  console.log(data);
+}
+6. CRUD Summary
+Operation
+Method
+JavaScript
+Create
+POST
+fetch() + method: "POST"
+Read
+GET
+fetch()
+Update
+PUT
+method: "PUT"
+Delete
+DELETE
+method: "DELETE"
+7. Full-Stack Flow
+       FRONTEND
+    HTML + JavaScript
+           ↓
+        fetch()
+           ↓
+     ┌─────────────┐
+     │   Express   │
+     │    Routes   │
+     └──────┬──────┘
+            ↓
+       Controllers
+            ↓
+         Mongoose
+            ↓
+         MongoDB
+This is the basic pattern you'll use in many full-stack applications.
+Complete Student Management UI
+Now we'll build a simple Student Management System frontend connected to your Express + MongoDB backend.
+1. Project Structure
+student-api/
+│
+├── server.js
+├── .env
+│
+├── models/
+│   └── Student.js
+│
+├── controllers/
+│   └── studentController.js
+│
+├── routes/
+│   └── studentRoutes.js
+│
+└── public/
+    ├── index.html
+    └── script.js
+2. index.html
+Create public/index.html:
+HTML
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Student Management</title>
+</head>
+
+<body>
+
+  <h1>Student Management System</h1>
+
+  <form id="studentForm">
+
+    <input
+      type="text"
+      id="name"
+      placeholder="Enter name"
+      required
+    >
+
+    <input
+      type="number"
+      id="age"
+      placeholder="Enter age"
+      required
+    >
+
+    <input
+      type="text"
+      id="branch"
+      placeholder="Enter branch"
+      required
+    >
+
+    <button type="submit">
+      Add Student
+    </button>
+
+  </form>
+
+  <h2>Student List</h2>
+
+  <table border="1">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Age</th>
+        <th>Branch</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+
+    <tbody id="studentList"></tbody>
+  </table>
+
+  <script src="script.js"></script>
+
+</body>
+</html>
+3. script.js
+Create:
+public/script.js
+Add:
+const API_URL = "/api/students";
+
+const form = document.getElementById("studentForm");
+const studentList = document.getElementById("studentList");
+
+form.addEventListener("submit", async (event) => {
+  event.preventDefault();
+
+  const student = {
+    name: document.getElementById("name").value,
+    age: Number(document.getElementById("age").value),
+    branch: document.getElementById("branch").value
+  };
+
+  const response = await fetch(API_URL, {
+    method: "POST",
+
+    headers: {
+      "Content-Type": "application/json"
+    },
+
+    body: JSON.stringify(student)
+  });
+
+  if (response.ok) {
+    form.reset();
+    getStudents();
+  }
+});
+4. Display Students
+Add this below the previous code:
+async function getStudents() {
+
+  const response = await fetch(API_URL);
+
+  const students = await response.json();
+
+  studentList.innerHTML = "";
+
+  students.forEach(student => {
+
+    const row = document.createElement("tr");
+
+    row.innerHTML = `
+      <td>${student.name}</td>
+      <td>${student.age}</td>
+      <td>${student.branch}</td>
+      <td>
+        <button onclick="deleteStudent('${student._id}')">
+          Delete
+        </button>
+      </td>
+    `;
+
+    studentList.appendChild(row);
+  });
+}
+
+getStudents();
+5. Delete Student
+Add:
+async function deleteStudent(id) {
+
+  const response = await fetch(
+    `${API_URL}/${id}`,
+    {
+      method: "DELETE"
+    }
+  );
+
+  if (response.ok) {
+    getStudents();
+  }
+}
+Now every student gets a Delete button.
+6. Serve the Frontend from Express
+In server.js, add:
+app.use(express.static("public"));
+Your server can now serve:
+public/index.html
+7. Open the Website
+Start the backend:
+node server.js
+Then open:
+http://localhost:3000
+You should see:
+Student Management System
+
+[ Name       ]
+[ Age        ]
+[ Branch     ]
+
+[ Add Student ]
+
+Student List
+
+Name    Age    Branch    Actions
+--------------------------------
+Gyan    20     CSE       Delete
+8. How It Works
+When you click Add Student:
+HTML Form
+   ↓
+JavaScript
+   ↓
+POST /api/students
+   ↓
+Express
+   ↓
+Controller
+   ↓
+Mongoose
+   ↓
+MongoDB
+When the page loads:
+Browser
+   ↓
+GET /api/students
+   ↓
+Express
+   ↓
+MongoDB
+   ↓
+Student List
+When you click Delete:
+Delete Button
+   ↓
+DELETE /api/students/:id
+   ↓
+Express
+   ↓
+MongoDB
+   ↓
+Student removed
+What You've Learned So Far
+HTML
+ ↓
+CSS
+ ↓
+JavaScript
+ ↓
+Node.js
+ ↓
+Express.js
+ ↓
+REST API
+ ↓
+MongoDB
+ ↓
+Mongoose
+ ↓
+CRUD
+ ↓
+Postman
+ ↓
+Authentication
+ ↓
+Full-Stack Integration
