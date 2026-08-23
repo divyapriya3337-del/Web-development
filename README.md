@@ -7509,3 +7509,365 @@ Postman
 Authentication
  ↓
 Full-Stack Integration
+Edit / Update Student from the UI
+Now we'll add an Edit button to the Student Management System and connect it to the PUT API.
+1. Update index.html
+Change the form slightly:
+HTML
+<form id="studentForm">
+
+  <input type="text" id="name" placeholder="Enter name" required>
+
+  <input type="number" id="age" placeholder="Enter age" required>
+
+  <input type="text" id="branch" placeholder="Enter branch" required>
+
+  <button type="submit" id="submitBtn">
+    Add Student
+  </button>
+
+  <button type="button" id="cancelBtn" style="display:none;">
+    Cancel
+  </button>
+
+</form>
+The Cancel button will appear when editing.
+2. Add an Edit Button
+In script.js, find this part:
+row.innerHTML = `
+  <td>${student.name}</td>
+  <td>${student.age}</td>
+  <td>${student.branch}</td>
+  <td>
+    <button onclick="deleteStudent('${student._id}')">
+      Delete
+    </button>
+  </td>
+`;
+Change it to:
+row.innerHTML = `
+  <td>${student.name}</td>
+  <td>${student.age}</td>
+  <td>${student.branch}</td>
+  <td>
+    <button onclick="editStudent('${student._id}')">
+      Edit
+    </button>
+
+    <button onclick="deleteStudent('${student._id}')">
+      Delete
+    </button>
+  </td>
+`;
+3. Create editStudent()
+Add this function:
+let editingId = null;
+
+async function editStudent(id) {
+
+  const response = await fetch(`${API_URL}/${id}`);
+
+  const student = await response.json();
+
+  document.getElementById("name").value = student.name;
+  document.getElementById("age").value = student.age;
+  document.getElementById("branch").value = student.branch;
+
+  editingId = id;
+
+  document.getElementById("submitBtn").textContent =
+    "Update Student";
+
+  document.getElementById("cancelBtn").style.display =
+    "inline";
+}
+4. Modify the Form Submit
+Replace your previous form submission code with:
+form.addEventListener("submit", async (event) => {
+
+  event.preventDefault();
+
+  const student = {
+    name: document.getElementById("name").value,
+    age: Number(document.getElementById("age").value),
+    branch: document.getElementById("branch").value
+  };
+
+  let response;
+
+  if (editingId) {
+
+    // UPDATE
+    response = await fetch(
+      `${API_URL}/${editingId}`,
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(student)
+      }
+    );
+
+  } else {
+
+    // CREATE
+    response = await fetch(
+      API_URL,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(student)
+      }
+    );
+  }
+
+  if (response.ok) {
+
+    form.reset();
+
+    editingId = null;
+
+    document.getElementById("submitBtn").textContent =
+      "Add Student";
+
+    document.getElementById("cancelBtn").style.display =
+      "none";
+
+    getStudents();
+  }
+});
+5. Cancel Editing
+Add:
+document.getElementById("cancelBtn")
+  .addEventListener("click", () => {
+
+    form.reset();
+
+    editingId = null;
+
+    document.getElementById("submitBtn").textContent =
+      "Add Student";
+
+    document.getElementById("cancelBtn").style.display =
+      "none";
+  });
+6. Complete Flow
+Add Student
+Fill Form
+   ↓
+Add Student
+   ↓
+POST
+   ↓
+MongoDB
+Edit Student
+Click Edit
+   ↓
+GET Student
+   ↓
+Fill Form
+   ↓
+Change Data
+   ↓
+Update Student
+   ↓
+PUT
+   ↓
+MongoDB
+Delete Student
+Click Delete
+   ↓
+DELETE
+   ↓
+MongoDB
+7. Final UI
+Your application will now have:
+       Student Management System
+
+Name:   [____________]
+
+Age:    [____________]
+
+Branch: [____________]
+
+        [Add Student]
+
+
+Student List
+
+------------------------------------------
+Name     Age     Branch     Actions
+------------------------------------------
+Gyan     20      CSE        Edit Delete
+Ravi     21      ECE        Edit Delete
+------------------------------------------
+When you click Edit, the student's information appears in the form. After changing it, click Update Student.
+CRUD Is Now Complete
+Operation
+Method
+API
+Create
+POST
+/api/students
+Read
+GET
+/api/students
+Read One
+GET
+/api/students/:id
+Update
+PUT
+/api/students/:id
+Delete
+DELETE
+/api/students/:id
+Search & Filter Students
+Now let's add a search box to your Student Management System.
+We will search students by name or branch.
+1. Add Search Box
+In index.html, above the student table, add:
+HTML
+<input
+  type="text"
+  id="searchInput"
+  placeholder="Search by name or branch"
+>
+
+<button onclick="searchStudents()">
+  Search
+</button>
+
+<button onclick="getStudents()">
+  Show All
+</button>
+Your page will look like:
+Student Management System
+
+Name:   [__________]
+Age:    [__________]
+Branch: [__________]
+
+[Add Student]
+
+Search:
+[ Search by name or branch ] [Search] [Show All]
+
+Student List
+2. Create Search Function
+In script.js:
+async function searchStudents() {
+
+  const search =
+    document.getElementById("searchInput").value
+      .toLowerCase();
+
+  const response = await fetch(API_URL);
+
+  const students = await response.json();
+
+  const filteredStudents = students.filter(student =>
+    student.name.toLowerCase().includes(search) ||
+    student.branch.toLowerCase().includes(search)
+  );
+
+  displayStudents(filteredStudents);
+}
+3. Create displayStudents()
+It's better to keep the display code in a separate function.
+function displayStudents(students) {
+
+  studentList.innerHTML = "";
+
+  students.forEach(student => {
+
+    const row = document.createElement("tr");
+
+    row.innerHTML = `
+      <td>${student.name}</td>
+      <td>${student.age}</td>
+      <td>${student.branch}</td>
+
+      <td>
+        <button onclick="editStudent('${student._id}')">
+          Edit
+        </button>
+
+        <button onclick="deleteStudent('${student._id}')">
+          Delete
+        </button>
+      </td>
+    `;
+
+    studentList.appendChild(row);
+  });
+}
+Then modify getStudents():
+async function getStudents() {
+
+  const response = await fetch(API_URL);
+
+  const students = await response.json();
+
+  displayStudents(students);
+}
+4. How Search Works
+Suppose your database contains:
+Gyan     CSE
+Ravi     ECE
+Priya    CSE
+Arun     IT
+Search:
+CSE
+Result:
+Gyan     CSE
+Priya    CSE
+Search:
+Ravi
+Result:
+Ravi     ECE
+5. Complete Flow
+User enters search
+       ↓
+JavaScript
+       ↓
+GET students
+       ↓
+Filter data
+       ↓
+Display matching students
+6. Important JavaScript Methods
+.filter()
+Used to select elements that satisfy a condition.
+const result = students.filter(student => {
+  return student.branch === "CSE";
+});
+.includes()
+Checks whether a string contains another string.
+"Gyan".toLowerCase().includes("gy")
+Result:
+true
+7. Better Approach for Large Data
+The above method downloads all students and filters them in the browser.
+For a small project, that's fine.
+For a larger application, you can send the search term to the backend:
+GET /api/students?search=CSE
+Then Express/MongoDB performs the search.
+Example:
+app.get("/api/students", async (req, res) => {
+  const search = req.query.search || "";
+
+  const students = await Student.find({
+    $or: [
+      { name: { $regex: search, $options: "i" } },
+      { branch: { $regex: search, $options: "i" } }
+    ]
+  });
+
+  res.json(students);
+});
+Now the database performs the filtering.
+Interview Answer
+Search and filtering allow users to find specific records from a collection. In JavaScript, .filter() and .includes() can be used for client-side filtering. For larger applications, search parameters can be sent to the backend using query parameters, and MongoDB can perform the filtering.
