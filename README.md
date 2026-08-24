@@ -7871,3 +7871,136 @@ app.get("/api/students", async (req, res) => {
 Now the database performs the filtering.
 Interview Answer
 Search and filtering allow users to find specific records from a collection. In JavaScript, .filter() and .includes() can be used for client-side filtering. For larger applications, search parameters can be sent to the backend using query parameters, and MongoDB can perform the filtering.
+API Security Basics
+API security means protecting your backend, database, and users' data from unauthorized or harmful requests.
+For your Node.js + Express project, learn these important concepts.
+1. Validate User Input
+Never blindly trust data received from the frontend.
+Example:
+if (!req.body.name) {
+  return res.status(400).json({
+    message: "Name is required"
+  });
+}
+Better: use a validation library such as Joi or Zod for larger projects.
+2. Never Store Plain-Text Passwords
+❌ Don't store:
+{
+  "password": "mypassword"
+}
+Use a password-hashing library such as bcrypt:
+const hashedPassword =
+  await bcrypt.hash(password, 10);
+Store the hash, not the original password.
+3. Use Environment Variables
+Keep secrets outside your source code.
+.env:
+MONGODB_URI=your-database-url
+JWT_SECRET=your-secret
+Code:
+const secret = process.env.JWT_SECRET;
+And add:
+.env
+to .gitignore.
+4. Authentication
+Authentication answers:
+Who is this user?
+For example, JWT-based authentication:
+Login
+  ↓
+Verify credentials
+  ↓
+Create token
+  ↓
+Client sends token
+  ↓
+Server verifies token
+5. Authorization
+Authorization answers:
+What is this user allowed to do?
+Example:
+Student → Can view own profile
+Admin   → Can manage students
+A backend should enforce these permissions rather than relying on the frontend.
+6. HTTPS
+Use HTTPS when deploying an application.
+HTTP  → data sent without transport encryption
+HTTPS → encrypted connection
+Never design a production authentication system around sending passwords or tokens over plain HTTP.
+7. CORS
+You learned CORS earlier.
+Instead of allowing every origin:
+app.use(cors());
+you can configure trusted origins:
+app.use(cors({
+  origin: "https://your-frontend.example"
+}));
+Use the actual origin of your deployed frontend.
+8. Rate Limiting
+Rate limiting restricts how many requests a client can make in a period of time.
+For example:
+Client
+  ↓
+Too many requests
+  ↓
+Rate limiter
+  ↓
+Temporarily reject requests
+A common package is:
+npm install express-rate-limit
+Example:
+const rateLimit = require("express-rate-limit");
+
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 100
+});
+
+app.use(limiter);
+This can help reduce abuse and excessive requests.
+9. Security Headers
+A commonly used package is Helmet:
+npm install helmet
+Then:
+const helmet = require("helmet");
+
+app.use(helmet());
+Helmet helps configure various HTTP security headers.
+10. Don't Expose Sensitive Errors
+Avoid sending internal database errors directly to users.
+❌ Avoid:
+res.status(500).json({
+  error: error.stack
+});
+Better:
+res.status(500).json({
+  message: "Internal server error"
+});
+Log detailed errors on the server when appropriate.
+11. Protect MongoDB
+Don't expose your database directly to the public internet unnecessarily.
+Your architecture should normally be:
+Frontend
+   ↓
+Backend API
+   ↓
+MongoDB
+Not:
+Frontend
+   ↓
+MongoDB directly
+12. Security Checklist
+Before deploying your API:
+☑ Validate input
+☑ Hash passwords
+☑ Use HTTPS
+☑ Protect authentication tokens
+☑ Use authorization
+☑ Keep secrets in environment variables
+☑ Configure CORS
+☑ Add rate limiting where appropriate
+☑ Use security headers
+☑ Don't expose sensitive errors
+☑ Keep dependencies updated
+☑ Protect the database
+API security involves protecting APIs from unauthorized access, invalid input, abuse, and data exposure. Common practices include input validation, password hashing, authentication, authorization, HTTPS, secure CORS configuration, rate limiting, security headers, environment variables, and safe error handling.
