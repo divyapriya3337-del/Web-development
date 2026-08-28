@@ -8285,3 +8285,224 @@ git push
 GitHub
 Interview Answer
 Git is a distributed version control system used to track code changes. GitHub is an online platform for hosting Git repositories. The common workflow is git add → git commit → git push, which stages changes, saves a snapshot locally, and uploads the commits to a remote repository
+Git Pull & Git Clone
+Now let's learn how to download a project from GitHub and get the latest changes.
+1. git clone
+git clone is used when you want to copy an existing GitHub repository to your computer.
+Example
+Suppose your GitHub repository URL is:
+https://github.com/USERNAME/student-management-system.git
+Open VS Code Terminal and run:
+git clone https://github.com/USERNAME/student-management-system.git
+Git will download the repository.
+2. Open the Project
+After cloning:
+cd student-management-system
+Then open it in VS Code:
+code .
+If code . doesn't work, simply open the folder manually in VS Code.
+3. Install Dependencies
+After cloning a Node.js project, node_modules normally isn't included.
+Run:
+npm install
+This reads package.json and installs the required packages.
+4. git pull
+Suppose another developer changes the project and pushes the changes to GitHub.
+Your local copy is now old.
+Use:
+git pull
+This gets the latest remote changes and integrates them into your current branch.
+5. Simple Example
+Developer A
+Changes:
+server.js
+Then:
+git add .
+git commit -m "Updated server"
+git push
+The changes are now on GitHub.
+Developer B
+Developer B's computer still has the old version.
+They run:
+git pull
+Now their local project is updated.
+6. git pull Flow
+GitHub
+   ↓
+git pull
+   ↓
+Your Computer
+   ↓
+Updated Project
+7. git clone vs git pull
+Command
+Use
+git clone
+Download a repository for the first time
+git pull
+Update an existing local repository
+Easy way to remember
+First time → git clone
+
+Already have project → git pull
+8. Complete Team Workflow
+GitHub Repository
+       ↓
+   git clone
+       ↓
+Developer Computer
+       ↓
+Write Code
+       ↓
+git add .
+       ↓
+git commit
+       ↓
+git push
+       ↓
+GitHub
+       ↓
+Other Developer
+       ↓
+git pull
+9. Important Commands
+git clone URL
+Download a repository.
+git pull
+Get the latest changes.
+git push
+Upload your committed changes.
+git status
+Check your current changes.
+git log
+View commit history.
+10. Real Full-Stack Example
+If you download your Student Management project:
+git clone https://github.com/USERNAME/student-management-system.git
+Then:
+cd student-management-system
+Install packages:
+npm install
+Create your own local .env file with the required configuration.
+Then start:
+npm start
+Your application can then run locally.
+Interview Answer
+git clone copies an existing remote Git repository to your local computer. git pull retrieves the latest changes from the remote repository and integrates them into your current local branch.
+GitHub Pull Request (PR)
+A Pull Request (PR) is a request to merge your changes from one branch into another branch, usually main.
+It is commonly used for code review and collaboration.
+1. Simple Example
+Suppose you have:
+main
+  │
+  └── login-feature
+You develop the login feature on:
+login-feature
+After finishing:
+login-feature
+       ↓
+    Push to
+     GitHub
+       ↓
+ Pull Request
+       ↓
+    Code Review
+       ↓
+     Merge
+       ↓
+      main
+2. Create a Feature Branch
+First, get the latest main:
+git switch main
+git pull
+Create a new branch:
+git switch -c login-feature
+Now you're working on:
+login-feature
+3. Write Your Code
+For example, you add:
+login.html
+login.js
+authController.js
+Check your changes:
+git status
+4. Commit Your Changes
+git add .
+Then:
+git commit -m "Added login feature"
+5. Push the Branch
+git push -u origin login-feature
+Your branch is now available on GitHub.
+6. Create Pull Request
+Go to your GitHub repository.
+You may see:
+Compare & pull request
+Click it.
+Choose:
+base: main
+compare: login-feature
+Add a title:
+Add login feature
+Add a short description explaining what you changed.
+Then click:
+Create pull request
+7. Code Review
+A teammate can review your changes.
+They may:
+Review
+ ↓
+Comment
+ ↓
+Request changes
+You can then modify your code, commit, and push again:
+git add .
+git commit -m "Address review comments"
+git push
+The existing PR will update automatically.
+8. Merge Pull Request
+Once the changes are approved and checks pass, an authorized repository member can merge the PR into main.
+After merging, you can usually delete the feature branch on GitHub if it is no longer needed.
+9. Pull Request Flow
+             main
+              │
+              │
+       Create feature branch
+              ↓
+       login-feature
+              │
+              ↓
+          Write code
+              ↓
+          git commit
+              ↓
+          git push
+              ↓
+           GitHub
+              ↓
+       Pull Request
+              ↓
+         Code Review
+              ↓
+           Approval
+              ↓
+            Merge
+              ↓
+             main
+10. Why Use Pull Requests?
+PRs help teams:
+Review code
+Find bugs
+Discuss changes
+Run automated tests/checks
+Keep the main branch stable
+Collaborate safely
+11. PR vs Git Merge
+Git Merge
+A Git operation performed in your local repository:
+git merge login-feature
+Pull Request
+A GitHub collaboration/review mechanism:
+login-feature → Pull Request → main
+A PR may ultimately result in a merge, but a PR itself is not the same thing as the Git merge command.
+A Pull Request is a request to integrate changes from one branch into another branch on a Git hosting platform such as GitHub. It allows developers to review, discuss, test, and approve changes before they are merged
