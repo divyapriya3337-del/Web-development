@@ -8506,3 +8506,364 @@ A GitHub collaboration/review mechanism:
 login-feature → Pull Request → main
 A PR may ultimately result in a merge, but a PR itself is not the same thing as the Git merge command.
 A Pull Request is a request to integrate changes from one branch into another branch on a Git hosting platform such as GitHub. It allows developers to review, discuss, test, and approve changes before they are merged
+Environment Variables & .env in Node.js
+Environment variables are used to store configuration values and secrets outside your source code.
+For example:
+Database URL
+API keys
+Passwords
+JWT secrets
+Port numbers
+1. What is .env?
+.env is a file where you can store environment variables.
+Example:
+PORT=3000
+MONGODB_URI=mongodb://127.0.0.1:27017/collegeDB
+JWT_SECRET=my-secret-key
+2. Install dotenv
+In your project terminal:
+npm install dotenv
+3. Create .env
+In the main project folder:
+student-api/
+│
+├── server.js
+├── .env
+├── package.json
+└── ...
+Inside .env:
+PORT=3000
+MONGODB_URI=mongodb://127.0.0.1:27017/collegeDB
+4. Load .env
+At the beginning of server.js:
+require("dotenv").config();
+Now Node.js can read the variables from .env.
+5. Access Environment Variables
+Use:
+process.env.PORT
+For MongoDB:
+process.env.MONGODB_URI
+Example:
+const mongoose = require("mongoose");
+
+mongoose.connect(process.env.MONGODB_URI);
+6. Complete Example
+.env
+PORT=3000
+MONGODB_URI=mongodb://127.0.0.1:27017/collegeDB
+server.js
+const express = require("express");
+const mongoose = require("mongoose");
+
+require("dotenv").config();
+
+const app = express();
+
+app.use(express.json());
+
+mongoose.connect(process.env.MONGODB_URI)
+  .then(() => {
+    console.log("MongoDB connected");
+  })
+  .catch((error) => {
+    console.log("MongoDB connection error");
+  });
+
+const PORT = process.env.PORT || 3000;
+
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
+7. Why Use .env?
+Without .env:
+mongoose.connect(
+  "mongodb+srv://username:password@cluster..."
+);
+This can accidentally expose sensitive information if the code is uploaded to GitHub.
+With .env:
+mongoose.connect(process.env.MONGODB_URI);
+The actual value stays in your environment.
+8. Add .env to .gitignore
+Create:
+.gitignore
+Add:
+node_modules/
+.env
+So Git won't normally include your .env file in commits.
+9. Important Difference
+.env
+Contains your actual local values:
+PORT=3000
+MONGODB_URI=...
+.env.example
+Can be safely used as a template:
+PORT=3000
+MONGODB_URI=your-mongodb-url
+JWT_SECRET=your-secret
+Then another developer knows which variables they need to configure.
+10. In Deployment
+On a hosting platform, you usually don't upload .env.
+Instead, add the environment variables in the hosting provider's settings:
+MONGODB_URI = your Atlas connection string
+JWT_SECRET = your secret
+Your application continues to use:
+process.env.MONGODB_URI
+11. Simple Flow
+.env
+ ↓
+dotenv
+ ↓
+process.env
+ ↓
+Node.js
+ ↓
+Express / MongoDB
+12. Common Mistake
+Don't write:
+PORT = 3000
+Prefer:
+PORT=3000
+Also, don't put unnecessary quotation marks around ordinary values.
+Environment variables are configuration values stored outside application source code. In Node.js, the dotenv package can load values from a .env file, and they can be accessed using process.env. This is useful for configuration and for keeping secrets such as database credentials out of the source code.
+JWT Authentication in Node.js
+JWT stands for JSON Web Token. It is commonly used to identify a user after login.
+We'll learn the basic flow first.
+1. Authentication Flow
+User
+ ↓
+Login
+ ↓
+Backend checks credentials
+ ↓
+JWT Token created
+ ↓
+Token sent to client
+ ↓
+Client sends token with future requests
+ ↓
+Backend verifies token
+ ↓
+Access allowed
+2. Install Packages
+In your project terminal:
+npm install jsonwebtoken bcrypt
+jsonwebtoken → creates and verifies JWTs
+bcrypt → securely hashes passwords
+3. Add JWT Secret
+In .env:
+PORT=3000
+MONGODB_URI=mongodb://127.0.0.1:27017/collegeDB
+JWT_SECRET=your-long-random-secret
+Keep the real secret private.
+4. Create User Model
+Create:
+models/User.js
+Add:
+const mongoose = require("mongoose");
+
+const userSchema = new mongoose.Schema({
+  username: {
+    type: String,
+    required: true,
+    unique: true
+  },
+
+  password: {
+    type: String,
+    required: true
+  }
+});
+
+module.exports = mongoose.model("User", userSchema);
+5. Registration
+Create a simple registration function:
+const bcrypt = require("bcrypt");
+const User = require("../models/User");
+
+async function register(req, res) {
+  try {
+    const { username, password } = req.body;
+
+    const existingUser = await User.findOne({ username });
+
+    if (existingUser) {
+      return res.status(400).json({
+        message: "Username already exists"
+      });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const user = await User.create({
+      username,
+      password: hashedPassword
+    });
+
+    res.status(201).json({
+      message: "User registered successfully",
+      userId: user._id
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      message: "Server error"
+    });
+  }
+}
+Notice that the original password isn't stored.
+6. Login
+const jwt = require("jsonwebtoken");
+
+async function login(req, res) {
+  try {
+    const { username, password } = req.body;
+
+    const user = await User.findOne({ username });
+
+    if (!user) {
+      return res.status(401).json({
+        message: "Invalid credentials"
+      });
+    }
+
+    const validPassword =
+      await bcrypt.compare(password, user.password);
+
+    if (!validPassword) {
+      return res.status(401).json({
+        message: "Invalid credentials"
+      });
+    }
+
+    const token = jwt.sign(
+      {
+        userId: user._id,
+        username: user.username
+      },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: "1h"
+      }
+    );
+
+    res.json({
+      message: "Login successful",
+      token
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      message: "Server error"
+    });
+  }
+}
+7. What Happens During Login?
+Suppose the user enters:
+Username: Gyan
+Password: ********
+Backend:
+Find user
+   ↓
+Compare password with hash
+   ↓
+Correct?
+   ↓
+Create JWT
+   ↓
+Send token
+The token represents authenticated information; it is not the password.
+8. Protect an API Route
+Create middleware:
+middleware/auth.js
+const jwt = require("jsonwebtoken");
+
+function authenticate(req, res, next) {
+
+  const authHeader = req.headers.authorization;
+
+  if (!authHeader ||
+      !authHeader.startsWith("Bearer ")) {
+    return res.status(401).json({
+      message: "Authentication required"
+    });
+  }
+
+  const token = authHeader.split(" ")[1];
+
+  try {
+
+    const decoded =
+      jwt.verify(token, process.env.JWT_SECRET);
+
+    req.user = decoded;
+
+    next();
+
+  } catch (error) {
+
+    return res.status(401).json({
+      message: "Invalid or expired token"
+    });
+  }
+}
+
+module.exports = authenticate;
+9. Use Middleware
+For example:
+const authenticate = require("./middleware/auth");
+
+app.get(
+  "/api/profile",
+  authenticate,
+  (req, res) => {
+
+    res.json({
+      message: "Protected profile",
+      user: req.user
+    });
+
+  }
+);
+Now the route requires a valid JWT.
+10. Sending the Token
+The client sends:
+Authorization: Bearer YOUR_TOKEN
+Example with fetch():
+fetch("http://localhost:3000/api/profile", {
+  headers: {
+    Authorization: `Bearer ${token}`
+  }
+});
+The backend verifies the token before allowing access.
+11. Complete JWT Flow
+             REGISTER
+                ↓
+        Hash Password
+                ↓
+           Save User
+                ↓
+              LOGIN
+                ↓
+        Check Password
+                ↓
+           Create JWT
+                ↓
+          Client gets Token
+                ↓
+       Authorization Header
+                ↓
+        JWT Middleware
+                ↓
+          Verify Token
+                ↓
+          Protected API
+12. Important Terms
+Authentication
+Who are you?
+Authorization
+What are you allowed to access?
+JWT
+A signed token commonly used to carry authenticated claims between a client and server.
+Middleware
+A function that runs during the request-response process and can check things such as authentication before passing control to the next handle.
+JWT authentication is a token-based authentication mechanism. After successfully logging in, the server creates a signed JWT. The client sends that token with later requests, and the server verifies it before allowing access to protected routes.
