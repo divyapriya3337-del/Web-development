@@ -8867,3 +8867,403 @@ A signed token commonly used to carry authenticated claims between a client and 
 Middleware
 A function that runs during the request-response process and can check things such as authentication before passing control to the next handle.
 JWT authentication is a token-based authentication mechanism. After successfully logging in, the server creates a signed JWT. The client sends that token with later requests, and the server verifies it before allowing access to protected routes.
+MVC Architecture
+MVC stands for:
+M → Model
+V → View
+C → Controller
+It is a software architecture pattern used to organize applications into separate parts.
+1. Basic MVC Structure
+        USER
+         ↓
+       VIEW
+         ↓
+    CONTROLLER
+         ↓
+       MODEL
+         ↓
+     DATABASE
+The response comes back through the application to the user.
+2. Model
+The Model handles the application's data and database structure.
+For your Student Management System:
+const mongoose = require("mongoose");
+
+const studentSchema = new mongoose.Schema({
+  name: String,
+  age: Number,
+  branch: String
+});
+
+module.exports =
+  mongoose.model("Student", studentSchema);
+The Model communicates with MongoDB.
+Model → MongoDB
+3. View
+The View is what the user sees.
+For a web application, this can be:
+HTML
+CSS
+JavaScript
+Example:
+HTML
+<h1>Student Management System</h1>
+
+<input id="name" placeholder="Enter name">
+
+<button>Add Student</button>
+The View displays information and collects user input.
+4. Controller
+The Controller contains the application logic.
+Example:
+const Student = require("../models/Student");
+
+async function getStudents(req, res) {
+
+  const students = await Student.find();
+
+  res.json(students);
+}
+
+async function createStudent(req, res) {
+
+  const student =
+    await Student.create(req.body);
+
+  res.status(201).json(student);
+}
+
+module.exports = {
+  getStudents,
+  createStudent
+};
+The Controller:
+Receives request
+      ↓
+Processes logic
+      ↓
+Uses Model
+      ↓
+Sends response
+5. Routes
+In an Express application, routes connect the URL to the controller.
+const express = require("express");
+
+const router = express.Router();
+
+const {
+  getStudents,
+  createStudent
+} = require("../controllers/studentController");
+
+router.get("/", getStudents);
+
+router.post("/", createStudent);
+
+module.exports = router;
+6. Complete Flow
+Suppose the user wants to see all students.
+Step 1
+Frontend sends:
+GET /api/students
+Step 2
+Route receives it:
+/api/students
+       ↓
+studentRoutes
+Step 3
+Controller runs:
+getStudents()
+Step 4
+Controller asks Model:
+Student.find()
+Step 5
+Model gets data from MongoDB.
+MongoDB
+   ↓
+Model
+   ↓
+Controller
+   ↓
+Response
+   ↓
+View
+7. MVC Diagram
+                  USER
+                   │
+                   ↓
+                VIEW
+            HTML/CSS/JS
+                   │
+                   ↓
+                ROUTE
+                   │
+                   ↓
+             CONTROLLER
+                   │
+                   ↓
+                 MODEL
+                   │
+                   ↓
+               DATABASE
+                   │
+                   ↓
+                 MODEL
+                   │
+                   ↓
+             CONTROLLER
+                   │
+                   ↓
+                  VIEW
+                   │
+                   ↓
+                  USER
+8. Project Structure
+A good MVC structure for your Student Management System:
+student-management/
+│
+├── server.js
+│
+├── models/
+│   └── Student.js
+│
+├── controllers/
+│   └── studentController.js
+│
+├── routes/
+│   └── studentRoutes.js
+│
+├── middleware/
+│   └── auth.js
+│
+├── public/
+│   ├── index.html
+│   ├── script.js
+│   └── style.css
+│
+├── .env
+├── .gitignore
+└── package.json
+9. Advantages of MVC
+1. Easy to understand
+Each part has a specific responsibility.
+2. Easy maintenance
+You can modify one part without unnecessarily changing everything.
+3. Reusable code
+Controllers and models can be reused.
+4. Easy debugging
+You can identify whether the problem is in:
+View
+Route
+Controller
+Model
+Database
+5. Good for large projects
+MVC keeps large applications organized.
+10. Easy Example
+Think of a restaurant:
+Customer
+   ↓
+Waiter
+   ↓
+Kitchen
+   ↓
+Food
+Similarly:
+User
+ ↓
+Controller
+ ↓
+Model
+ ↓
+Database
+The View is the interface through which the user interacts with the application.
+
+MVC (Model-View-Controller) is an architectural pattern that separates an application into three main components. The Model manages data and database operations, the View handles the user interface, and the Controller contains application logic and coordinates requests between the View and Model.
+Easy Memory Trick
+MODEL      → Data
+VIEW       → UI
+CONTROLLER → Logic
+REST API
+REST stands for Representational State Transfer.
+A REST API is an API designed using REST principles so that applications can communicate with each other over HTTP.
+For your Student Management System:
+Frontend
+   ↓ HTTP Request
+REST API
+   ↓
+Node.js + Express
+   ↓
+MongoDB
+1. What is an API?
+API stands for Application Programming Interface.
+It allows one software application to communicate with another.
+Example:
+Frontend → API → Backend → Database
+2. REST API Example
+For students, we can create:
+Operation
+HTTP Method
+Endpoint
+Get all students
+GET
+/api/students
+Get one student
+GET
+/api/students/:id
+Add student
+POST
+/api/students
+Update student
+PUT
+/api/students/:id
+Delete student
+DELETE
+/api/students/:id
+3. GET
+Used to retrieve data.
+GET /api/students
+Example response:
+[
+  {
+    "name": "Gyan",
+    "age": 20,
+    "branch": "CSE"
+  },
+  {
+    "name": "Ravi",
+    "age": 21,
+    "branch": "ECE"
+  }
+]
+4. POST
+Used to create new data.
+POST /api/students
+Request body:
+{
+  "name": "Priya",
+  "age": 20,
+  "branch": "CSE"
+}
+Backend saves it to MongoDB.
+5. PUT
+Used to update an existing resource.
+PUT /api/students/123
+Request:
+{
+  "name": "Priya",
+  "age": 21,
+  "branch": "CSE"
+}
+6. DELETE
+Used to delete a resource.
+DELETE /api/students/123
+The backend removes the student with that ID.
+7. HTTP Status Codes
+The server uses status codes to tell the client what happened.
+200 OK
+Request succeeded.
+GET → 200 OK
+201 Created
+New resource successfully created.
+POST → 201 Created
+400 Bad Request
+The request contains invalid data.
+400 Bad Request
+401 Unauthorized
+Authentication is required or failed.
+401 Unauthorized
+403 Forbidden
+The user is authenticated but doesn't have permission.
+403 Forbidden
+404 Not Found
+Requested resource doesn't exist.
+404 Not Found
+500 Internal Server Error
+Unexpected server-side error.
+500 Internal Server Error
+8. REST Endpoint Design
+Prefer resource-based URLs.
+Good
+GET /api/students
+GET /api/students/123
+POST /api/students
+PUT /api/students/123
+DELETE /api/students/123
+Avoid
+GET /getStudents
+POST /createStudent
+GET /deleteStudent
+The HTTP method already describes the operation.
+9. REST API Flow
+Getting Students
+Frontend
+   │
+   │ GET /api/students
+   ↓
+Express Route
+   ↓
+Controller
+   ↓
+Model
+   ↓
+MongoDB
+   ↓
+Controller
+   ↓
+JSON Response
+   ↓
+Frontend
+10. REST and CRUD
+REST APIs commonly map HTTP methods to CRUD operations:
+C → Create → POST
+R → Read   → GET
+U → Update → PUT/PATCH
+D → Delete → DELETE
+Remember:
+POST   → Create
+GET    → Read
+PUT    → Update
+DELETE → Delete
+11. Query Parameters
+You can filter or control results using query parameters.
+Example:
+GET /api/students?branch=CSE
+Multiple parameters:
+GET /api/students?branch=CSE&page=2&limit=10
+In Express:
+const branch = req.query.branch;
+const page = req.query.page;
+const limit = req.query.limit;
+12. Path Parameters
+Example:
+GET /api/students/123
+Here:
+123
+is a path parameter.
+Express:
+router.get("/:id", (req, res) => {
+
+  const id = req.params.id;
+
+  res.json({
+    studentId: id
+  });
+
+});
+13. REST API Best Practices
+✓ Use meaningful resource URLs
+✓ Use correct HTTP methods
+✓ Return appropriate status codes
+✓ Validate input
+✓ Return consistent JSON responses
+✓ Handle errors properly
+✓ Protect sensitive endpoints
+✓ Use HTTPS in production
+Interview Answer
+A REST API is an HTTP-based API designed according to REST principles. It represents resources using URLs and uses HTTP methods such as GET, POST, PUT/PATCH, and DELETE to perform operations on those resources.
+Easy Memory Trick
+URL        → Resource
+HTTP Method → Action
+Status Code → Result
+JSON       → Data
