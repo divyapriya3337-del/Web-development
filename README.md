@@ -10763,3 +10763,961 @@ Relationships
 Querying
    ↓
 Indexing ⭐
+Authentication & Authorization in a Full-Stack Application 🔐
+Now we move from database concepts to real application security.
+A typical application has:
+Register → Login → JWT → Protected Routes → Roles/Permissions
+1. Authentication vs Authorization
+These two terms are very important in interviews.
+Authentication
+Authentication = Who are you?
+Example:
+Username: gyan
+Password: ********
+        ↓
+     Login
+        ↓
+   Identity verified
+Authorization
+Authorization = What are you allowed to do?
+Example:
+User → Can view profile
+Admin → Can view + delete users
+Easy Memory Trick
+Authentication = Who?
+Authorization = What can you do?
+2. Real Login Flow
+                USER
+                 ↓
+              LOGIN
+                 ↓
+          Email + Password
+                 ↓
+              Backend
+                 ↓
+        Find user in MongoDB
+                 ↓
+       Compare password hash
+            ↙          ↘
+        Invalid        Valid
+           ↓             ↓
+        401 Error       JWT
+                         ↓
+                    Client stores
+                    token safely
+                         ↓
+                 Protected Request
+                         ↓
+                  Auth Middleware
+                         ↓
+                      Access
+3. Install Required Packages
+In your project:
+npm install bcrypt jsonwebtoken
+If you haven't installed environment-variable support:
+npm install dotenv
+4. User Model
+Create:
+models/User.js
+const mongoose = require("mongoose");
+
+const userSchema = new mongoose.Schema({
+  name: {
+    type: String,
+    required: true
+  },
+
+  email: {
+    type: String,
+    required: true,
+    unique: true
+  },
+
+  password: {
+    type: String,
+    required: true
+  },
+
+  role: {
+    type: String,
+    enum: ["user", "admin"],
+    default: "user"
+  }
+});
+
+module.exports = mongoose.model("User", userSchema);
+5. Why Do We Hash Passwords?
+❌ Never store:
+password = "12345678"
+in plain text.
+Instead:
+User Password
+      ↓
+    bcrypt
+      ↓
+Password Hash
+      ↓
+   MongoDB
+Example stored value:
+$2b$10$...
+The actual password is not stored.
+6. Registration
+Create a registration route:
+const bcrypt = require("bcrypt");
+const User = require("./models/User");
+
+app.post("/api/auth/register", async (req, res) => {
+
+  try {
+
+    const { name, email, password } = req.body;
+
+    if (!name || !email || !password) {
+      return res.status(400).json({
+        message: "All fields are required"
+      });
+    }
+
+    const existingUser = await User.findOne({ email });
+
+    if (existingUser) {
+      return res.status(409).json({
+        message: "Email already registered"
+      });
+    }
+
+    const hashedPassword =
+      await bcrypt.hash(password, 10);
+
+    const user = await User.create({
+      name,
+      email,
+      password: hashedPassword
+    });
+
+    res.status(201).json({
+      message: "Registration successful",
+      userId: user._id
+    });
+
+  } catch (error) {
+
+    res.status(500).json({
+      message: "Server error"
+    });
+
+  }
+});
+7. Registration Flow
+Name
+Email
+Password
+   ↓
+Validation
+   ↓
+Check existing email
+   ↓
+bcrypt.hash()
+   ↓
+Save user
+   ↓
+Registration successful
+8. Login
+Login API:
+POST /api/auth/login
+Code:
+const jwt = require("jsonwebtoken");
+
+app.post("/api/auth/login", async (req, res) => {
+
+  try {
+
+    const { email, password } = req.body;
+
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(401).json({
+        message: "Invalid email or password"
+      });
+    }
+
+    const passwordMatch =
+      await bcrypt.compare(password, user.password);
+
+    if (!passwordMatch) {
+      return res.status(401).json({
+        message: "Invalid email or password"
+      });
+    }
+
+    const token = jwt.sign(
+      {
+        userId: user._id.toString(),
+        role: user.role
+      },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: "1h"
+      }
+    );
+
+    res.json({
+      message: "Login successful",
+      token
+    });
+
+  } catch (error) {
+
+    res.status(500).json({
+      message: "Server error"
+    });
+
+  }
+});
+9. What Happens During Login?
+Suppose:
+Email: gyan@example.com
+Password: mypassword
+Backend:
+Email
+ ↓
+Find User
+ ↓
+Get password hash
+ ↓
+bcrypt.compare()
+ ↓
+Correct?
+ ↓
+Create JWT
+ ↓
+Send JWT to client
+10. What is JWT?
+JWT means:
+JSON Web Token
+It is a signed token commonly used to represent authenticated identity.
+Example:
+eyJhbGciOiJIUzI1NiIs...
+The client sends the token with later requests.
+11. JWT Structure
+A JWT has three parts:
+Header.Payload.Signature
+        JWT
+         |
+   ┌─────┼─────┐
+   ↓     ↓     ↓
+Header Payload Signature
+Header
+Contains information about the token, such as the signing algorithm.
+Payload
+Contains claims such as:
+{
+  "userId": "123",
+  "role": "user"
+}
+Signature
+Used to verify that the token was signed by the server and hasn't been modified.
+⚠️ JWT payloads are not encrypted by default. Don't put passwords or sensitive secrets inside them.
+12. JWT Secret
+In .env:
+JWT_SECRET=your-long-random-secret
+Never hard-code production secrets in your source code.
+Also add:
+.env
+to .gitignore.
+13. Authentication Middleware
+Create:
+middleware/auth.js
+const jwt = require("jsonwebtoken");
+
+function authenticate(req, res, next) {
+
+  const authHeader = req.headers.authorization;
+
+  if (!authHeader ||
+      !authHeader.startsWith("Bearer ")) {
+
+    return res.status(401).json({
+      message: "Authentication required"
+    });
+  }
+
+  const token = authHeader.split(" ")[1];
+
+  try {
+
+    const decoded =
+      jwt.verify(token, process.env.JWT_SECRET);
+
+    req.user = decoded;
+
+    next();
+
+  } catch (error) {
+
+    return res.status(401).json({
+      message: "Invalid or expired token"
+    });
+
+  }
+}
+
+module.exports = authenticate;
+14. Protected Route
+app.get(
+  "/api/profile",
+  authenticate,
+  async (req, res) => {
+
+    res.json({
+      message: "Welcome to your profile",
+      user: req.user
+    });
+
+  }
+);
+Now the route requires a valid JWT.
+15. Sending JWT
+The client sends:
+Authorization: Bearer YOUR_TOKEN
+Example:
+GET /api/profile
+Authorization: Bearer eyJhbGciOiJIUzI1NiIs...
+Flow:
+Client
+  ↓
+Authorization Header
+  ↓
+Auth Middleware
+  ↓
+jwt.verify()
+  ↓
+Valid?
+ ↙    ↘
+No     Yes
+↓       ↓
+401    Route
+16. Authorization — Admin Only
+Authentication tells us:
+Who is the user?
+Authorization checks:
+Is this user allowed?
+Create middleware:
+function adminOnly(req, res, next) {
+
+  if (req.user.role !== "admin") {
+    return res.status(403).json({
+      message: "Admin access required"
+    });
+  }
+
+  next();
+}
+Use it:
+app.delete(
+  "/api/users/:id",
+  authenticate,
+  adminOnly,
+  async (req, res) => {
+
+    // Delete user
+
+  }
+);
+17. Authentication + Authorization Flow
+             Request
+                ↓
+        Authentication
+                ↓
+         Valid JWT?
+          ↙       ↘
+        No         Yes
+        ↓           ↓
+       401      Authorization
+                    ↓
+              Admin/User?
+                 ↙    ↘
+              No       Yes
+              ↓         ↓
+             403      Route
+Remember:
+401 → Not authenticated
+403 → Authenticated but not allowed
+18. User vs Admin
+Example:
+Feature
+User
+Admin
+View profile
+✅
+✅
+Update own profile
+✅
+✅
+View users
+Maybe
+✅
+Delete users
+❌
+✅
+Manage courses
+❌
+✅
+This is role-based authorization.
+19. Complete Security Flow
+             REGISTER
+                 ↓
+          Hash Password
+                 ↓
+             MongoDB
+                 ↓
+               LOGIN
+                 ↓
+         Compare Password
+                 ↓
+               JWT
+                 ↓
+        ┌────────┴────────┐
+        ↓                 ↓
+   User Request       Admin Request
+        ↓                 ↓
+   authenticate       authenticate
+        ↓                 ↓
+     User Role        Admin Role
+        ↓                 ↓
+     Allow/Deny       Allow/Deny
+20. Important Security Rules 🔐
+Never store plain passwords
+Use:
+bcrypt.hash()
+Never expose password hashes
+When returning users, select only required fields.
+Never put secrets in JWT payload
+Don't put:
+password
+database password
+API secret
+inside the token.
+Use HTTPS in production
+Credentials and tokens should be transmitted over HTTPS.
+Validate input
+Never trust client input.
+Keep JWT secret private
+Use:
+.env
+and secure deployment environment variables.
+⭐ Interview Questions
+Q1. What is authentication?
+Authentication verifies the identity of a user.
+Q2. What is authorization?
+Authorization determines what an authenticated user is allowed to access or perform.
+Q3. What is JWT?
+JWT is a signed token commonly used to carry authentication-related claims between a client and server.
+Q4. Why use bcrypt?
+bcrypt is used to securely hash passwords so that plaintext passwords don't need to be stored.
+Q5. Difference between 401 and 403?
+401 means authentication is missing or invalid. 403 means the user is authenticated but doesn't have permission for the requested operation.
+⭐ Easy Memory Trick
+REGISTER
+   ↓
+HASH
+   ↓
+LOGIN
+   ↓
+COMPARE
+   ↓
+JWT
+   ↓
+AUTHENTICATE
+   ↓
+AUTHORIZE
+   ↓
+ACCESS
+Authentication = WHO?
+Authorization = WHAT?
+JWT = TOKEN
+bcrypt = PASSWORD PROTECTION
+Frontend–Backend Integration with fetch() 🌐
+Now we connect the frontend and backend.
+This is a very important full-stack concept because a real application works like:
+┌──────────────────┐
+│    FRONTEND      │
+│ HTML CSS JS      │
+└────────┬─────────┘
+         │
+       fetch()
+         │
+         ↓
+┌──────────────────┐
+│     BACKEND      │
+│ Node + Express   │
+└────────┬─────────┘
+         │
+         ↓
+┌──────────────────┐
+│     MongoDB      │
+└──────────────────┘
+1. What is fetch()?
+fetch() is a JavaScript API used to make HTTP requests.
+For example:
+fetch("/api/students");
+means:
+Frontend, send a request to the backend API.
+2. GET Request
+Suppose backend has:
+GET /api/students
+Frontend:
+fetch("/api/students")
+  .then(response => response.json())
+  .then(data => {
+    console.log(data);
+  })
+  .catch(error => {
+    console.log(error);
+  });
+Flow
+JavaScript
+    ↓
+fetch()
+    ↓
+GET /api/students
+    ↓
+Express
+    ↓
+MongoDB
+    ↓
+JSON Response
+    ↓
+JavaScript
+3. Using async/await
+This is usually easier to read:
+async function getStudents() {
+
+  try {
+
+    const response =
+      await fetch("/api/students");
+
+    const data =
+      await response.json();
+
+    console.log(data);
+
+  } catch (error) {
+
+    console.log(error);
+
+  }
+}
+Call:
+getStudents();
+4. Display Students on HTML
+HTML:
+HTML
+<div id="studentList"></div>
+JavaScript:
+async function getStudents() {
+
+  const response =
+    await fetch("/api/students");
+
+  const students =
+    await response.json();
+
+  const list =
+    document.getElementById("studentList");
+
+  list.innerHTML = "";
+
+  students.forEach(student => {
+
+    list.innerHTML += `
+      <div>
+        <h3>${student.name}</h3>
+        <p>Age: ${student.age}</p>
+        <p>Branch: ${student.branch}</p>
+      </div>
+    `;
+
+  });
+}
+Now database data can appear on the webpage.
+5. POST Request — Add Student
+HTML:
+HTML
+<form id="studentForm">
+
+  <input
+    id="name"
+    placeholder="Name"
+  >
+
+  <input
+    id="age"
+    type="number"
+    placeholder="Age"
+  >
+
+  <input
+    id="branch"
+    placeholder="Branch"
+  >
+
+  <button type="submit">
+    Add Student
+  </button>
+
+</form>
+JavaScript:
+const form =
+  document.getElementById("studentForm");
+
+form.addEventListener("submit", async (event) => {
+
+  event.preventDefault();
+
+  const student = {
+    name: document.getElementById("name").value,
+    age: Number(document.getElementById("age").value),
+    branch: document.getElementById("branch").value
+  };
+
+  const response = await fetch("/api/students", {
+
+    method: "POST",
+
+    headers: {
+      "Content-Type": "application/json"
+    },
+
+    body: JSON.stringify(student)
+
+  });
+
+  const data = await response.json();
+
+  console.log(data);
+});
+6. Why JSON.stringify()?
+JavaScript object:
+const student = {
+  name: "Gyan",
+  age: 21,
+  branch: "CSE"
+};
+fetch() sends the body as text/bytes, so for a JSON API we convert the object to JSON:
+JSON.stringify(student)
+Result:
+{
+  "name": "Gyan",
+  "age": 21,
+  "branch": "CSE"
+}
+7. Why Content-Type?
+We tell the backend:
+headers: {
+  "Content-Type": "application/json"
+}
+Meaning:
+The request body contains JSON data.
+Because Express uses:
+app.use(express.json());
+it can then read:
+req.body
+8. PUT Request — Update Student
+Suppose student ID is:
+68abc123
+Frontend:
+async function updateStudent(id) {
+
+  const updatedData = {
+    age: 22,
+    branch: "ECE"
+  };
+
+  const response = await fetch(
+    `/api/students/${id}`,
+    {
+      method: "PUT",
+
+      headers: {
+        "Content-Type": "application/json"
+      },
+
+      body: JSON.stringify(updatedData)
+    }
+  );
+
+  const data = await response.json();
+
+  console.log(data);
+}
+9. DELETE Request
+async function deleteStudent(id) {
+
+  const response = await fetch(
+    `/api/students/${id}`,
+    {
+      method: "DELETE"
+    }
+  );
+
+  const data = await response.json();
+
+  console.log(data);
+}
+Example:
+deleteStudent("68abc123");
+10. CRUD from Frontend
+┌───────────────┬──────────────┐
+│ Operation     │ fetch()      │
+├───────────────┼──────────────┤
+│ Create        │ POST         │
+│ Read          │ GET          │
+│ Update        │ PUT          │
+│ Delete        │ DELETE       │
+└───────────────┴──────────────┘
+Memory Trick
+POST   → Add
+GET    → Get
+PUT    → Change
+DELETE → Remove
+11. Handling HTTP Errors
+Don't assume every response is successful.
+Better:
+async function getStudents() {
+
+  try {
+
+    const response =
+      await fetch("/api/students");
+
+    if (!response.ok) {
+      throw new Error(
+        `Request failed: ${response.status}`
+      );
+    }
+
+    const data =
+      await response.json();
+
+    console.log(data);
+
+  } catch (error) {
+
+    console.error(error);
+
+  }
+}
+response.ok is true for successful HTTP status codes in the 2xx range.
+12. Sending JWT from Frontend
+For a protected API:
+const token = localStorage.getItem("token");
+
+const response = await fetch(
+  "/api/profile",
+  {
+    headers: {
+      "Authorization": `Bearer ${token}`
+    }
+  }
+);
+Backend receives:
+Authorization: Bearer TOKEN
+and your authentication middleware verifies it.
+⚠️ For production apps, token storage needs careful security design. Storing long-lived authentication tokens in localStorage can expose them to JavaScript-accessible XSS attacks; secure, appropriately configured cookies are often preferable for browser sessions.
+13. Login from Frontend
+HTML:
+HTML
+<form id="loginForm">
+
+  <input
+    id="email"
+    type="email"
+    placeholder="Email"
+  >
+
+  <input
+    id="password"
+    type="password"
+    placeholder="Password"
+  >
+
+  <button type="submit">
+    Login
+  </button>
+
+</form>
+JavaScript:
+document
+  .getElementById("loginForm")
+  .addEventListener("submit", async (event) => {
+
+    event.preventDefault();
+
+    const email =
+      document.getElementById("email").value;
+
+    const password =
+      document.getElementById("password").value;
+
+    const response = await fetch(
+      "/api/auth/login",
+      {
+        method: "POST",
+
+        headers: {
+          "Content-Type": "application/json"
+        },
+
+        body: JSON.stringify({
+          email,
+          password
+        })
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      alert(data.message);
+      return;
+    }
+
+    console.log("Login successful");
+    console.log(data.token);
+  });
+14. CORS
+Sometimes frontend and backend run on different origins.
+For example:
+Frontend → http://localhost:5173
+Backend  → http://localhost:3000
+The browser may block cross-origin requests unless the backend allows them.
+Install:
+npm install cors
+Then:
+const cors = require("cors");
+
+app.use(cors());
+For production, configure CORS to allow only the origins your application actually needs rather than allowing everything.
+15. Complete Full-Stack Flow
+Suppose you click:
+Add Student
+       HTML Form
+           ↓
+     JavaScript Event
+           ↓
+         fetch()
+           ↓
+     POST /api/students
+           ↓
+        Express
+           ↓
+       Validation
+           ↓
+       Controller
+           ↓
+        Mongoose
+           ↓
+        MongoDB
+           ↓
+       JSON Response
+           ↓
+       JavaScript
+           ↓
+      Update webpage
+16. Recommended Project Structure
+student-management/
+│
+├── server.js
+├── package.json
+├── .env
+├── .gitignore
+│
+├── models/
+│   ├── Student.js
+│   └── User.js
+│
+├── routes/
+│   ├── studentRoutes.js
+│   └── authRoutes.js
+│
+├── controllers/
+│   ├── studentController.js
+│   └── authController.js
+│
+├── middleware/
+│   ├── auth.js
+│   └── errorHandler.js
+│
+└── public/
+    ├── index.html
+    ├── login.html
+    ├── style.css
+    └── script.js
+17. Backend Serving Frontend
+Express can serve your public folder:
+app.use(express.static("public"));
+Then:
+http://localhost:3000/
+can serve:
+public/index.html
+Your frontend JavaScript can call:
+fetch("/api/students");
+Because both frontend and API are served by the same Express application, you don't need to hard-code a different backend origin.
+18. Most Important fetch() Pattern
+GET
+const response =
+  await fetch("/api/students");
+
+const data =
+  await response.json();
+POST
+await fetch("/api/students", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json"
+  },
+  body: JSON.stringify(data)
+});
+PUT
+await fetch(`/api/students/${id}`, {
+  method: "PUT",
+  headers: {
+    "Content-Type": "application/json"
+  },
+  body: JSON.stringify(data)
+});
+DELETE
+await fetch(`/api/students/${id}`, {
+  method: "DELETE"
+});
+⭐ Interview Questions
+What is fetch()?
+fetch() is a browser JavaScript API used to make HTTP requests and receive responses from servers.
+Why use JSON.stringify()?
+It converts a JavaScript value into a JSON string suitable for sending as a JSON request body.
+What is response.json()?
+It reads the response body and parses JSON into a JavaScript value.
+What is CORS?
+CORS is a browser security mechanism that controls whether a web page can make requests to a different origin.
+🧠 Easy Memory Trick
+Frontend
+   ↓
+fetch()
+   ↓
+HTTP Request
+   ↓
+Express API
+   ↓
+MongoDB
+   ↓
+JSON
+   ↓
+Frontend
+And:
+GET    → Read
+POST   → Create
+PUT    → Update
+DELETE → Delete
