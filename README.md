@@ -12712,3 +12712,1482 @@ CONTROLLER
 MODEL
   ↓
 MONGODB
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>Student Management System</title>
+
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+  <div class="container">
+
+    <h1>Student Management System</h1>
+
+    <!-- Student Form -->
+    <div class="form-card">
+
+      <h2>Add Student</h2>
+
+      <form id="studentForm">
+
+        <div class="form-group">
+          <label>Name</label>
+
+          <input
+            type="text"
+            id="name"
+            placeholder="Enter student name"
+            required
+          >
+        </div>
+
+        <div class="form-group">
+          <label>Age</label>
+
+          <input
+            type="number"
+            id="age"
+            placeholder="Enter age"
+            required
+          >
+        </div>
+
+        <div class="form-group">
+          <label>Branch</label>
+
+          <input
+            type="text"
+            id="branch"
+            placeholder="Enter branch"
+            required
+          >
+        </div>
+
+        <div class="form-group">
+          <label>Email</label>
+
+          <input
+            type="email"
+            id="email"
+            placeholder="Enter email"
+            required
+          >
+        </div>
+
+        <button type="submit">
+          Add Student
+        </button>
+
+      </form>
+
+    </div>
+
+
+    <!-- Search -->
+    <div class="search-box">
+
+      <h2>Search Students</h2>
+
+      <input
+        type="text"
+        id="searchInput"
+        placeholder="Search by name, branch or email"
+      >
+
+    </div>
+
+
+    <!-- Student List -->
+    <div class="table-card">
+
+      <h2>Student List</h2>
+
+      <table>
+
+        <thead>
+
+          <tr>
+            <th>Name</th>
+            <th>Age</th>
+            <th>Branch</th>
+            <th>Email</th>
+            <th>Actions</th>
+          </tr>
+
+        </thead>
+
+        <tbody id="studentTableBody">
+        </tbody>
+
+      </table>
+
+    </div>
+
+  </div>
+
+
+  <script src="script.js"></script>
+
+</body>
+
+</html>
+Next: Build the Frontend UI 🎨
+Now we connect our HTML + CSS + JavaScript frontend to the CRUD backend you just created.
+By the end, you will have:
+┌─────────────────────────────────────┐
+│       STUDENT MANAGEMENT SYSTEM     │
+├─────────────────────────────────────┤
+│ Name:   [______________]            │
+│ Age:    [____]                      │
+│ Branch: [______________]            │
+│ Email:  [______________]            │
+│                                     │
+│        [ Add Student ]              │
+├─────────────────────────────────────┤
+│ Search: [______________]            │
+├─────────────────────────────────────┤
+│ Name | Age | Branch | Email | Action│
+│ Gyan | 21  | CSE    | ...   | Edit │
+│                              |Delete│
+└─────────────────────────────────────┘
+Step 1: Open the public Folder
+Your project should contain:
+student-management/
+│
+├── server.js
+├── models/
+├── routes/
+├── controllers/
+├── middleware/
+│
+└── public/
+    ├── index.html
+    ├── login.html
+    ├── register.html
+    ├── style.css
+    └── script.js
+We will first work with:
+public/index.html
+public/style.css
+public/script.js
+Step 2: Create index.html
+Open:
+public/index.html
+Delete everything inside it and type:
+HTML
+Step 3: Understand the HTML
+The main parts are:
+HTML
+ │
+ ├── Heading
+ │
+ ├── Student Form
+ │    ├── Name
+ │    ├── Age
+ │    ├── Branch
+ │    └── Email
+ │
+ ├── Search Box
+ │
+ └── Student Table
+      ├── Name
+      ├── Age
+      ├── Branch
+      ├── Email
+      └── Actions
+The important IDs are:
+studentForm
+name
+age
+branch
+email
+searchInput
+studentTableBody
+JavaScript will use these IDs.
+Step 4: Create the CSS
+Open:
+public/style.css
+Add:
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  background: #f4f6f8;
+  padding: 30px;
+}
+
+.container {
+  max-width: 1100px;
+  margin: auto;
+}
+
+h1 {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+h2 {
+  margin-bottom: 20px;
+}
+
+.form-card,
+.search-box,
+.table-card {
+  background: white;
+  padding: 25px;
+  margin-bottom: 25px;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.form-group {
+  margin-bottom: 15px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: bold;
+}
+
+input {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 16px;
+}
+
+button {
+  padding: 10px 18px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 15px;
+}
+
+form button {
+  width: 100%;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th,
+td {
+  padding: 12px;
+  border-bottom: 1px solid #ddd;
+  text-align: left;
+}
+
+th {
+  font-weight: bold;
+}
+
+.edit-btn {
+  margin-right: 5px;
+}
+
+.delete-btn {
+  background: #ddd;
+}
+
+@media (max-width: 700px) {
+
+  body {
+    padding: 15px;
+  }
+
+  .table-card {
+    overflow-x: auto;
+  }
+
+  table {
+    min-width: 700px;
+  }
+}
+Step 5: Create JavaScript
+Open:
+public/script.js
+Add:
+const API_URL = "/api/students";
+
+const studentForm =
+  document.getElementById("studentForm");
+
+const studentTableBody =
+  document.getElementById("studentTableBody");
+
+const searchInput =
+  document.getElementById("searchInput");
+
+
+// Store students in memory
+let students = [];
+
+
+// Load students when page opens
+document.addEventListener("DOMContentLoaded", () => {
+  loadStudents();
+});
+
+
+// GET all students
+async function loadStudents() {
+
+  try {
+
+    const response = await fetch(API_URL);
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message);
+    }
+
+    students = data.students;
+
+    displayStudents(students);
+
+  } catch (error) {
+
+    console.error(error);
+
+    alert("Unable to load students");
+  }
+}
+
+
+// Display students
+function displayStudents(studentList) {
+
+  studentTableBody.innerHTML = "";
+
+  if (studentList.length === 0) {
+
+    studentTableBody.innerHTML = `
+      <tr>
+        <td colspan="5">
+          No students found
+        </td>
+      </tr>
+    `;
+
+    return;
+  }
+
+
+  studentList.forEach(student => {
+
+    const row = document.createElement("tr");
+
+    row.innerHTML = `
+      <td>${student.name}</td>
+
+      <td>${student.age}</td>
+
+      <td>${student.branch}</td>
+
+      <td>${student.email}</td>
+
+      <td>
+
+        <button
+          class="edit-btn"
+          onclick="editStudent('${student._id}')"
+        >
+          Edit
+        </button>
+
+        <button
+          class="delete-btn"
+          onclick="deleteStudent('${student._id}')"
+        >
+          Delete
+        </button>
+
+      </td>
+    `;
+
+    studentTableBody.appendChild(row);
+
+  });
+}
+
+
+// CREATE student
+studentForm.addEventListener(
+  "submit",
+  async function(event) {
+
+    event.preventDefault();
+
+    const student = {
+
+      name: document.getElementById("name").value,
+
+      age: Number(
+        document.getElementById("age").value
+      ),
+
+      branch:
+        document.getElementById("branch").value,
+
+      email:
+        document.getElementById("email").value
+
+    };
+
+
+    try {
+
+      const response = await fetch(API_URL, {
+
+        method: "POST",
+
+        headers: {
+          "Content-Type": "application/json"
+        },
+
+        body: JSON.stringify(student)
+
+      });
+
+
+      const data = await response.json();
+
+
+      if (!response.ok) {
+
+        throw new Error(data.message);
+      }
+
+
+      alert("Student added successfully!");
+
+      studentForm.reset();
+
+      loadStudents();
+
+
+    } catch (error) {
+
+      alert(error.message);
+    }
+
+  }
+);
+Step 6: Add Delete Function
+At the bottom of script.js, add:
+async function deleteStudent(id) {
+
+  const confirmDelete =
+    confirm("Are you sure you want to delete this student?");
+
+  if (!confirmDelete) {
+    return;
+  }
+
+
+  try {
+
+    const response = await fetch(
+      `${API_URL}/${id}`,
+      {
+        method: "DELETE"
+      }
+    );
+
+
+    const data = await response.json();
+
+
+    if (!response.ok) {
+      throw new Error(data.message);
+    }
+
+
+    alert("Student deleted successfully!");
+
+    loadStudents();
+
+
+  } catch (error) {
+
+    alert(error.message);
+
+  }
+}
+Step 7: Add Edit Function
+Add:
+async function editStudent(id) {
+
+  const student = students.find(
+    student => student._id === id
+  );
+
+
+  if (!student) {
+    alert("Student not found");
+    return;
+  }
+
+
+  const name = prompt(
+    "Enter student name:",
+    student.name
+  );
+
+  if (name === null) return;
+
+
+  const age = prompt(
+    "Enter student age:",
+    student.age
+  );
+
+  if (age === null) return;
+
+
+  const branch = prompt(
+    "Enter student branch:",
+    student.branch
+  );
+
+  if (branch === null) return;
+
+
+  const email = prompt(
+    "Enter student email:",
+    student.email
+  );
+
+  if (email === null) return;
+
+
+  const updatedStudent = {
+
+    name: name,
+
+    age: Number(age),
+
+    branch: branch,
+
+    email: email
+
+  };
+
+
+  try {
+
+    const response = await fetch(
+      `${API_URL}/${id}`,
+      {
+
+        method: "PUT",
+
+        headers: {
+          "Content-Type": "application/json"
+        },
+
+        body: JSON.stringify(updatedStudent)
+
+      }
+    );
+
+
+    const data = await response.json();
+
+
+    if (!response.ok) {
+      throw new Error(data.message);
+    }
+
+
+    alert("Student updated successfully!");
+
+    loadStudents();
+
+
+  } catch (error) {
+
+    alert(error.message);
+
+  }
+}
+Step 8: Add Search
+Now add:
+searchInput.addEventListener(
+  "input",
+  function() {
+
+    const searchText =
+      searchInput.value.toLowerCase();
+
+
+    const filteredStudents =
+      students.filter(student =>
+
+        student.name
+          .toLowerCase()
+          .includes(searchText)
+
+        ||
+
+        student.branch
+          .toLowerCase()
+          .includes(searchText)
+
+        ||
+
+        student.email
+          .toLowerCase()
+          .includes(searchText)
+
+      );
+
+
+    displayStudents(filteredStudents);
+
+  }
+);
+Step 9: Start Your Application
+Open VS Code terminal.
+Make sure you are inside:
+student-management
+Run:
+npm run dev
+You should see:
+Server running at http://localhost:3000
+MongoDB connected
+Step 10: Open the Frontend
+Open your browser:
+http://localhost:3000
+Because we already have:
+app.use(express.static("public"));
+Express automatically serves:
+public/index.html
+Step 11: Test Add Student
+Enter:
+Name:
+Gyan
+
+Age:
+21
+
+Branch:
+CSE
+
+Email:
+gyan@example.com
+Click:
+Add Student
+The flow is:
+HTML Form
+    ↓
+JavaScript
+    ↓
+fetch()
+    ↓
+POST /api/students
+    ↓
+Express
+    ↓
+Controller
+    ↓
+Mongoose
+    ↓
+MongoDB
+    ↓
+JSON Response
+    ↓
+JavaScript
+    ↓
+Student Table
+Step 12: Test Edit
+Suppose the table shows:
+Gyan | 21 | CSE | gyan@example.com
+Click:
+Edit
+You will get prompts.
+Change:
+21 → 22
+CSE → ECE
+Then the frontend sends:
+PUT /api/students/:id
+The backend updates MongoDB.
+Step 13: Test Delete
+Click:
+Delete
+You will see:
+Are you sure you want to delete this student?
+Click:
+OK
+The frontend sends:
+DELETE /api/students/:id
+The record is removed from MongoDB.
+Step 14: Test Search
+Suppose you have:
+Gyan       CSE
+Ravi       ECE
+Priya      CSE
+Arun       IT
+Type:
+CSE
+The table shows:
+Gyan       CSE
+Priya      CSE
+Type:
+Gyan
+It shows:
+Gyan       CSE
+⭐ Full Project Flow
+You have now connected the frontend and backend:
+             STUDENT MANAGEMENT SYSTEM
+
+                    FRONTEND
+                       │
+             ┌─────────┴─────────┐
+             │                   │
+          HTML/CSS           JavaScript
+             │                   │
+             └─────────┬─────────┘
+                       │
+                     fetch()
+                       │
+                       ↓
+                  EXPRESS API
+                       │
+                  ┌────┴────┐
+                  │ Routes  │
+                  └────┬────┘
+                       ↓
+                  Controllers
+                       ↓
+                    Mongoose
+                       ↓
+                    MongoDB
+🧠 Easy Memory Trick
+HTML
+ ↓
+JavaScript
+ ↓
+FETCH
+ ↓
+API
+ ↓
+EXPRESS
+ ↓
+CONTROLLER
+ ↓
+MONGODB
+And CRUD:
+➕ Add     → POST
+👀 View    → GET
+✏️ Edit    → PUT
+🗑️ Delete  → DELETE
+What we have completed
+✅ Backend CRUD
+✅ MongoDB
+✅ Mongoose
+✅ Express routes
+✅ Controllers
+✅ Error handling
+✅ HTML frontend
+✅ CSS
+✅ JavaScript
+✅ Add student
+✅ View students
+✅ Edit student
+✅ Delete student
+✅ Search student
+Next: User Registration & Login — we will build register.html, login.html, the User model, registration API, password hashing with bcrypt, and connect the login form to the backend.
+Next: User Registration & Login 🔐
+Now we will add real user authentication to our Student Management System.
+After this step, your project will have:
+Register
+   ↓
+Password Hashing
+   ↓
+MongoDB User
+   ↓
+Login
+   ↓
+Check Password
+   ↓
+JWT Token
+   ↓
+Authenticated User
+1. What We Are Building
+We will create:
+Feature
+Endpoint
+Register
+POST /api/auth/register
+Login
+POST /api/auth/login
+Get Profile
+GET /api/auth/profile
+The complete flow:
+             USER
+              ↓
+       ┌──────┴──────┐
+       ↓             ↓
+    REGISTER       LOGIN
+       ↓             ↓
+   bcrypt hash    bcrypt compare
+       ↓             ↓
+    MongoDB       JWT Token
+                     ↓
+                  Profile
+2. Check Required Packages
+You already installed:
+npm install bcrypt jsonwebtoken
+If not, run:
+npm install bcrypt jsonwebtoken
+3. Create User Model
+Inside:
+models/
+create:
+User.js
+Add:
+const mongoose = require("mongoose");
+
+const userSchema = new mongoose.Schema(
+  {
+    name: {
+      type: String,
+      required: true,
+      trim: true,
+      minlength: 2,
+      maxlength: 50
+    },
+
+    email: {
+      type: String,
+      required: true,
+      unique: true,
+      lowercase: true,
+      trim: true
+    },
+
+    password: {
+      type: String,
+      required: true,
+      minlength: 6
+    },
+
+    role: {
+      type: String,
+      enum: ["user", "admin"],
+      default: "user"
+    }
+  },
+  {
+    timestamps: true
+  }
+);
+
+module.exports = mongoose.model("User", userSchema);
+4. Understand the User Model
+Our MongoDB user document will look approximately like:
+{
+  "name": "Gyan",
+  "email": "gyan@example.com",
+  "password": "hashed-password",
+  "role": "user"
+}
+⚠️ The actual password should never be stored as plain text.
+Instead:
+123456
+   ↓
+bcrypt
+   ↓
+$2b$10$....
+5. Create Authentication Controller
+Create:
+controllers/authController.js
+Add:
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
+
+const User = require("../models/User");
+
+
+// REGISTER
+exports.register = async (req, res, next) => {
+
+  try {
+
+    const {
+      name,
+      email,
+      password
+    } = req.body;
+
+
+    // Validate fields
+    if (!name || !email || !password) {
+
+      return res.status(400).json({
+        success: false,
+        message: "Name, email and password are required"
+      });
+
+    }
+
+
+    // Check password length
+    if (password.length < 6) {
+
+      return res.status(400).json({
+        success: false,
+        message: "Password must be at least 6 characters"
+      });
+
+    }
+
+
+    // Check existing user
+    const existingUser = await User.findOne({
+      email: email.toLowerCase().trim()
+    });
+
+
+    if (existingUser) {
+
+      return res.status(409).json({
+        success: false,
+        message: "Email already registered"
+      });
+
+    }
+
+
+    // Hash password
+    const hashedPassword =
+      await bcrypt.hash(password, 10);
+
+
+    // Create user
+    const user = await User.create({
+
+      name,
+
+      email,
+
+      password: hashedPassword
+
+    });
+
+
+    res.status(201).json({
+
+      success: true,
+
+      message: "Registration successful",
+
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role
+      }
+
+    });
+
+  } catch (error) {
+
+    next(error);
+
+  }
+};
+
+
+
+// LOGIN
+exports.login = async (req, res, next) => {
+
+  try {
+
+    const {
+      email,
+      password
+    } = req.body;
+
+
+    // Validate
+    if (!email || !password) {
+
+      return res.status(400).json({
+        success: false,
+        message: "Email and password are required"
+      });
+
+    }
+
+
+    // Find user
+    const user = await User.findOne({
+      email: email.toLowerCase().trim()
+    });
+
+
+    if (!user) {
+
+      return res.status(401).json({
+        success: false,
+        message: "Invalid email or password"
+      });
+
+    }
+
+
+    // Compare password
+    const passwordMatch =
+      await bcrypt.compare(
+        password,
+        user.password
+      );
+
+
+    if (!passwordMatch) {
+
+      return res.status(401).json({
+        success: false,
+        message: "Invalid email or password"
+      });
+
+    }
+
+
+    // Create JWT
+    const token = jwt.sign(
+
+      {
+        userId: user._id.toString(),
+        role: user.role
+      },
+
+      process.env.JWT_SECRET,
+
+      {
+        expiresIn: "1h"
+      }
+
+    );
+
+
+    res.status(200).json({
+
+      success: true,
+
+      message: "Login successful",
+
+      token,
+
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role
+      }
+
+    });
+
+  } catch (error) {
+
+    next(error);
+
+  }
+};
+
+
+
+// PROFILE
+exports.profile = async (req, res) => {
+
+  res.status(200).json({
+
+    success: true,
+
+    message: "Profile accessed successfully",
+
+    user: req.user
+
+  });
+
+};
+6. Create Authentication Routes
+Create:
+routes/authRoutes.js
+Add:
+const express = require("express");
+
+const router = express.Router();
+
+const {
+  register,
+  login,
+  profile
+} = require("../controllers/authController");
+
+const authMiddleware =
+  require("../middleware/auth");
+
+
+// Register
+router.post("/register", register);
+
+
+// Login
+router.post("/login", login);
+
+
+// Protected profile
+router.get(
+  "/profile",
+  authMiddleware,
+  profile
+);
+
+
+module.exports = router;
+7. Create JWT Authentication Middleware
+Create:
+middleware/auth.js
+Add:
+const jwt = require("jsonwebtoken");
+
+function authMiddleware(req, res, next) {
+
+  try {
+
+    const authHeader =
+      req.headers.authorization;
+
+
+    if (
+      !authHeader ||
+      !authHeader.startsWith("Bearer ")
+    ) {
+
+      return res.status(401).json({
+        success: false,
+        message: "Authentication required"
+      });
+
+    }
+
+
+    const token =
+      authHeader.split(" ")[1];
+
+
+    const decoded =
+      jwt.verify(
+        token,
+        process.env.JWT_SECRET
+      );
+
+
+    req.user = decoded;
+
+    next();
+
+  } catch (error) {
+
+    return res.status(401).json({
+      success: false,
+      message: "Invalid or expired token"
+    });
+
+  }
+}
+
+
+module.exports = authMiddleware;
+8. Connect Auth Routes to server.js
+Open:
+server.js
+Add:
+const authRoutes =
+  require("./routes/authRoutes");
+Then add:
+app.use("/api/auth", authRoutes);
+Your route section becomes:
+app.use("/api/students", studentRoutes);
+
+app.use("/api/auth", authRoutes);
+9. Your Authentication Architecture
+Now:
+                     CLIENT
+                       ↓
+                  /api/auth
+                       ↓
+                 AUTH ROUTES
+                       ↓
+               AUTH CONTROLLER
+                       ↓
+          ┌────────────┴────────────┐
+          ↓                         ↓
+       REGISTER                    LOGIN
+          ↓                         ↓
+      bcrypt.hash              bcrypt.compare
+          ↓                         ↓
+       MongoDB                  JWT.sign()
+                                    ↓
+                                  TOKEN
+10. Test Registration in Postman
+Start the server:
+npm run dev
+Open Postman.
+Choose:
+POST
+URL:
+http://localhost:3000/api/auth/register
+Body → raw → JSON
+{
+  "name": "Gyan",
+  "email": "gyan@example.com",
+  "password": "123456"
+}
+Click Send.
+Expected:
+{
+  "success": true,
+  "message": "Registration successful",
+  "user": {
+    "name": "Gyan",
+    "email": "gyan@example.com",
+    "role": "user"
+  }
+}
+11. Check MongoDB
+In MongoDB, you should find a user similar to:
+name: Gyan
+email: gyan@example.com
+password: $2b$10$........
+role: user
+Notice:
+123456
+is not stored.
+Instead:
+123456
+   ↓
+bcrypt
+   ↓
+hashed value
+12. Test Login
+Postman:
+POST
+http://localhost:3000/api/auth/login
+Body:
+{
+  "email": "gyan@example.com",
+  "password": "123456"
+}
+Expected:
+{
+  "success": true,
+  "message": "Login successful",
+  "token": "eyJhbGciOiJIUzI1NiIs..."
+}
+Copy the token.
+13. What Is the JWT Token?
+JWT means:
+JSON Web Token
+It allows the server to identify an authenticated user.
+Basic structure:
+HEADER
+   .
+PAYLOAD
+   .
+SIGNATURE
+Example:
+xxxxx.yyyyy.zzzzz
+The payload can contain:
+{
+  "userId": "12345",
+  "role": "user"
+}
+⚠️ JWT payload is encoded, not encrypted. Don't put passwords or other secrets inside it.
+14. Test Protected Profile API
+Now test:
+GET
+http://localhost:3000/api/auth/profile
+Go to:
+Authorization
+    ↓
+Type: Bearer Token
+    ↓
+Paste JWT token
+Then click Send.
+Expected:
+{
+  "success": true,
+  "message": "Profile accessed successfully",
+  "user": {
+    "userId": "...",
+    "role": "user"
+  }
+}
+15. What Happens Internally?
+When you request:
+GET /api/auth/profile
+with:
+Authorization: Bearer TOKEN
+the process is:
+Request
+   ↓
+Auth Middleware
+   ↓
+Read Authorization header
+   ↓
+Extract token
+   ↓
+jwt.verify()
+   ↓
+Valid?
+ ┌─┴─┐
+YES  NO
+ ↓    ↓
+req.user  401
+ ↓
+Controller
+ ↓
+Response
+16. Test Without Token
+Send:
+GET
+http://localhost:3000/api/auth/profile
+without Authorization.
+Expected:
+{
+  "success": false,
+  "message": "Authentication required"
+}
+Status:
+401 Unauthorized
+17. Test Wrong Password
+Send:
+{
+  "email": "gyan@example.com",
+  "password": "wrong123"
+}
+Expected:
+{
+  "success": false,
+  "message": "Invalid email or password"
+}
+18. Authentication vs Authorization
+This is very important for interviews.
+Authentication
+Who are you?
+Example:
+Login with email + password
+Authorization
+What are you allowed to do?
+Example:
+User → View students
+Admin → Add/Delete students
+Memory trick:
+AUTHENTICATION = WHO?
+AUTHORIZATION   = WHAT CAN YOU DO?
+19. Current Project Structure
+Your project is now:
+student-management/
+│
+├── server.js
+├── package.json
+├── package-lock.json
+├── .env
+├── .gitignore
+│
+├── models/
+│   ├── Student.js
+│   └── User.js
+│
+├── routes/
+│   ├── studentRoutes.js
+│   └── authRoutes.js
+│
+├── controllers/
+│   ├── studentController.js
+│   └── authController.js
+│
+├── middleware/
+│   ├── auth.js
+│   └── errorHandler.js
+│
+└── public/
+    ├── index.html
+    ├── login.html
+    ├── register.html
+    ├── style.css
+    └── script.js
+⭐ Important Security Rules
+Never do this:
+password: password
+for database storage.
+Instead:
+const hashedPassword =
+  await bcrypt.hash(password, 10);
+Also:
+❌ Don't store plaintext passwords
+❌ Don't put JWT_SECRET in GitHub
+❌ Don't put passwords inside JWT
+❌ Don't expose database credentials
+✅ Use HTTPS in production
+✅ Validate user input
+✅ Use a strong JWT secret
+Your .env remains:
+PORT=3000
+MONGODB_URI=mongodb://127.0.0.1:27017/studentManagement
+JWT_SECRET=replace-this-with-a-long-random-secret
+And .gitignore:
+node_modules/
+.env
+🎯 What You Have Now
+STUDENT MANAGEMENT SYSTEM
+│
+├── Student CRUD
+│   ├── Create
+│   ├── Read
+│   ├── Update
+│   └── Delete
+│
+├── Search
+│
+├── MongoDB
+│
+├── Express
+│
+├── Mongoose
+│
+├── User Registration
+│
+├── Password Hashing
+│
+├── Login
+│
+├── JWT Authentication
+│
+└── Protected API
