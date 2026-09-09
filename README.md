@@ -14191,3 +14191,1478 @@ STUDENT MANAGEMENT SYSTEM
 ├── JWT Authentication
 │
 └── Protected API
+Next: Register & Login Frontend 🔐
+Now we connect the Register and Login pages to the authentication backend we created.
+After this step:
+Register Page
+     ↓
+POST /api/auth/register
+     ↓
+MongoDB
+     ↓
+Login Page
+     ↓
+POST /api/auth/login
+     ↓
+JWT Token
+     ↓
+Student Dashboard
+1. Create register.html
+Open:
+public/register.html
+Replace everything with:
+HTML
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>Register</title>
+
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+  <div class="auth-container">
+
+    <div class="auth-card">
+
+      <h1>Create Account</h1>
+
+      <p>Register for Student Management System</p>
+
+      <form id="registerForm">
+
+        <div class="form-group">
+
+          <label>Name</label>
+
+          <input
+            type="text"
+            id="registerName"
+            placeholder="Enter your name"
+            required
+          >
+
+        </div>
+
+
+        <div class="form-group">
+
+          <label>Email</label>
+
+          <input
+            type="email"
+            id="registerEmail"
+            placeholder="Enter your email"
+            required
+          >
+
+        </div>
+
+
+        <div class="form-group">
+
+          <label>Password</label>
+
+          <input
+            type="password"
+            id="registerPassword"
+            placeholder="Minimum 6 characters"
+            required
+          >
+
+        </div>
+
+
+        <button type="submit">
+          Register
+        </button>
+
+      </form>
+
+
+      <p class="auth-link">
+
+        Already have an account?
+
+        <a href="login.html">
+          Login
+        </a>
+
+      </p>
+
+    </div>
+
+  </div>
+
+
+  <script src="auth.js"></script>
+
+</body>
+
+</html>
+2. Create login.html
+Open:
+public/login.html
+Add:
+HTML
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>Login</title>
+
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+  <div class="auth-container">
+
+    <div class="auth-card">
+
+      <h1>Login</h1>
+
+      <p>Login to Student Management System</p>
+
+
+      <form id="loginForm">
+
+        <div class="form-group">
+
+          <label>Email</label>
+
+          <input
+            type="email"
+            id="loginEmail"
+            placeholder="Enter your email"
+            required
+          >
+
+        </div>
+
+
+        <div class="form-group">
+
+          <label>Password</label>
+
+          <input
+            type="password"
+            id="loginPassword"
+            placeholder="Enter your password"
+            required
+          >
+
+        </div>
+
+
+        <button type="submit">
+          Login
+        </button>
+
+      </form>
+
+
+      <p class="auth-link">
+
+        Don't have an account?
+
+        <a href="register.html">
+          Register
+        </a>
+
+      </p>
+
+    </div>
+
+  </div>
+
+
+  <script src="auth.js"></script>
+
+</body>
+
+</html>
+3. Add Authentication CSS
+Open:
+public/style.css
+At the bottom, add:
+.auth-container {
+  min-height: 100vh;
+
+  display: flex;
+
+  justify-content: center;
+
+  align-items: center;
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 420px;
+
+  background: white;
+
+  padding: 30px;
+
+  border-radius: 10px;
+
+  box-shadow:
+    0 2px 10px rgba(0, 0, 0, 0.15);
+}
+
+.auth-card h1 {
+  margin-bottom: 10px;
+}
+
+.auth-card p {
+  margin-bottom: 20px;
+}
+
+.auth-link {
+  text-align: center;
+
+  margin-top: 20px;
+}
+
+.auth-link a {
+  text-decoration: none;
+}
+4. Create auth.js
+Inside:
+public/
+create:
+auth.js
+Add:
+const AUTH_API = "/api/auth";
+
+
+// ============================
+// REGISTER
+// ============================
+
+const registerForm =
+  document.getElementById("registerForm");
+
+
+if (registerForm) {
+
+  registerForm.addEventListener(
+    "submit",
+    async function(event) {
+
+      event.preventDefault();
+
+
+      const name =
+        document.getElementById(
+          "registerName"
+        ).value.trim();
+
+
+      const email =
+        document.getElementById(
+          "registerEmail"
+        ).value.trim();
+
+
+      const password =
+        document.getElementById(
+          "registerPassword"
+        ).value;
+
+
+      try {
+
+        const response = await fetch(
+          `${AUTH_API}/register`,
+          {
+
+            method: "POST",
+
+            headers: {
+              "Content-Type": "application/json"
+            },
+
+            body: JSON.stringify({
+              name,
+              email,
+              password
+            })
+
+          }
+        );
+
+
+        const data =
+          await response.json();
+
+
+        if (!response.ok) {
+
+          throw new Error(
+            data.message
+          );
+
+        }
+
+
+        alert(
+          "Registration successful!"
+        );
+
+
+        window.location.href =
+          "login.html";
+
+
+      } catch (error) {
+
+        alert(error.message);
+
+      }
+
+    }
+  );
+
+}
+5. Add Login JavaScript
+Continue below the previous code in:
+public/auth.js
+Add:
+// ============================
+// LOGIN
+// ============================
+
+const loginForm =
+  document.getElementById("loginForm");
+
+
+if (loginForm) {
+
+  loginForm.addEventListener(
+    "submit",
+    async function(event) {
+
+      event.preventDefault();
+
+
+      const email =
+        document.getElementById(
+          "loginEmail"
+        ).value.trim();
+
+
+      const password =
+        document.getElementById(
+          "loginPassword"
+        ).value;
+
+
+      try {
+
+        const response = await fetch(
+          `${AUTH_API}/login`,
+          {
+
+            method: "POST",
+
+            headers: {
+              "Content-Type": "application/json"
+            },
+
+            body: JSON.stringify({
+              email,
+              password
+            })
+
+          }
+        );
+
+
+        const data =
+          await response.json();
+
+
+        if (!response.ok) {
+
+          throw new Error(
+            data.message
+          );
+
+        }
+
+
+        // Save JWT token
+        localStorage.setItem(
+          "token",
+          data.token
+        );
+
+
+        // Save user information
+        localStorage.setItem(
+          "user",
+          JSON.stringify(data.user)
+        );
+
+
+        alert("Login successful!");
+
+
+        window.location.href =
+          "index.html";
+
+
+      } catch (error) {
+
+        alert(error.message);
+
+      }
+
+    }
+  );
+
+}
+6. Understand the Login Flow
+When the user enters:
+Email:
+gyan@example.com
+
+Password:
+123456
+and clicks Login:
+             Login Form
+                 ↓
+              JavaScript
+                 ↓
+               fetch()
+                 ↓
+        POST /api/auth/login
+                 ↓
+          Express Route
+                 ↓
+       Authentication Controller
+                 ↓
+          Find User
+                 ↓
+        bcrypt.compare()
+                 ↓
+             Password?
+             /       \
+           YES        NO
+            ↓          ↓
+       JWT Token      401
+            ↓
+      Send Response
+            ↓
+        JavaScript
+            ↓
+      localStorage
+            ↓
+       index.html
+7. What Is localStorage?
+We use:
+localStorage.setItem(
+  "token",
+  data.token
+);
+It stores information in the browser.
+For example:
+localStorage
+
+token → JWT token
+user  → user information
+To retrieve the token:
+const token =
+  localStorage.getItem("token");
+To retrieve the user:
+const user =
+  JSON.parse(
+    localStorage.getItem("user")
+  );
+Important security note
+For a learning project this demonstrates the concept, but for a production browser application, avoid casually storing long-lived authentication tokens in localStorage because JavaScript-accessible storage can be exposed by XSS. A common production approach is a properly configured, short-lived/session-based HttpOnly, Secure, SameSite cookie.
+8. Show Logged-In User on Dashboard
+Now open:
+public/index.html
+Find:
+HTML
+<h1>Student Management System</h1>
+Change it to:
+HTML
+<div class="header">
+
+  <div>
+    <h1>Student Management System</h1>
+
+    <p id="welcomeMessage"></p>
+  </div>
+
+  <button id="logoutBtn">
+    Logout
+  </button>
+
+</div>
+9. Add Dashboard CSS
+Open:
+public/style.css
+Add:
+.header {
+  display: flex;
+
+  justify-content: space-between;
+
+  align-items: center;
+
+  margin-bottom: 30px;
+}
+
+#welcomeMessage {
+  margin-top: 5px;
+}
+
+#logoutBtn {
+  padding: 10px 20px;
+}
+10. Add Login Information to script.js
+Open:
+public/script.js
+At the top add:
+const token =
+  localStorage.getItem("token");
+
+const savedUser =
+  localStorage.getItem("user");
+Then add:
+const welcomeMessage =
+  document.getElementById(
+    "welcomeMessage"
+  );
+
+
+if (savedUser && welcomeMessage) {
+
+  const user =
+    JSON.parse(savedUser);
+
+  welcomeMessage.textContent =
+    `Welcome, ${user.name}`;
+
+}
+11. Add Logout
+Still in:
+public/script.js
+Add:
+const logoutBtn =
+  document.getElementById("logoutBtn");
+
+
+if (logoutBtn) {
+
+  logoutBtn.addEventListener(
+    "click",
+    function() {
+
+      localStorage.removeItem(
+        "token"
+      );
+
+      localStorage.removeItem(
+        "user"
+      );
+
+
+      window.location.href =
+        "login.html";
+
+    }
+  );
+
+}
+Now:
+Logout
+  ↓
+Remove token
+  ↓
+Remove user
+  ↓
+Login page
+12. Protect the Dashboard
+At the beginning of script.js, add:
+if (!token) {
+
+  window.location.href =
+    "login.html";
+
+}
+Now if someone directly opens:
+http://localhost:3000/index.html
+without logging in, they are redirected to:
+login.html
+13. Send JWT with Student Requests
+This is very important.
+Currently your student API does not require authentication.
+Later we will protect it using:
+Authorization: Bearer TOKEN
+For example:
+const response = await fetch(
+  "/api/students",
+  {
+    headers: {
+      "Authorization":
+        `Bearer ${token}`
+    }
+  }
+);
+The backend can then verify:
+Bearer TOKEN
+      ↓
+JWT verification
+      ↓
+Authenticated user
+14. Test Registration
+Start your server:
+npm run dev
+Open:
+http://localhost:3000/register.html
+Enter:
+Name:
+Gyan
+
+Email:
+gyan@example.com
+
+Password:
+123456
+Click:
+Register
+You should see:
+Registration successful!
+Then you are sent to:
+login.html
+15. Test Login
+Enter:
+Email:
+gyan@example.com
+
+Password:
+123456
+Click:
+Login
+You should see:
+Login successful!
+Then:
+index.html
+will open.
+You should see:
+Student Management System
+
+Welcome, Gyan
+
+                         [Logout]
+16. Test Logout
+Click:
+Logout
+The browser removes:
+token
+user
+and sends you to:
+login.html
+17. Complete Authentication Flow
+Your application now looks like:
+                 ┌──────────────┐
+                 │   REGISTER   │
+                 └──────┬───────┘
+                        ↓
+                   bcrypt.hash
+                        ↓
+                     MongoDB
+                        ↓
+                 ┌──────────────┐
+                 │    LOGIN     │
+                 └──────┬───────┘
+                        ↓
+                bcrypt.compare
+                        ↓
+                   JWT Token
+                        ↓
+                 Browser Storage
+                        ↓
+                  ┌─────────┐
+                  │Dashboard│
+                  └────┬────┘
+                       ↓
+                  Student CRUD
+                       ↓
+                    MongoDB
+18. Your Project Structure Now
+student-management/
+│
+├── server.js
+│
+├── models/
+│   ├── Student.js
+│   └── User.js
+│
+├── routes/
+│   ├── studentRoutes.js
+│   └── authRoutes.js
+│
+├── controllers/
+│   ├── studentController.js
+│   └── authController.js
+│
+├── middleware/
+│   ├── auth.js
+│   └── errorHandler.js
+│
+└── public/
+    ├── index.html
+    ├── login.html
+    ├── register.html
+    ├── style.css
+    ├── script.js
+    └── auth.js
+🧠 Remember
+REGISTER
+   ↓
+HASH PASSWORD
+   ↓
+DATABASE
+
+LOGIN
+   ↓
+COMPARE PASSWORD
+   ↓
+JWT
+   ↓
+DASHBOARD
+
+LOGOUT
+   ↓
+REMOVE TOKEN
+   ↓
+LOGIN
+Current status
+✅ Student CRUD
+✅ MongoDB
+✅ Mongoose
+✅ Express
+✅ Frontend
+✅ Search
+✅ Registration
+✅ bcrypt password hashing
+✅ Login
+✅ JWT generation
+✅ Logout
+✅ Protected dashboard
+Next: JWT Protected Student APIs + Admin Authorization 🔐👨‍💻
+Now we will make the Student CRUD backend secure.
+Currently, someone could potentially call:
+POST /api/students
+PUT /api/students/:id
+DELETE /api/students/:id
+without being logged in.
+We will fix that.
+1. Authentication vs Authorization
+Authentication
+"Who are you?"
+User logs in → JWT is issued.
+Authorization
+"What are you allowed to do?"
+For our project:
+USER
+ ├── View students
+ └── Search students
+
+ADMIN
+ ├── View students
+ ├── Add students
+ ├── Update students
+ └── Delete students
+So:
+LOGIN
+  ↓
+JWT
+  ↓
+AUTHENTICATION
+  ↓
+ROLE CHECK
+  ↓
+AUTHORIZATION
+2. Our Security Plan
+We will use:
+GET    /api/students
+        ↓
+   Login required
+
+POST   /api/students
+        ↓
+   Admin required
+
+PUT    /api/students/:id
+        ↓
+   Admin required
+
+DELETE /api/students/:id
+        ↓
+   Admin required
+3. Your Existing auth.js
+You already have:
+middleware/auth.js
+It verifies the JWT.
+const jwt = require("jsonwebtoken");
+
+function authMiddleware(req, res, next) {
+
+  try {
+
+    const authHeader =
+      req.headers.authorization;
+
+    if (
+      !authHeader ||
+      !authHeader.startsWith("Bearer ")
+    ) {
+      return res.status(401).json({
+        success: false,
+        message: "Authentication required"
+      });
+    }
+
+    const token =
+      authHeader.split(" ")[1];
+
+    const decoded =
+      jwt.verify(
+        token,
+        process.env.JWT_SECRET
+      );
+
+    req.user = decoded;
+
+    next();
+
+  } catch (error) {
+
+    return res.status(401).json({
+      success: false,
+      message: "Invalid or expired token"
+    });
+
+  }
+}
+
+module.exports = authMiddleware;
+This gives us:
+req.user
+For example:
+req.user.userId
+req.user.role
+4. Create Admin Middleware
+Create a new file:
+middleware/admin.js
+Add:
+function adminMiddleware(req, res, next) {
+
+  if (!req.user) {
+
+    return res.status(401).json({
+      success: false,
+      message: "Authentication required"
+    });
+
+  }
+
+
+  if (req.user.role !== "admin") {
+
+    return res.status(403).json({
+      success: false,
+      message: "Admin access required"
+    });
+
+  }
+
+
+  next();
+}
+
+module.exports = adminMiddleware;
+5. Understand the Middleware
+Suppose a normal user tries:
+DELETE /api/students/123
+Flow:
+Request
+   ↓
+authMiddleware
+   ↓
+JWT valid?
+   ↓
+YES
+   ↓
+adminMiddleware
+   ↓
+role = admin?
+   ↓
+NO
+   ↓
+403 Forbidden
+An admin:
+Request
+   ↓
+authMiddleware
+   ↓
+JWT valid
+   ↓
+adminMiddleware
+   ↓
+role = admin
+   ↓
+Controller
+   ↓
+MongoDB
+6. Protect Student Routes
+Open:
+routes/studentRoutes.js
+Replace it with:
+const express = require("express");
+
+const router = express.Router();
+
+const {
+  createStudent,
+  getStudents,
+  getStudent,
+  updateStudent,
+  deleteStudent
+} = require("../controllers/studentController");
+
+const authMiddleware =
+  require("../middleware/auth");
+
+const adminMiddleware =
+  require("../middleware/admin");
+
+
+// =============================
+// GET ALL STUDENTS
+// Login required
+// =============================
+
+router.get(
+  "/",
+  authMiddleware,
+  getStudents
+);
+
+
+// =============================
+// GET ONE STUDENT
+// Login required
+// =============================
+
+router.get(
+  "/:id",
+  authMiddleware,
+  getStudent
+);
+
+
+// =============================
+// CREATE STUDENT
+// Admin only
+// =============================
+
+router.post(
+  "/",
+  authMiddleware,
+  adminMiddleware,
+  createStudent
+);
+
+
+// =============================
+// UPDATE STUDENT
+// Admin only
+// =============================
+
+router.put(
+  "/:id",
+  authMiddleware,
+  adminMiddleware,
+  updateStudent
+);
+
+
+// =============================
+// DELETE STUDENT
+// Admin only
+// =============================
+
+router.delete(
+  "/:id",
+  authMiddleware,
+  adminMiddleware,
+  deleteStudent
+);
+
+
+module.exports = router;
+7. Middleware Order Is Important
+Look at:
+router.post(
+  "/",
+  authMiddleware,
+  adminMiddleware,
+  createStudent
+);
+The order is:
+authMiddleware
+      ↓
+adminMiddleware
+      ↓
+createStudent
+Why?
+First:
+"Are you logged in?"
+Then:
+"Are you an admin?"
+Then:
+"Perform the operation."
+8. Test Without Login
+Open Postman.
+Try:
+GET
+http://localhost:3000/api/students
+without a token.
+Expected:
+{
+  "success": false,
+  "message": "Authentication required"
+}
+Status:
+401 Unauthorized
+✅ API is protected.
+9. Login as Normal User
+Register a user:
+POST
+/api/auth/register
+{
+  "name": "Gyan",
+  "email": "gyan@example.com",
+  "password": "123456"
+}
+The user's role is automatically:
+user
+because the User model has:
+default: "user"
+10. Login
+Send:
+POST
+/api/auth/login
+{
+  "email": "gyan@example.com",
+  "password": "123456"
+}
+Copy the JWT token.
+In Postman:
+Authorization
+     ↓
+Bearer Token
+     ↓
+Paste token
+11. Normal User Can View Students
+Try:
+GET
+/api/students
+with the user token.
+This should work:
+user
+ ↓
+authMiddleware
+ ↓
+getStudents
+12. Normal User Cannot Delete
+Try:
+DELETE
+/api/students/STUDENT_ID
+with the normal user's token.
+Flow:
+JWT valid
+   ↓
+role = user
+   ↓
+adminMiddleware
+   ↓
+STOP
+Response:
+{
+  "success": false,
+  "message": "Admin access required"
+}
+Status:
+403 Forbidden
+13. Why 401 and 403 Are Different
+This is very important.
+401
+User is not properly authenticated.
+Example:
+No token
+Invalid token
+Expired token
+401 = "You are not authenticated."
+403
+User is authenticated but doesn't have permission.
+Example:
+Logged-in user
+       ↓
+Tries admin operation
+       ↓
+403
+403 = "You are authenticated, but not allowed."
+Memory:
+401 → WHO ARE YOU?
+403 → YOU CAN'T DO THIS.
+14. Create an Admin User
+Our registration endpoint intentionally creates normal users:
+role = user
+For development/testing, you can create an admin directly in MongoDB.
+Your admin document should have:
+{
+  "name": "Admin",
+  "email": "admin@example.com",
+  "password": "BCRYPT_HASH_HERE",
+  "role": "admin"
+}
+⚠️ Never store:
+"password": "123456"
+Use a bcrypt hash.
+15. Easier Development Method: Temporary Admin Script
+Create a file in your project root:
+createAdmin.js
+Add:
+const mongoose = require("mongoose");
+const bcrypt = require("bcrypt");
+require("dotenv").config();
+
+const User = require("./models/User");
+
+async function createAdmin() {
+
+  try {
+
+    await mongoose.connect(
+      process.env.MONGODB_URI
+    );
+
+    const password = "Admin@123";
+
+    const hashedPassword =
+      await bcrypt.hash(password, 10);
+
+    const existingAdmin =
+      await User.findOne({
+        email: "admin@example.com"
+      });
+
+    if (existingAdmin) {
+
+      console.log("Admin already exists");
+
+      return;
+    }
+
+    const admin =
+      await User.create({
+
+        name: "Admin",
+
+        email: "admin@example.com",
+
+        password: hashedPassword,
+
+        role: "admin"
+
+      });
+
+    console.log(
+      "Admin created:",
+      admin.email
+    );
+
+  } catch (error) {
+
+    console.error(error);
+
+  } finally {
+
+    await mongoose.disconnect();
+
+  }
+}
+
+createAdmin();
+Run:
+node createAdmin.js
+Expected:
+Admin created: admin@example.com
+After creating the admin, delete createAdmin.js or keep it out of any public repository, especially if it contains a known password.
+16. Login as Admin
+Postman:
+POST
+http://localhost:3000/api/auth/login
+Body:
+{
+  "email": "admin@example.com",
+  "password": "Admin@123"
+}
+You receive:
+JWT TOKEN
+Copy it.
+17. Test Admin Create
+Use:
+POST
+http://localhost:3000/api/students
+Authorization:
+Bearer
+YOUR_ADMIN_TOKEN
+Body:
+{
+  "name": "Ravi",
+  "age": 22,
+  "branch": "ECE",
+  "email": "ravi@example.com"
+}
+Flow:
+Admin Token
+     ↓
+JWT verification
+     ↓
+role = admin
+     ↓
+createStudent()
+     ↓
+MongoDB
+     ↓
+201 Created
+18. Test Admin Update
+PUT
+http://localhost:3000/api/students/STUDENT_ID
+Body:
+{
+  "age": 23,
+  "branch": "CSE"
+}
+Expected:
+{
+  "success": true,
+  "message": "Student updated successfully"
+}
+19. Test Admin Delete
+DELETE
+http://localhost:3000/api/students/STUDENT_ID
+Use admin token.
+Expected:
+{
+  "success": true,
+  "message": "Student deleted successfully"
+}
+20. Important Security Improvement
+Your frontend currently redirects users based on whether a token exists:
+if (!token) {
+  window.location.href = "login.html";
+}
+But remember:
+A token existing in the browser does not prove that the token is valid.
+The backend must always verify the JWT.
+That's why this is important:
+Frontend
+   ↓
+UX protection
+   ↓
+Backend
+   ↓
+REAL SECURITY
+Never rely only on JavaScript to protect APIs.
+21. Send Token from Frontend
+When calling the API, use:
+const token =
+  localStorage.getItem("token");
+
+const response = await fetch(
+  "/api/students",
+  {
+    headers: {
+      "Authorization":
+        `Bearer ${token}`
+    }
+  }
+);
+For POST:
+const response = await fetch(
+  "/api/students",
+  {
+    method: "POST",
+
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization":
+        `Bearer ${token}`
+    },
+
+    body: JSON.stringify(student)
+  }
+);
+22. Update Your loadStudents()
+In:
+public/script.js
+change your GET request from:
+const response = await fetch(API_URL);
+to:
+const response = await fetch(
+  API_URL,
+  {
+    headers: {
+      "Authorization":
+        `Bearer ${token}`
+    }
+  }
+);
+23. Update DELETE
+Change:
+const response = await fetch(
+  `${API_URL}/${id}`,
+  {
+    method: "DELETE"
+  }
+);
+to:
+const response = await fetch(
+  `${API_URL}/${id}`,
+  {
+    method: "DELETE",
+
+    headers: {
+      "Authorization":
+        `Bearer ${token}`
+    }
+  }
+);
+24. Update PUT
+Your edit request should contain:
+const response = await fetch(
+  `${API_URL}/${id}`,
+  {
+    method: "PUT",
+
+    headers: {
+      "Content-Type": "application/json",
+
+      "Authorization":
+        `Bearer ${token}`
+    },
+
+    body: JSON.stringify(updatedStudent)
+  }
+);
+25. Update POST
+Your Add Student request should contain:
+const response = await fetch(
+  API_URL,
+  {
+    method: "POST",
+
+    headers: {
+      "Content-Type": "application/json",
+
+      "Authorization":
+        `Bearer ${token}`
+    },
+
+    body: JSON.stringify(student)
+  }
+);
+26. Final Secure Architecture 🔐
+Your application now works like this:
+                    USER
+                     ↓
+                  LOGIN
+                     ↓
+                JWT TOKEN
+                     ↓
+            ┌────────┴────────┐
+            ↓                 ↓
+          USER              ADMIN
+            ↓                 ↓
+      View Students      View Students
+                              ↓
+                         Add Student
+                              ↓
+                        Update Student
+                              ↓
+                        Delete Student
+Backend:
+Request
+   ↓
+authMiddleware
+   ↓
+JWT verification
+   ↓
+adminMiddleware
+   ↓
+Role verification
+   ↓
+Controller
+   ↓
+Mongoose
+   ↓
+MongoDB
+🧠 Easy Memory Trick
+JWT
+ ↓
+WHO?
+ ↓
+Authentication
+ ↓
+ROLE
+ ↓
+WHAT?
+ ↓
+Authorization
+And:
+401 → Login required
+403 → Permission denied
+🎯 Current Project
+You have now built:
+✅ HTML/CSS/JavaScript
+✅ Node.js
+✅ Express
+✅ MongoDB
+✅ Mongoose
+✅ MVC structure
+✅ CRUD
+✅ Search
+✅ Registration
+✅ bcrypt
+✅ Login
+✅ JWT
+✅ Logout
+✅ Protected routes
+✅ Admin authorization
