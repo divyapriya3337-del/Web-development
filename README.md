@@ -15666,3 +15666,2255 @@ You have now built:
 ✅ Logout
 ✅ Protected routes
 ✅ Admin authorization
+Next: Advanced Student Search 🔎
+Now we'll upgrade the Student Management System with a professional search API.
+You will be able to:
+🔎 Search by student name/email
+🎓 Filter by branch
+🎂 Filter by minimum/maximum age
+↕️ Sort students
+📄 Paginate results
+🔢 Get total student count
+1. How the Search API Will Work
+Example:
+/api/students?search=gyan
+or:
+/api/students?branch=CSE
+or:
+/api/students?minAge=18&maxAge=25
+or combine everything:
+/api/students?search=gyan&branch=CSE&minAge=18&maxAge=25&page=1&limit=5
+Flow:
+Frontend
+   ↓
+Search Parameters
+   ↓
+GET /api/students?...
+   ↓
+Controller
+   ↓
+MongoDB Query
+   ↓
+Filter + Sort + Pagination
+   ↓
+JSON Response
+   ↓
+Frontend Table
+2. Update studentController.js
+Open:
+controllers/studentController.js
+Find your current:
+exports.getStudents = async ...
+Replace only that function with:
+exports.getStudents = async (req, res, next) => {
+
+  try {
+
+    const {
+      search,
+      branch,
+      minAge,
+      maxAge,
+      sortBy = "createdAt",
+      order = "desc",
+      page = 1,
+      limit = 10
+    } = req.query;
+
+
+    // =========================
+    // BUILD FILTER
+    // =========================
+
+    const filter = {};
+
+
+    // Search by name or email
+    if (search) {
+
+      filter.$or = [
+
+        {
+          name: {
+            $regex: search,
+            $options: "i"
+          }
+        },
+
+        {
+          email: {
+            $regex: search,
+            $options: "i"
+          }
+        }
+
+      ];
+
+    }
+
+
+    // Branch filter
+    if (branch) {
+
+      filter.branch = {
+        $regex: `^${branch}$`,
+        $options: "i"
+      };
+
+    }
+
+
+    // Age filter
+    if (minAge || maxAge) {
+
+      filter.age = {};
+
+      if (minAge) {
+        filter.age.$gte = Number(minAge);
+      }
+
+      if (maxAge) {
+        filter.age.$lte = Number(maxAge);
+      }
+
+    }
+
+
+    // =========================
+    // PAGINATION
+    // =========================
+
+    const currentPage =
+      Math.max(Number(page), 1);
+
+    const itemsPerPage =
+      Math.min(
+        Math.max(Number(limit), 1),
+        100
+      );
+
+    const skip =
+      (currentPage - 1) *
+      itemsPerPage;
+
+
+    // =========================
+    // SORT
+    // =========================
+
+    const allowedSortFields = [
+      "name",
+      "age",
+      "branch",
+      "createdAt"
+    ];
+
+    const safeSortBy =
+      allowedSortFields.includes(sortBy)
+        ? sortBy
+        : "createdAt";
+
+    const sortOrder =
+      order === "asc" ? 1 : -1;
+
+
+    // =========================
+    // DATABASE QUERY
+    // =========================
+
+    const students =
+      await Student.find(filter)
+        .sort({
+          [safeSortBy]: sortOrder
+        })
+        .skip(skip)
+        .limit(itemsPerPage);
+
+
+    // Total matching records
+    const total =
+      await Student.countDocuments(filter);
+
+
+    const totalPages =
+      Math.ceil(
+        total / itemsPerPage
+      );
+
+
+    // =========================
+    // RESPONSE
+    // =========================
+
+    res.status(200).json({
+
+      success: true,
+
+      count: students.length,
+
+      total,
+
+      page: currentPage,
+
+      limit: itemsPerPage,
+
+      totalPages,
+
+      students
+
+    });
+
+  } catch (error) {
+
+    next(error);
+
+  }
+
+};
+3. What Did We Add?
+We added these parameters:
+search
+branch
+minAge
+maxAge
+sortBy
+order
+page
+limit
+Think:
+SEARCH
+FILTER
+SORT
+PAGINATE
+4. Search by Name
+Postman:
+GET
+http://localhost:3000/api/students?search=Gyan
+MongoDB performs a search similar to:
+{
+  $or: [
+    { name: /Gyan/i },
+    { email: /Gyan/i }
+  ]
+}
+The i means case-insensitive.
+So:
+Gyan
+gyan
+GYAN
+GyAn
+can match.
+5. Search by Email
+Example:
+GET /api/students?search=gmail
+It can find students whose email contains:
+gmail
+6. Filter by Branch
+Try:
+GET
+http://localhost:3000/api/students?branch=CSE
+Possible result:
+Gyan     CSE
+Priya    CSE
+Ravi     ECE
+Only CSE students are returned.
+7. Filter by Age
+Minimum age
+/api/students?minAge=20
+Means:
+age >= 20
+Maximum age
+/api/students?maxAge=25
+Means:
+age <= 25
+Age range
+/api/students?minAge=18&maxAge=25
+Means:
+18 <= age <= 25
+8. Combine Filters
+Example:
+/api/students?branch=CSE&minAge=18&maxAge=25
+Meaning:
+Branch = CSE
+AND
+Age >= 18
+AND
+Age <= 25
+9. Sorting
+Sort by age:
+/api/students?sortBy=age
+Default order is descending.
+For ascending:
+/api/students?sortBy=age&order=asc
+Example:
+18
+20
+21
+23
+25
+Descending:
+25
+23
+21
+20
+18
+10. Sort by Name
+/api/students?sortBy=name&order=asc
+Possible:
+Arun
+Gyan
+Priya
+Ravi
+We restrict sortBy to known fields, which is safer than blindly accepting arbitrary query input.
+11. Pagination 📄
+Suppose there are:
+50 students
+but you only want:
+10 students per page
+Use:
+/api/students?page=1&limit=10
+Page 2:
+/api/students?page=2&limit=10
+Page 3:
+/api/students?page=3&limit=10
+The calculation is:
+skip = (page - 1) × limit
+So page 3:
+(3 - 1) × 10
+= 20
+MongoDB skips the first 20 records and returns the next 10.
+12. Example Response
+Request:
+GET /api/students?branch=CSE&page=1&limit=5
+Response:
+{
+  "success": true,
+  "count": 5,
+  "total": 17,
+  "page": 1,
+  "limit": 5,
+  "totalPages": 4,
+  "students": [
+    {
+      "_id": "...",
+      "name": "Gyan",
+      "age": 21,
+      "branch": "CSE",
+      "email": "gyan@example.com"
+    }
+  ]
+}
+Meaning:
+count      → students returned now
+total      → all matching students
+page       → current page
+limit      → students per page
+totalPages → number of pages
+13. Update Frontend Search
+Now let's connect the professional API to the frontend.
+Open:
+public/script.js
+Instead of downloading all students and filtering only in JavaScript, we'll ask the backend to search.
+Add this function:
+async function searchStudents() {
+
+  try {
+
+    const search =
+      document
+        .getElementById("searchInput")
+        .value
+        .trim();
+
+
+    const url =
+      search
+        ? `${API_URL}?search=${encodeURIComponent(search)}`
+        : API_URL;
+
+
+    const response =
+      await fetch(url, {
+
+        headers: {
+          "Authorization":
+            `Bearer ${token}`
+        }
+
+      });
+
+
+    const data =
+      await response.json();
+
+
+    if (!response.ok) {
+      throw new Error(data.message);
+    }
+
+
+    displayStudents(data.students);
+
+
+  } catch (error) {
+
+    console.error(error);
+
+    alert(error.message);
+
+  }
+
+}
+14. Connect Search Box
+Find your current:
+searchInput.addEventListener(
+  "input",
+  function() {
+Replace that search listener with:
+searchInput.addEventListener(
+  "input",
+  searchStudents
+);
+Now:
+User types "CSE"
+       ↓
+searchStudents()
+       ↓
+GET /api/students?search=CSE
+       ↓
+Express
+       ↓
+MongoDB
+       ↓
+Filtered results
+       ↓
+Table
+15. Add Branch Filter
+Let's make the UI better.
+Open:
+public/index.html
+Below the search input, add:
+HTML
+<select id="branchFilter">
+
+  <option value="">
+    All Branches
+  </option>
+
+  <option value="CSE">
+    CSE
+  </option>
+
+  <option value="ECE">
+    ECE
+  </option>
+
+  <option value="EEE">
+    EEE
+  </option>
+
+  <option value="IT">
+    IT
+  </option>
+
+  <option value="MECH">
+    MECH
+  </option>
+
+</select>
+So your search section becomes:
+HTML
+<div class="search-box">
+
+  <h2>Search Students</h2>
+
+  <input
+    type="text"
+    id="searchInput"
+    placeholder="Search by name or email"
+  >
+
+  <select id="branchFilter">
+
+    <option value="">
+      All Branches
+    </option>
+
+    <option value="CSE">CSE</option>
+
+    <option value="ECE">ECE</option>
+
+    <option value="EEE">EEE</option>
+
+    <option value="IT">IT</option>
+
+    <option value="MECH">MECH</option>
+
+  </select>
+
+</div>
+16. Add CSS for Dropdown
+In:
+public/style.css
+add:
+#branchFilter {
+  width: 100%;
+  padding: 12px;
+  margin-top: 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 16px;
+}
+17. Update Search Function
+Replace searchStudents() with:
+async function searchStudents() {
+
+  try {
+
+    const search =
+      document
+        .getElementById("searchInput")
+        .value
+        .trim();
+
+
+    const branch =
+      document
+        .getElementById("branchFilter")
+        .value;
+
+
+    const params =
+      new URLSearchParams();
+
+
+    if (search) {
+      params.set("search", search);
+    }
+
+
+    if (branch) {
+      params.set("branch", branch);
+    }
+
+
+    const queryString =
+      params.toString();
+
+
+    const url =
+      queryString
+        ? `${API_URL}?${queryString}`
+        : API_URL;
+
+
+    const response =
+      await fetch(url, {
+
+        headers: {
+          "Authorization":
+            `Bearer ${token}`
+        }
+
+      });
+
+
+    const data =
+      await response.json();
+
+
+    if (!response.ok) {
+      throw new Error(data.message);
+    }
+
+
+    displayStudents(data.students);
+
+
+  } catch (error) {
+
+    console.error(error);
+
+    alert(error.message);
+
+  }
+
+}
+Then add:
+document
+  .getElementById("branchFilter")
+  .addEventListener(
+    "change",
+    searchStudents
+  );
+18. Test It
+Start:
+npm run dev
+Open:
+http://localhost:3000
+Try:
+Search:
+Gyan
+Then select:
+CSE
+The frontend requests something like:
+/api/students?search=Gyan&branch=CSE
+19. Professional Search Architecture
+You now have:
+                SEARCH UI
+                    ↓
+        ┌───────────┴───────────┐
+        ↓                       ↓
+      Search                  Branch
+        ↓                       ↓
+        └───────────┬───────────┘
+                    ↓
+               URLSearchParams
+                    ↓
+              Express API
+                    ↓
+               Controller
+                    ↓
+               MongoDB
+                    ↓
+          Filter + Sort + Page
+                    ↓
+                 JSON
+                    ↓
+                Table
+20. Why Backend Search Is Better
+Previously:
+MongoDB
+   ↓
+ALL students
+   ↓
+Browser
+   ↓
+JavaScript filtering
+For a large database, that's inefficient.
+Now:
+Browser
+   ↓
+Search request
+   ↓
+MongoDB
+   ↓
+ONLY matching students
+   ↓
+Browser
+This is much better for larger datasets.
+21. Important MongoDB Operators
+You should remember these for interviews:
+Operator
+Meaning
+$gt
+greater than
+$gte
+greater than/equal
+$lt
+less than
+$lte
+less than/equal
+$in
+matches values in list
+$nin
+not in list
+$or
+either condition
+$and
+all conditions
+$regex
+pattern/text search
+Example:
+{
+  age: {
+    $gte: 18,
+    $lte: 25
+  }
+}
+Means:
+18 ≤ age ≤ 25
+🧠 Easy Memory Trick
+SEARCH  → $regex
+OR      → $or
+RANGE   → $gte + $lte
+SORT    → sort()
+SKIP    → skip()
+LIMIT   → limit()
+COUNT   → countDocuments()
+🎯 Your Project Has Now Reached This Level
+STUDENT MANAGEMENT SYSTEM
+│
+├── Frontend
+│   ├── HTML
+│   ├── CSS
+│   └── JavaScript
+│
+├── Backend
+│   ├── Node.js
+│   └── Express
+│
+├── Database
+│   ├── MongoDB
+│   └── Mongoose
+│
+├── Authentication
+│   ├── Register
+│   ├── Login
+│   ├── bcrypt
+│   └── JWT
+│
+├── Authorization
+│   ├── User
+│   └── Admin
+│
+└── Student Management
+    ├── Create
+    ├── Read
+    ├── Update
+    ├── Delete
+    ├── Search
+    ├── Filter
+    ├── Sort
+    └── Pagination
+Next: Professional Dashboard UI 🎨
+Now we'll make your Student Management System look like a real portfolio project, not just a basic HTML page.
+We'll add:
+📊 Dashboard statistics
+🔎 Better search/filter area
+✏️ Professional Edit modal
+🗑️ Delete confirmation
+📄 Pagination buttons
+👤 Logged-in user information
+🚪 Logout
+📱 Responsive design
+1. Dashboard Design
+The final page will look conceptually like:
+┌──────────────────────────────────────────────────┐
+│ Student Management       Welcome, Gyan   Logout │
+├──────────────────────────────────────────────────┤
+│                                                  │
+│  Total Students     CSE Students     Other      │
+│       25                 12             13       │
+│                                                  │
+├──────────────────────────────────────────────────┤
+│ Search students...     Branch ▼                 │
+├──────────────────────────────────────────────────┤
+│                                                  │
+│ Student List                                     │
+│                                                  │
+│ Name   Age   Branch   Email          Actions     │
+│ Gyan   21    CSE      ...            Edit Delete │
+│ Ravi   22    ECE      ...            Edit Delete │
+│                                                  │
+├──────────────────────────────────────────────────┤
+│              ← 1  2  3  →                       │
+└──────────────────────────────────────────────────┘
+2. Update index.html
+Open:
+public/index.html
+Replace the entire file with:
+HTML
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>Student Management Dashboard</title>
+
+  <link rel="stylesheet" href="style.css">
+
+</head>
+
+
+<body>
+
+  <div class="dashboard">
+
+
+    <!-- HEADER -->
+
+    <header class="header">
+
+      <div>
+
+        <h1>Student Management</h1>
+
+        <p id="welcomeMessage">
+          Welcome
+        </p>
+
+      </div>
+
+      <button id="logoutBtn">
+        Logout
+      </button>
+
+    </header>
+
+
+    <!-- STATISTICS -->
+
+    <section class="stats">
+
+      <div class="stat-card">
+
+        <h3>Total Students</h3>
+
+        <p id="totalStudents">
+          0
+        </p>
+
+      </div>
+
+
+      <div class="stat-card">
+
+        <h3>CSE Students</h3>
+
+        <p id="cseStudents">
+          0
+        </p>
+
+      </div>
+
+
+      <div class="stat-card">
+
+        <h3>Other Branches</h3>
+
+        <p id="otherStudents">
+          0
+        </p>
+
+      </div>
+
+    </section>
+
+
+    <!-- ADD STUDENT -->
+
+    <section class="card">
+
+      <h2>Add Student</h2>
+
+      <form id="studentForm">
+
+        <div class="form-grid">
+
+          <div class="form-group">
+
+            <label>Name</label>
+
+            <input
+              type="text"
+              id="name"
+              placeholder="Enter name"
+              required
+            >
+
+          </div>
+
+
+          <div class="form-group">
+
+            <label>Age</label>
+
+            <input
+              type="number"
+              id="age"
+              placeholder="Enter age"
+              required
+            >
+
+          </div>
+
+
+          <div class="form-group">
+
+            <label>Branch</label>
+
+            <input
+              type="text"
+              id="branch"
+              placeholder="CSE / ECE / IT"
+              required
+            >
+
+          </div>
+
+
+          <div class="form-group">
+
+            <label>Email</label>
+
+            <input
+              type="email"
+              id="email"
+              placeholder="Enter email"
+              required
+            >
+
+          </div>
+
+        </div>
+
+
+        <button
+          type="submit"
+          class="primary-btn"
+        >
+          Add Student
+        </button>
+
+      </form>
+
+    </section>
+
+
+    <!-- SEARCH -->
+
+    <section class="card">
+
+      <h2>Search Students</h2>
+
+      <div class="search-grid">
+
+        <input
+          type="text"
+          id="searchInput"
+          placeholder="Search by name or email"
+        >
+
+
+        <select id="branchFilter">
+
+          <option value="">
+            All Branches
+          </option>
+
+          <option value="CSE">
+            CSE
+          </option>
+
+          <option value="ECE">
+            ECE
+          </option>
+
+          <option value="EEE">
+            EEE
+          </option>
+
+          <option value="IT">
+            IT
+          </option>
+
+          <option value="MECH">
+            MECH
+          </option>
+
+        </select>
+
+
+        <select id="sortSelect">
+
+          <option value="createdAt-desc">
+            Newest
+          </option>
+
+          <option value="createdAt-asc">
+            Oldest
+          </option>
+
+          <option value="name-asc">
+            Name A-Z
+          </option>
+
+          <option value="name-desc">
+            Name Z-A
+          </option>
+
+          <option value="age-asc">
+            Age Low-High
+          </option>
+
+          <option value="age-desc">
+            Age High-Low
+          </option>
+
+        </select>
+
+      </div>
+
+    </section>
+
+
+    <!-- STUDENT TABLE -->
+
+    <section class="card">
+
+      <h2>Student List</h2>
+
+      <div class="table-container">
+
+        <table>
+
+          <thead>
+
+            <tr>
+
+              <th>Name</th>
+              <th>Age</th>
+              <th>Branch</th>
+              <th>Email</th>
+              <th>Actions</th>
+
+            </tr>
+
+          </thead>
+
+
+          <tbody id="studentTableBody">
+
+          </tbody>
+
+        </table>
+
+      </div>
+
+
+      <!-- PAGINATION -->
+
+      <div
+        id="pagination"
+        class="pagination"
+      ></div>
+
+    </section>
+
+
+  </div>
+
+
+  <!-- EDIT MODAL -->
+
+  <div
+    id="editModal"
+    class="modal hidden"
+  >
+
+    <div class="modal-content">
+
+      <h2>Edit Student</h2>
+
+
+      <form id="editForm">
+
+        <input
+          type="hidden"
+          id="editId"
+        >
+
+
+        <div class="form-group">
+
+          <label>Name</label>
+
+          <input
+            type="text"
+            id="editName"
+            required
+          >
+
+        </div>
+
+
+        <div class="form-group">
+
+          <label>Age</label>
+
+          <input
+            type="number"
+            id="editAge"
+            required
+          >
+
+        </div>
+
+
+        <div class="form-group">
+
+          <label>Branch</label>
+
+          <input
+            type="text"
+            id="editBranch"
+            required
+          >
+
+        </div>
+
+
+        <div class="form-group">
+
+          <label>Email</label>
+
+          <input
+            type="email"
+            id="editEmail"
+            required
+          >
+
+        </div>
+
+
+        <div class="modal-actions">
+
+          <button
+            type="submit"
+            class="primary-btn"
+          >
+            Save Changes
+          </button>
+
+
+          <button
+            type="button"
+            id="closeModal"
+          >
+            Cancel
+          </button>
+
+        </div>
+
+      </form>
+
+    </div>
+
+  </div>
+
+
+  <script src="script.js"></script>
+
+</body>
+
+</html>
+3. Replace style.css
+Open:
+public/style.css
+Replace the file with:
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+
+body {
+  font-family: Arial, sans-serif;
+
+  background: #f4f6f8;
+
+  padding: 25px;
+}
+
+
+.dashboard {
+  max-width: 1200px;
+
+  margin: auto;
+}
+
+
+/* HEADER */
+
+.header {
+  display: flex;
+
+  justify-content: space-between;
+
+  align-items: center;
+
+  margin-bottom: 25px;
+}
+
+
+.header h1 {
+  margin-bottom: 5px;
+}
+
+
+.header p {
+  color: #666;
+}
+
+
+/* CARDS */
+
+.card {
+  background: white;
+
+  padding: 25px;
+
+  margin-bottom: 25px;
+
+  border-radius: 12px;
+
+  box-shadow:
+    0 2px 10px
+    rgba(0, 0, 0, 0.08);
+}
+
+
+.card h2 {
+  margin-bottom: 20px;
+}
+
+
+/* STATISTICS */
+
+.stats {
+  display: grid;
+
+  grid-template-columns:
+    repeat(3, 1fr);
+
+  gap: 20px;
+
+  margin-bottom: 25px;
+}
+
+
+.stat-card {
+  background: white;
+
+  padding: 25px;
+
+  border-radius: 12px;
+
+  text-align: center;
+
+  box-shadow:
+    0 2px 10px
+    rgba(0, 0, 0, 0.08);
+}
+
+
+.stat-card h3 {
+  margin-bottom: 10px;
+}
+
+
+.stat-card p {
+  font-size: 32px;
+
+  font-weight: bold;
+}
+
+
+/* FORM */
+
+.form-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(2, 1fr);
+
+  gap: 15px;
+}
+
+
+.form-group {
+  margin-bottom: 15px;
+}
+
+
+.form-group label {
+  display: block;
+
+  font-weight: bold;
+
+  margin-bottom: 6px;
+}
+
+
+input,
+select {
+  width: 100%;
+
+  padding: 12px;
+
+  border: 1px solid #ccc;
+
+  border-radius: 6px;
+
+  font-size: 15px;
+}
+
+
+button {
+  padding: 10px 18px;
+
+  border: none;
+
+  border-radius: 6px;
+
+  cursor: pointer;
+
+  font-size: 15px;
+}
+
+
+.primary-btn {
+  margin-top: 5px;
+}
+
+
+/* SEARCH */
+
+.search-grid {
+  display: grid;
+
+  grid-template-columns:
+    2fr 1fr 1fr;
+
+  gap: 15px;
+}
+
+
+/* TABLE */
+
+.table-container {
+  overflow-x: auto;
+}
+
+
+table {
+  width: 100%;
+
+  border-collapse: collapse;
+}
+
+
+th,
+td {
+  padding: 14px;
+
+  border-bottom: 1px solid #ddd;
+
+  text-align: left;
+}
+
+
+th {
+  font-weight: bold;
+}
+
+
+.edit-btn {
+  margin-right: 5px;
+}
+
+
+.delete-btn {
+  margin-left: 5px;
+}
+
+
+/* PAGINATION */
+
+.pagination {
+  display: flex;
+
+  justify-content: center;
+
+  gap: 8px;
+
+  margin-top: 20px;
+}
+
+
+.pagination button {
+  min-width: 40px;
+}
+
+
+/* MODAL */
+
+.modal {
+  position: fixed;
+
+  inset: 0;
+
+  background: rgba(0, 0, 0, 0.5);
+
+  display: flex;
+
+  justify-content: center;
+
+  align-items: center;
+
+  padding: 20px;
+}
+
+
+.modal.hidden {
+  display: none;
+}
+
+
+.modal-content {
+  background: white;
+
+  width: 100%;
+
+  max-width: 500px;
+
+  padding: 30px;
+
+  border-radius: 12px;
+}
+
+
+.modal-content h2 {
+  margin-bottom: 20px;
+}
+
+
+.modal-actions {
+  display: flex;
+
+  gap: 10px;
+
+  margin-top: 15px;
+}
+
+
+/* MOBILE */
+
+@media (max-width: 700px) {
+
+  body {
+    padding: 15px;
+  }
+
+
+  .header {
+    flex-direction: column;
+
+    align-items: flex-start;
+
+    gap: 15px;
+  }
+
+
+  .stats {
+    grid-template-columns: 1fr;
+  }
+
+
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+
+  .search-grid {
+    grid-template-columns: 1fr;
+  }
+
+}
+4. Replace script.js
+Now open:
+public/script.js
+Replace it with:
+const API_URL = "/api/students";
+
+const token =
+  localStorage.getItem("token");
+
+const savedUser =
+  localStorage.getItem("user");
+
+
+// ============================
+// AUTH CHECK
+// ============================
+
+if (!token) {
+
+  window.location.href =
+    "login.html";
+
+}
+
+
+// ============================
+// USER INFORMATION
+// ============================
+
+const welcomeMessage =
+  document.getElementById(
+    "welcomeMessage"
+  );
+
+
+if (savedUser && welcomeMessage) {
+
+  const user =
+    JSON.parse(savedUser);
+
+  welcomeMessage.textContent =
+    `Welcome, ${user.name}`;
+
+}
+
+
+// ============================
+// LOGOUT
+// ============================
+
+const logoutBtn =
+  document.getElementById(
+    "logoutBtn"
+  );
+
+
+if (logoutBtn) {
+
+  logoutBtn.addEventListener(
+    "click",
+    () => {
+
+      localStorage.removeItem(
+        "token"
+      );
+
+      localStorage.removeItem(
+        "user"
+      );
+
+      window.location.href =
+        "login.html";
+
+    }
+  );
+
+}
+
+
+// ============================
+// ELEMENTS
+// ============================
+
+const studentForm =
+  document.getElementById(
+    "studentForm"
+  );
+
+const studentTableBody =
+  document.getElementById(
+    "studentTableBody"
+  );
+
+const searchInput =
+  document.getElementById(
+    "searchInput"
+  );
+
+const branchFilter =
+  document.getElementById(
+    "branchFilter"
+  );
+
+const sortSelect =
+  document.getElementById(
+    "sortSelect"
+  );
+
+const pagination =
+  document.getElementById(
+    "pagination"
+  );
+
+
+// ============================
+// STATE
+// ============================
+
+let currentPage = 1;
+
+const limit = 5;
+
+
+// ============================
+// LOAD STUDENTS
+// ============================
+
+async function loadStudents() {
+
+  try {
+
+    const search =
+      searchInput.value.trim();
+
+    const branch =
+      branchFilter.value;
+
+
+    const [
+      sortBy,
+      order
+    ] =
+      sortSelect.value.split("-");
+
+
+    const params =
+      new URLSearchParams();
+
+
+    if (search) {
+
+      params.set(
+        "search",
+        search
+      );
+
+    }
+
+
+    if (branch) {
+
+      params.set(
+        "branch",
+        branch
+      );
+
+    }
+
+
+    params.set(
+      "sortBy",
+      sortBy
+    );
+
+
+    params.set(
+      "order",
+      order
+    );
+
+
+    params.set(
+      "page",
+      currentPage
+    );
+
+
+    params.set(
+      "limit",
+      limit
+    );
+
+
+    const response =
+      await fetch(
+        `${API_URL}?${params}`,
+        {
+          headers: {
+            "Authorization":
+              `Bearer ${token}`
+          }
+        }
+      );
+
+
+    const data =
+      await response.json();
+
+
+    if (!response.ok) {
+
+      throw new Error(
+        data.message
+      );
+
+    }
+
+
+    displayStudents(
+      data.students
+    );
+
+
+    updateStats(
+      data.total
+    );
+
+
+    createPagination(
+      data.totalPages
+    );
+
+
+  } catch (error) {
+
+    console.error(error);
+
+    alert(error.message);
+
+  }
+
+}
+
+
+// ============================
+// DISPLAY STUDENTS
+// ============================
+
+function displayStudents(
+  studentList
+) {
+
+  studentTableBody.innerHTML = "";
+
+
+  if (
+    studentList.length === 0
+  ) {
+
+    studentTableBody.innerHTML = `
+      <tr>
+        <td colspan="5">
+          No students found
+        </td>
+      </tr>
+    `;
+
+    return;
+
+  }
+
+
+  studentList.forEach(
+    student => {
+
+      const row =
+        document.createElement(
+          "tr"
+        );
+
+
+      row.innerHTML = `
+
+        <td>
+          ${student.name}
+        </td>
+
+        <td>
+          ${student.age}
+        </td>
+
+        <td>
+          ${student.branch}
+        </td>
+
+        <td>
+          ${student.email}
+        </td>
+
+        <td>
+
+          <button
+            class="edit-btn"
+            onclick="openEditModal('${student._id}')"
+          >
+            Edit
+          </button>
+
+          <button
+            class="delete-btn"
+            onclick="deleteStudent('${student._id}')"
+          >
+            Delete
+          </button>
+
+        </td>
+
+      `;
+
+
+      studentTableBody.appendChild(
+        row
+      );
+
+    }
+  );
+
+}
+
+
+// ============================
+// ADD STUDENT
+// ============================
+
+studentForm.addEventListener(
+  "submit",
+  async event => {
+
+    event.preventDefault();
+
+
+    const student = {
+
+      name:
+        document.getElementById(
+          "name"
+        ).value.trim(),
+
+      age:
+        Number(
+          document.getElementById(
+            "age"
+          ).value
+        ),
+
+      branch:
+        document.getElementById(
+          "branch"
+        ).value.trim(),
+
+      email:
+        document.getElementById(
+          "email"
+        ).value.trim()
+
+    };
+
+
+    try {
+
+      const response =
+        await fetch(
+          API_URL,
+          {
+
+            method: "POST",
+
+            headers: {
+
+              "Content-Type":
+                "application/json",
+
+              "Authorization":
+                `Bearer ${token}`
+
+            },
+
+            body:
+              JSON.stringify(
+                student
+              )
+
+          }
+        );
+
+
+      const data =
+        await response.json();
+
+
+      if (!response.ok) {
+
+        throw new Error(
+          data.message
+        );
+
+      }
+
+
+      alert(
+        "Student added successfully!"
+      );
+
+
+      studentForm.reset();
+
+      currentPage = 1;
+
+      loadStudents();
+
+
+    } catch (error) {
+
+      alert(error.message);
+
+    }
+
+  }
+);
+
+
+// ============================
+// EDIT MODAL
+// ============================
+
+async function openEditModal(id) {
+
+  try {
+
+    const response =
+      await fetch(
+        `${API_URL}/${id}`,
+        {
+          headers: {
+            "Authorization":
+              `Bearer ${token}`
+          }
+        }
+      );
+
+
+    const data =
+      await response.json();
+
+
+    if (!response.ok) {
+
+      throw new Error(
+        data.message
+      );
+
+    }
+
+
+    const student =
+      data.student;
+
+
+    document.getElementById(
+      "editId"
+    ).value = student._id;
+
+
+    document.getElementById(
+      "editName"
+    ).value = student.name;
+
+
+    document.getElementById(
+      "editAge"
+    ).value = student.age;
+
+
+    document.getElementById(
+      "editBranch"
+    ).value = student.branch;
+
+
+    document.getElementById(
+      "editEmail"
+    ).value = student.email;
+
+
+    document.getElementById(
+      "editModal"
+    ).classList.remove(
+      "hidden"
+    );
+
+
+  } catch (error) {
+
+    alert(error.message);
+
+  }
+
+}
+
+
+// ============================
+// CLOSE MODAL
+// ============================
+
+document.getElementById(
+  "closeModal"
+).addEventListener(
+  "click",
+  () => {
+
+    document.getElementById(
+      "editModal"
+    ).classList.add(
+      "hidden"
+    );
+
+  }
+);
+
+
+// ============================
+// UPDATE STUDENT
+// ============================
+
+document.getElementById(
+  "editForm"
+).addEventListener(
+  "submit",
+  async event => {
+
+    event.preventDefault();
+
+
+    const id =
+      document.getElementById(
+        "editId"
+      ).value;
+
+
+    const updatedStudent = {
+
+      name:
+        document.getElementById(
+          "editName"
+        ).value.trim(),
+
+      age:
+        Number(
+          document.getElementById(
+            "editAge"
+          ).value
+        ),
+
+      branch:
+        document.getElementById(
+          "editBranch"
+        ).value.trim(),
+
+      email:
+        document.getElementById(
+          "editEmail"
+        ).value.trim()
+
+    };
+
+
+    try {
+
+      const response =
+        await fetch(
+          `${API_URL}/${id}`,
+          {
+
+            method: "PUT",
+
+            headers: {
+
+              "Content-Type":
+                "application/json",
+
+              "Authorization":
+                `Bearer ${token}`
+
+            },
+
+            body:
+              JSON.stringify(
+                updatedStudent
+              )
+
+          }
+        );
+
+
+      const data =
+        await response.json();
+
+
+      if (!response.ok) {
+
+        throw new Error(
+          data.message
+        );
+
+      }
+
+
+      alert(
+        "Student updated successfully!"
+      );
+
+
+      document.getElementById(
+        "editModal"
+      ).classList.add(
+        "hidden"
+      );
+
+
+      loadStudents();
+
+
+    } catch (error) {
+
+      alert(error.message);
+
+    }
+
+  }
+);
+
+
+// ============================
+// DELETE STUDENT
+// ============================
+
+async function deleteStudent(id) {
+
+  const confirmed =
+    confirm(
+      "Are you sure you want to delete this student?"
+    );
+
+
+  if (!confirmed) {
+    return;
+  }
+
+
+  try {
+
+    const response =
+      await fetch(
+        `${API_URL}/${id}`,
+        {
+
+          method: "DELETE",
+
+          headers: {
+            "Authorization":
+              `Bearer ${token}`
+          }
+
+        }
+      );
+
+
+    const data =
+      await response.json();
+
+
+    if (!response.ok) {
+
+      throw new Error(
+        data.message
+      );
+
+    }
+
+
+    alert(
+      "Student deleted successfully!"
+    );
+
+
+    loadStudents();
+
+
+  } catch (error) {
+
+    alert(error.message);
+
+  }
+
+}
+
+
+// ============================
+// SEARCH / FILTER
+// ============================
+
+searchInput.addEventListener(
+  "input",
+  () => {
+
+    currentPage = 1;
+
+    loadStudents();
+
+  }
+);
+
+
+branchFilter.addEventListener(
+  "change",
+  () => {
+
+    currentPage = 1;
+
+    loadStudents();
+
+  }
+);
+
+
+sortSelect.addEventListener(
+  "change",
+  () => {
+
+    currentPage = 1;
+
+    loadStudents();
+
+  }
+);
+
+
+// ============================
+// STATISTICS
+// ============================
+
+function updateStats(total) {
+
+  document.getElementById(
+    "totalStudents"
+  ).textContent = total;
+
+}
+
+
+// ============================
+// PAGINATION
+// ============================
+
+function createPagination(
+  totalPages
+) {
+
+  pagination.innerHTML = "";
+
+
+  if (totalPages <= 1) {
+    return;
+  }
+
+
+  for (
+    let page = 1;
+    page <= totalPages;
+    page++
+  ) {
+
+    const button =
+      document.createElement(
+        "button"
+      );
+
+
+    button.text
