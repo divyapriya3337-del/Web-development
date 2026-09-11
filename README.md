@@ -17918,3 +17918,1211 @@ function createPagination(
 
 
     button.text
+🚀 Next: Dashboard Statistics API + Charts 📊
+Now we'll add real dashboard analytics to your Student Management System.
+We will create:
+📊 Total Students
+💻 CSE Students
+🔌 ECE Students
+📚 Other Branches
+
+        Branch Distribution
+             📊 Chart
+And the data will come directly from MongoDB, not hard-coded values.
+1. Create Dashboard Controller
+In VS Code, open:
+student-management
+ └── controllers
+      └── dashboardController.js
+Create a new file:
+dashboardController.js
+Paste:
+const Student = require("../models/Student");
+
+exports.getDashboardStats = async (req, res, next) => {
+  try {
+
+    // Total students
+    const totalStudents =
+      await Student.countDocuments();
+
+
+    // Students by branch
+    const branchStats =
+      await Student.aggregate([
+        {
+          $group: {
+            _id: {
+              $toUpper: "$branch"
+            },
+            count: {
+              $sum: 1
+            }
+          }
+        },
+        {
+          $sort: {
+            count: -1
+          }
+        }
+      ]);
+
+
+    // Average age
+    const ageStats =
+      await Student.aggregate([
+        {
+          $group: {
+            _id: null,
+            averageAge: {
+              $avg: "$age"
+            }
+          }
+        }
+      ]);
+
+
+    const averageAge =
+      ageStats.length > 0
+        ? Number(
+            ageStats[0].averageAge.toFixed(1)
+          )
+        : 0;
+
+
+    res.status(200).json({
+
+      success: true,
+
+      statistics: {
+
+        totalStudents,
+
+        averageAge,
+
+        branchStats
+
+      }
+
+    });
+
+  } catch (error) {
+
+    next(error);
+
+  }
+};
+2. What Does This Code Do?
+Total students
+Student.countDocuments()
+Example:
+MongoDB
+   ↓
+Student collection
+   ↓
+countDocuments()
+   ↓
+25
+So:
+Total Students = 25
+Branch statistics
+We use MongoDB:
+aggregate()
+Example database:
+Name
+Branch
+Gyan
+CSE
+Ravi
+CSE
+Priya
+ECE
+Anu
+IT
+Rahul
+CSE
+The API produces:
+CSE → 3
+ECE → 1
+IT  → 1
+Average age
+MongoDB calculates:
+21 + 22 + 20 + 21
+------------------
+         4
+Result:
+Average Age = 21
+3. Create Dashboard Route
+Go to:
+routes
+Create:
+dashboardRoutes.js
+Paste:
+const express = require("express");
+
+const router =
+  express.Router();
+
+const {
+  getDashboardStats
+} =
+  require("../controllers/dashboardController");
+
+const authMiddleware =
+  require("../middleware/auth");
+
+
+router.get(
+  "/stats",
+  authMiddleware,
+  getDashboardStats
+);
+
+
+module.exports = router;
+4. Add Route to server.js
+Open:
+server.js
+Add:
+const dashboardRoutes =
+  require("./routes/dashboardRoutes");
+Then add:
+app.use(
+  "/api/dashboard",
+  dashboardRoutes
+);
+Your routes now look like:
+/api/auth
+/api/students
+/api/dashboard
+5. Your Dashboard API
+Start your server:
+npm run dev
+Then use Postman.
+Method:
+GET
+URL:
+http://localhost:3000/api/dashboard/stats
+Authorization:
+Bearer Token
+Paste your JWT token.
+Click:
+Send
+6. Expected Response
+You should receive something similar to:
+{
+  "success": true,
+  "statistics": {
+    "totalStudents": 25,
+    "averageAge": 21.4,
+    "branchStats": [
+      {
+        "_id": "CSE",
+        "count": 12
+      },
+      {
+        "_id": "ECE",
+        "count": 6
+      },
+      {
+        "_id": "IT",
+        "count": 4
+      },
+      {
+        "_id": "EEE",
+        "count": 3
+      }
+    ]
+  }
+}
+Your numbers will depend on your database.
+7. Connect Statistics to Frontend
+Open:
+public/script.js
+Add this function:
+async function loadDashboardStats() {
+
+  try {
+
+    const response =
+      await fetch(
+        "/api/dashboard/stats",
+        {
+          headers: {
+            "Authorization":
+              `Bearer ${token}`
+          }
+        }
+      );
+
+
+    const data =
+      await response.json();
+
+
+    if (!response.ok) {
+
+      throw new Error(
+        data.message
+      );
+
+    }
+
+
+    const stats =
+      data.statistics;
+
+
+    document.getElementById(
+      "totalStudents"
+    ).textContent =
+      stats.totalStudents;
+
+
+    const cse =
+      stats.branchStats.find(
+        branch =>
+          branch._id === "CSE"
+      );
+
+
+    document.getElementById(
+      "cseStudents"
+    ).textContent =
+      cse ? cse.count : 0;
+
+
+    const other =
+      stats.branchStats
+        .filter(
+          branch =>
+            branch._id !== "CSE"
+        )
+        .reduce(
+          (total, branch) =>
+            total + branch.count,
+          0
+        );
+
+
+    document.getElementById(
+      "otherStudents"
+    ).textContent =
+      other;
+
+
+  } catch (error) {
+
+    console.error(
+      "Dashboard error:",
+      error
+    );
+
+  }
+
+}
+8. Call the Function
+At the bottom of script.js, currently you have:
+loadStudents();
+Change it to:
+loadStudents();
+
+loadDashboardStats();
+Now when the dashboard opens:
+Browser
+   ↓
+loadDashboardStats()
+   ↓
+GET /api/dashboard/stats
+   ↓
+Express
+   ↓
+Dashboard Controller
+   ↓
+MongoDB
+   ↓
+Statistics
+   ↓
+Frontend
+9. Add Average Age Card
+Let's improve the dashboard.
+In index.html, inside:
+HTML
+<section class="stats">
+Add another card:
+HTML
+<div class="stat-card">
+
+  <h3>Average Age</h3>
+
+  <p id="averageAge">
+    0
+  </p>
+
+</div>
+Your cards become:
+┌──────────────┐
+│ Total        │
+│ 25           │
+└──────────────┘
+
+┌──────────────┐
+│ CSE          │
+│ 12           │
+└──────────────┘
+
+┌──────────────┐
+│ Other        │
+│ 13           │
+└──────────────┘
+
+┌──────────────┐
+│ Average Age  │
+│ 21.4         │
+└──────────────┘
+10. Update JavaScript
+Inside loadDashboardStats() add:
+document.getElementById(
+  "averageAge"
+).textContent =
+  stats.averageAge;
+11. Update CSS
+Open:
+public/style.css
+Find:
+.stats {
+  display: grid;
+
+  grid-template-columns:
+    repeat(3, 1fr);
+Change it to:
+.stats {
+  display: grid;
+
+  grid-template-columns:
+    repeat(4, 1fr);
+
+  gap: 20px;
+
+  margin-bottom: 25px;
+}
+For mobile, keep:
+@media (max-width: 700px) {
+
+  .stats {
+    grid-template-columns: 1fr;
+  }
+
+}
+12. Add Branch Chart 📊
+For a portfolio project, a chart makes the dashboard much better.
+We'll use Chart.js.
+In index.html, before:
+HTML
+<script src="script.js"></script>
+add:
+HTML
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+So the bottom becomes:
+HTML
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script src="script.js"></script>
+13. Add Chart HTML
+Below the statistics section, add:
+HTML
+<section class="card">
+
+  <h2>Students by Branch</h2>
+
+  <canvas
+    id="branchChart"
+  ></canvas>
+
+</section>
+14. Create Chart in JavaScript
+Inside script.js, add:
+let branchChart = null;
+
+
+function createBranchChart(
+  branchStats
+) {
+
+  const canvas =
+    document.getElementById(
+      "branchChart"
+    );
+
+
+  const labels =
+    branchStats.map(
+      branch => branch._id
+    );
+
+
+  const values =
+    branchStats.map(
+      branch => branch.count
+    );
+
+
+  if (branchChart) {
+
+    branchChart.destroy();
+
+  }
+
+
+  branchChart =
+    new Chart(
+      canvas,
+      {
+        type: "bar",
+
+        data: {
+
+          labels: labels,
+
+          datasets: [
+            {
+              label:
+                "Number of Students",
+
+              data: values
+            }
+          ]
+
+        },
+
+        options: {
+
+          responsive: true,
+
+          plugins: {
+
+            legend: {
+              display: false
+            }
+
+          }
+
+        }
+
+      }
+    );
+
+}
+15. Call the Chart Function
+Inside:
+loadDashboardStats()
+after:
+const stats =
+  data.statistics;
+add:
+createBranchChart(
+  stats.branchStats
+);
+So:
+const stats =
+  data.statistics;
+
+createBranchChart(
+  stats.branchStats
+);
+16. Final Dashboard Flow
+Your application is now:
+                  STUDENT MANAGEMENT SYSTEM
+                           │
+             ┌─────────────┴─────────────┐
+             │                           │
+        Authentication              Dashboard
+             │                           │
+          JWT Token                 Statistics API
+             │                           │
+             │                     ┌─────┴─────┐
+             │                     │           │
+             │                  MongoDB      Charts
+             │                     │
+             │             ┌───────┼────────┐
+             │             │       │        │
+             │           Total   Branch   Avg Age
+             │
+             └──────────────┬───────────────
+                            │
+                     Student Management
+                            │
+             ┌──────────────┼──────────────┐
+             │              │              │
+            Add           Edit           Delete
+             │              │              │
+             └──────────────┼──────────────┘
+                            │
+                       MongoDB
+🧠 Important MongoDB Concepts Learned
+Concept
+Meaning
+countDocuments()
+Count records
+aggregate()
+Process/analyze data
+$group
+Group records
+$sum
+Calculate count/sum
+$avg
+Calculate average
+$sort
+Sort results
+find()
+Retrieve records
+Easy memory trick:
+C-G-S-A-S
+C → Count
+G → Group
+S → Sum
+A → Average
+S → Sort
+🎯 Your Project Is Becoming Portfolio-Level
+Current features:
+✅ HTML
+✅ CSS
+✅ JavaScript
+✅ Node.js
+✅ Express.js
+✅ REST API
+✅ MongoDB
+✅ Mongoose
+✅ CRUD
+✅ MVC
+✅ Middleware
+✅ Error handling
+✅ Input validation
+✅ JWT Authentication
+✅ bcrypt password hashing
+✅ Role-based Authorization
+✅ Search
+✅ Filtering
+✅ Sorting
+✅ Pagination
+✅ Dashboard
+✅ MongoDB Aggregation
+✅ Statistics
+✅ Charts
+🚀 Next: API Security & Production Hardening
+Now we'll make your Student Management System more secure and professional.
+We'll add:
+🛡️ Helmet — security headers
+🚦 Rate limiting — prevent request abuse
+🔐 Better password validation
+🧹 Safe search handling
+🌐 Proper CORS configuration
+📦 Environment-based configuration
+🔒 Better JWT handling
+🚫 Protection against common mistakes
+1. Install Security Packages
+Open VS Code terminal:
+npm install helmet express-rate-limit
+You already have:
+express
+mongoose
+dotenv
+bcrypt
+jsonwebtoken
+cors
+Now additionally:
+helmet
+express-rate-limit
+2. Add Helmet
+Open:
+server.js
+At the top add:
+const helmet = require("helmet");
+Then after:
+const app = express();
+add:
+app.use(helmet());
+So:
+const express = require("express");
+const mongoose = require("mongoose");
+const cors = require("cors");
+const helmet = require("helmet");
+
+require("dotenv").config();
+
+const app = express();
+
+app.use(helmet());
+
+app.use(express.json());
+What is Helmet?
+Helmet adds security-related HTTP headers.
+Think:
+Browser
+   ↓
+Helmet
+   ↓
+Express
+   ↓
+Your API
+It helps reduce exposure to several common web security risks.
+3. Add Rate Limiting 🚦
+Without rate limiting:
+Attacker
+   ↓
+1000 requests
+   ↓
+Login API
+   ↓
+Server
+This can cause abuse.
+Install:
+npm install express-rate-limit
+We already installed it above.
+At the top of server.js:
+const rateLimit =
+  require("express-rate-limit");
+Create a general API limiter:
+const apiLimiter =
+  rateLimit({
+    windowMs: 15 * 60 * 1000,
+
+    limit: 100,
+
+    message: {
+      success: false,
+      message:
+        "Too many requests. Please try again later."
+    }
+  });
+Then:
+app.use(
+  "/api/",
+  apiLimiter
+);
+Now approximately:
+15 minutes
+     ↓
+Maximum 100 API requests
+     ↓
+Same client
+The exact behavior can vary with deployment/proxy configuration.
+4. Give Login a Stricter Limit 🔐
+Login endpoints deserve stronger protection because attackers may repeatedly guess passwords.
+Create:
+const loginLimiter =
+  rateLimit({
+    windowMs:
+      15 * 60 * 1000,
+
+    limit: 10,
+
+    message: {
+      success: false,
+      message:
+        "Too many login attempts. Try again later."
+    }
+  });
+Then in:
+routes/authRoutes.js
+add:
+const rateLimit =
+  require("express-rate-limit");
+Actually, an even cleaner approach is to create a middleware file.
+Create:
+middleware/rateLimiters.js
+Paste:
+const rateLimit =
+  require("express-rate-limit");
+
+
+const loginLimiter =
+  rateLimit({
+
+    windowMs:
+      15 * 60 * 1000,
+
+    limit: 10,
+
+    message: {
+      success: false,
+      message:
+        "Too many login attempts. Please try again later."
+    }
+
+  });
+
+
+module.exports = {
+  loginLimiter
+};
+Then in authRoutes.js:
+const {
+  loginLimiter
+} = require("../middleware/rateLimiters");
+Change:
+router.post(
+  "/login",
+  login
+);
+to:
+router.post(
+  "/login",
+  loginLimiter,
+  login
+);
+Now:
+POST /api/auth/login
+        ↓
+Rate Limiter
+        ↓
+Login Controller
+        ↓
+bcrypt
+        ↓
+JWT
+5. Improve Password Validation
+Open:
+controllers/authController.js
+In registration, don't only check:
+if (!password) {
+Use:
+if (!password || password.length < 6) {
+
+  return res.status(400).json({
+    success: false,
+    message:
+      "Password must be at least 6 characters long"
+  });
+
+}
+For a stronger application, you can require:
+Minimum 8 characters
++ uppercase
++ lowercase
++ number
++ special character
+Example:
+const passwordRegex =
+  /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$/;
+Then:
+if (!passwordRegex.test(password)) {
+
+  return res.status(400).json({
+    success: false,
+    message:
+      "Password must contain uppercase, lowercase, number and special character"
+  });
+
+}
+Example accepted password:
+Student@123
+6. Never Store Plain Passwords
+Your current registration correctly uses:
+const hashedPassword =
+  await bcrypt.hash(
+    password,
+    10
+  );
+Database should contain something like:
+$2b$10$..............
+NOT:
+Student@123
+Remember:
+Password
+   ↓
+bcrypt
+   ↓
+Hash
+   ↓
+MongoDB
+Login:
+Password
+   ↓
+bcrypt.compare()
+   ↓
+Stored hash
+   ↓
+Match?
+   ↓
+JWT
+7. Improve Search Security 🛡️
+Your current controller uses:
+filter.$or = [
+  {
+    name: {
+      $regex: search,
+      $options: "i"
+    }
+  },
+  {
+    email: {
+      $regex: search,
+      $options: "i"
+    }
+  }
+];
+A user can enter regex characters such as:
+.*
+So let's escape regex characters.
+At the top of:
+controllers/studentController.js
+add:
+function escapeRegex(value) {
+
+  return value.replace(
+    /[.*+?^${}()|[\]\\]/g,
+    "\\$&"
+  );
+
+}
+Then change:
+if (search) {
+
+  filter.$or = [
+    {
+      name: {
+        $regex: search,
+        $options: "i"
+      }
+    },
+    {
+      email: {
+        $regex: search,
+        $options: "i"
+      }
+    }
+  ];
+
+}
+to:
+if (search) {
+
+  const safeSearch =
+    escapeRegex(search);
+
+  filter.$or = [
+
+    {
+      name: {
+        $regex: safeSearch,
+        $options: "i"
+      }
+    },
+
+    {
+      email: {
+        $regex: safeSearch,
+        $options: "i"
+      }
+    }
+
+  ];
+
+}
+Now search behaves more like normal text search.
+8. Do the Same for Branch
+Current:
+filter.branch = {
+  $regex: `^${branch}$`,
+  $options: "i"
+};
+Change to:
+const safeBranch =
+  escapeRegex(branch);
+
+filter.branch = {
+  $regex: `^${safeBranch}$`,
+  $options: "i"
+};
+9. Configure CORS Properly 🌐
+Currently you may have:
+app.use(cors());
+This allows broad cross-origin access.
+For development, this is convenient.
+For production, restrict allowed origins.
+For example:
+const allowedOrigins =
+  process.env.FRONTEND_URL
+    ? [process.env.FRONTEND_URL]
+    : [];
+Then:
+app.use(
+  cors({
+    origin: allowedOrigins
+  })
+);
+But because your frontend is currently served by the same Express server, you don't actually need CORS for normal browser requests to:
+http://localhost:3000
+You can simply remove:
+app.use(cors());
+if the frontend and API remain same-origin.
+10. Add FRONTEND_URL to .env
+If later you deploy frontend separately, your .env can contain:
+PORT=3000
+
+MONGODB_URI=mongodb://127.0.0.1:27017/studentManagement
+
+JWT_SECRET=your-long-random-secret
+
+FRONTEND_URL=http://localhost:3000
+For a real deployed application:
+FRONTEND_URL=https://your-frontend-domain.com
+Don't commit .env.
+11. Improve JWT Secret
+Your .env currently has:
+JWT_SECRET=replace-this-with-a-long-random-secret
+Don't use that exact value in production.
+Generate a strong random secret.
+One convenient Node command is:
+node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+You'll get a long random value.
+Copy it into:
+.env
+Example:
+JWT_SECRET=your-generated-random-value
+Important
+Never put:
+JWT_SECRET
+directly in:
+server.js
+or GitHub.
+12. Protect JWT Properly
+Your middleware currently does:
+const authHeader =
+  req.headers.authorization;
+Then:
+const token =
+  authHeader.split(" ")[1];
+Improve it slightly:
+if (
+  !authHeader ||
+  !authHeader.startsWith("Bearer ")
+) {
+
+  return res.status(401).json({
+    success: false,
+    message:
+      "Authentication required"
+  });
+
+}
+Then:
+const token =
+  authHeader.substring(7);
+And verify:
+const decoded =
+  jwt.verify(
+    token,
+    process.env.JWT_SECRET
+  );
+13. Don't Put Sensitive Data in JWT
+Your JWT currently contains:
+{
+  userId,
+  role
+}
+That's good.
+Don't put:
+{
+  userId,
+  password,
+  bankAccount,
+  privateInformation
+}
+JWT payloads are encoded, not encrypted.
+Anyone who obtains the token can decode its payload.
+14. JWT Expiration
+Your login currently uses:
+{
+  expiresIn: "1h"
+}
+So:
+Login
+ ↓
+JWT
+ ↓
+1 hour
+ ↓
+Expires
+That's a reasonable starting point.
+When expired:
+JWT verification
+      ↓
+Invalid/expired
+      ↓
+401 Unauthorized
+15. Don't Return Password
+Your registration/login response should return safe fields only:
+{
+  id,
+  name,
+  email,
+  role
+}
+Never:
+{
+  password: hashedPassword
+}
+Even though the password is hashed, don't unnecessarily expose the hash.
+16. Production Error Messages
+Don't send:
+res.status(500).json({
+  error: error.stack
+});
+because this can reveal internal information.
+Use:
+res.status(500).json({
+  success: false,
+  message:
+    "Internal server error"
+});
+Log the detailed error on the server:
+console.error(error);
+17. Your Secure Request Flow
+Now your API architecture becomes:
+                Browser
+                   │
+                   ▼
+             HTTP Request
+                   │
+                   ▼
+            Rate Limiter
+                   │
+                   ▼
+               Helmet
+                   │
+                   ▼
+             Authentication
+                   │
+                   ▼
+             Authorization
+                   │
+                   ▼
+             Validation
+                   │
+                   ▼
+              Controller
+                   │
+                   ▼
+               Mongoose
+                   │
+                   ▼
+               MongoDB
+                   │
+                   ▼
+             JSON Response
+This is much closer to a production architecture.
+18. Test Security with Postman
+Test 1 — No Token
+GET /api/students
+Don't provide Authorization.
+Expected:
+{
+  "success": false,
+  "message": "Authentication required"
+}
+Status:
+401
+Test 2 — Normal User Tries Delete
+Login as:
+role: user
+Then:
+DELETE /api/students/STUDENT_ID
+Expected:
+{
+  "success": false,
+  "message": "Admin access required"
+}
+Status:
+403
+Test 3 — Admin Delete
+Login as:
+role: admin
+Send:
+DELETE /api/students/STUDENT_ID
+Expected:
+200 OK
+Test 4 — Invalid ID
+Try:
+GET /api/students/abc
+Expected:
+400 Bad Request
+Test 5 — Duplicate Email
+Create a student using an existing email.
+Expected:
+409 Conflict
+🧠 Easy Security Memory Trick
+Remember:
+H-R-V-A-E
+H → Helmet
+R → Rate Limit
+V → Validate
+A → Authenticate / Authorize
+E → Error handling
+And:
+Password → bcrypt
+Token → JWT
+Database → Mongoose
+Search → escaped regex
+Secrets → .env
+📁 Your Improved Project Structure
+student-management/
+│
+├── server.js
+├── package.json
+├── .env
+├── .gitignore
+│
+├── models/
+│   ├── Student.js
+│   └── User.js
+│
+├── controllers/
+│   ├── studentController.js
+│   ├── authController.js
+│   └── dashboardController.js
+│
+├── routes/
+│   ├── studentRoutes.js
+│   ├── authRoutes.js
+│   └── dashboardRoutes.js
+│
+├── middleware/
+│   ├── auth.js
+│   ├── admin.js
+│   ├── errorHandler.js
+│   └── rateLimiters.js
+│
+└── public/
+    ├── index.html
+    ├── login.html
+    ├── register.html
+    ├── style.css
+    ├── script.js
+    └── auth.js
+🎯 What Your Project Now Demonstrates
+You can confidently mention these technologies in your BTech portfolio:
+HTML5
+CSS3
+JavaScript
+Node.js
+Express.js
+MongoDB
+Mongoose
+REST APIs
+MVC Architecture
+JWT Authentication
+Role-Based Authorization
+bcrypt
+MongoDB Aggregation
+API Search & Filtering
+Pagination
+Dashboard Analytics
+Chart.js
+Helmet
+Rate Limiting
+Input Validation
+Error Handling
+Git & GitHub
+Postman
