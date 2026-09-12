@@ -19126,3 +19126,1514 @@ Input Validation
 Error Handling
 Git & GitHub
 Postman
+NEXT — College Management System: Student Profile + Attendance + Marks
+Now we’ll expand your Student Management System into a more complete College Management System.
+1. New Features
+              COLLEGE MANAGEMENT SYSTEM
+                       │
+        ┌──────────────┼──────────────┐
+        │              │              │
+     Students      Attendance       Marks
+        │              │              │
+     Profile        Present %       Subjects
+     Department     Absent          Exams
+     Semester       Reports         Grades
+We will use separate MongoDB collections for Attendance and Marks.
+PART A — Student Profile
+Your existing Student model already has:
+name
+age
+branch
+email
+Let's add:
+rollNumber
+department
+semester
+phone
+Step 1: Open
+models/Student.js
+Replace it with:
+const mongoose = require("mongoose");
+
+const studentSchema = new mongoose.Schema(
+  {
+    name: {
+      type: String,
+      required: true,
+      trim: true,
+      minlength: 2,
+      maxlength: 50
+    },
+
+    age: {
+      type: Number,
+      required: true,
+      min: 1,
+      max: 100
+    },
+
+    branch: {
+      type: String,
+      required: true,
+      trim: true
+    },
+
+    email: {
+      type: String,
+      required: true,
+      unique: true,
+      lowercase: true,
+      trim: true
+    },
+
+    rollNumber: {
+      type: String,
+      required: true,
+      unique: true,
+      trim: true
+    },
+
+    department: {
+      type: String,
+      required: true,
+      trim: true
+    },
+
+    semester: {
+      type: Number,
+      required: true,
+      min: 1,
+      max: 8
+    },
+
+    phone: {
+      type: String,
+      trim: true
+    }
+  },
+  {
+    timestamps: true
+  }
+);
+
+module.exports = mongoose.model("Student", studentSchema);
+What each field means
+Field
+Example
+name
+Gyan Kishore
+age
+21
+branch
+CSE
+email
+student@gmail.com
+rollNumber
+CSE001
+department
+Computer Science
+semester
+5
+phone
+9876543210
+Important ⚠️
+Because rollNumber is now required, old Student documents may not have it.
+For learning/development, you can either:
+Delete old student records and create them again, or
+Update the existing records in MongoDB.
+For now, the easiest approach is create fresh student records with the new fields.
+PART B — Attendance Management
+Now create an Attendance collection.
+Step 2: Create file
+models/Attendance.js
+Add:
+const mongoose = require("mongoose");
+
+const attendanceSchema = new mongoose.Schema(
+  {
+    student: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Student",
+      required: true
+    },
+
+    subject: {
+      type: String,
+      required: true,
+      trim: true
+    },
+
+    date: {
+      type: Date,
+      required: true
+    },
+
+    status: {
+      type: String,
+      enum: ["Present", "Absent", "Late"],
+      required: true
+    }
+  },
+  {
+    timestamps: true
+  }
+);
+
+attendanceSchema.index(
+  {
+    student: 1,
+    subject: 1,
+    date: 1
+  },
+  {
+    unique: true
+  }
+);
+
+module.exports = mongoose.model(
+  "Attendance",
+  attendanceSchema
+);
+Understanding Attendance
+Example document:
+{
+  "student": "68xxxxxxxxxxxx",
+  "subject": "DBMS",
+  "date": "2026-09-12",
+  "status": "Present"
+}
+Here:
+student ────────→ Student document
+subject ────────→ DBMS
+date ───────────→ 12-09-2026
+status ─────────→ Present
+Relationship
+Student
+   │
+   ├── Attendance - DBMS - Present
+   ├── Attendance - OS   - Absent
+   ├── Attendance - CN   - Present
+   └── Attendance - DAA  - Present
+So one student can have many attendance records.
+This is a:
+One-to-Many relationship
+PART C — Attendance Controller
+Step 3: Create
+controllers/attendanceController.js
+Add:
+const mongoose = require("mongoose");
+const Attendance = require("../models/Attendance");
+const Student = require("../models/Student");
+
+exports.createAttendance = async (req, res, next) => {
+  try {
+    const { student, subject, date, status } = req.body;
+
+    if (!student || !subject || !date || !status) {
+      return res.status(400).json({
+        success: false,
+        message: "All fields are required"
+      });
+    }
+
+    if (!mongoose.isValidObjectId(student)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid student ID"
+      });
+    }
+
+    const existingStudent =
+      await Student.findById(student);
+
+    if (!existingStudent) {
+      return res.status(404).json({
+        success: false,
+        message: "Student not found"
+      });
+    }
+
+    const attendance =
+      await Attendance.create({
+        student,
+        subject,
+        date,
+        status
+      });
+
+    res.status(201).json({
+      success: true,
+      message: "Attendance created successfully",
+      attendance
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+PART D — Get Attendance
+Add this below the previous function:
+exports.getAttendance = async (req, res, next) => {
+  try {
+    const { student } = req.query;
+
+    const filter = {};
+
+    if (student) {
+      if (!mongoose.isValidObjectId(student)) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid student ID"
+        });
+      }
+
+      filter.student = student;
+    }
+
+    const attendance = await Attendance.find(filter)
+      .populate("student", "name rollNumber branch")
+      .sort({ date: -1 });
+
+    res.status(200).json({
+      success: true,
+      count: attendance.length,
+      attendance
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+Now you can get:
+GET /api/attendance
+or attendance for one student:
+GET /api/attendance?student=STUDENT_ID
+PART E — Attendance Percentage
+This is an important college-management feature.
+Add:
+exports.getAttendanceSummary = async (req, res, next) => {
+  try {
+    const { student } = req.params;
+
+    if (!mongoose.isValidObjectId(student)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid student ID"
+      });
+    }
+
+    const records = await Attendance.find({
+      student
+    });
+
+    const totalClasses = records.length;
+
+    const presentClasses = records.filter(
+      record => record.status === "Present"
+    ).length;
+
+    const absentClasses = records.filter(
+      record => record.status === "Absent"
+    ).length;
+
+    const lateClasses = records.filter(
+      record => record.status === "Late"
+    ).length;
+
+    const percentage =
+      totalClasses === 0
+        ? 0
+        : (presentClasses / totalClasses) * 100;
+
+    res.status(200).json({
+      success: true,
+      summary: {
+        totalClasses,
+        presentClasses,
+        absentClasses,
+        lateClasses,
+        attendancePercentage:
+          Number(percentage.toFixed(2))
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+Example
+Suppose:
+Total classes = 100
+Present = 85
+Absent = 10
+Late = 5
+Attendance percentage:
+85 / 100 × 100
+
+= 85%
+Response:
+{
+  "success": true,
+  "summary": {
+    "totalClasses": 100,
+    "presentClasses": 85,
+    "absentClasses": 10,
+    "lateClasses": 5,
+    "attendancePercentage": 85
+  }
+}
+PART F — Attendance Routes
+Create:
+routes/attendanceRoutes.js
+Add:
+const express = require("express");
+
+const router = express.Router();
+
+const {
+  createAttendance,
+  getAttendance,
+  getAttendanceSummary
+} = require("../controllers/attendanceController");
+
+const authMiddleware =
+  require("../middleware/auth");
+
+const adminMiddleware =
+  require("../middleware/admin");
+
+router.get(
+  "/",
+  authMiddleware,
+  getAttendance
+);
+
+router.get(
+  "/summary/:student",
+  authMiddleware,
+  getAttendanceSummary
+);
+
+router.post(
+  "/",
+  authMiddleware,
+  adminMiddleware,
+  createAttendance
+);
+
+module.exports = router;
+Routes
+Method
+URL
+Access
+GET
+/api/attendance
+Login
+GET
+/api/attendance/summary/:student
+Login
+POST
+/api/attendance
+Admin
+PART G — Connect Attendance to Server
+Open:
+server.js
+Add:
+const attendanceRoutes =
+  require("./routes/attendanceRoutes");
+Then add:
+app.use(
+  "/api/attendance",
+  attendanceRoutes
+);
+Your architecture is now:
+Frontend
+   ↓
+/api/attendance
+   ↓
+attendanceRoutes
+   ↓
+authMiddleware
+   ↓
+adminMiddleware
+   ↓
+attendanceController
+   ↓
+Attendance Model
+   ↓
+MongoDB
+PART H — Marks Management
+Now we create marks.
+Step 1: Create
+models/Mark.js
+Add:
+const mongoose = require("mongoose");
+
+const markSchema = new mongoose.Schema(
+  {
+    student: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Student",
+      required: true
+    },
+
+    subject: {
+      type: String,
+      required: true,
+      trim: true
+    },
+
+    examType: {
+      type: String,
+      enum: [
+        "Internal",
+        "Mid",
+        "Semester"
+      ],
+      required: true
+    },
+
+    marks: {
+      type: Number,
+      required: true,
+      min: 0
+    },
+
+    maxMarks: {
+      type: Number,
+      required: true,
+      min: 1
+    }
+  },
+  {
+    timestamps: true
+  }
+);
+
+markSchema.index(
+  {
+    student: 1,
+    subject: 1,
+    examType: 1
+  },
+  {
+    unique: true
+  }
+);
+
+module.exports = mongoose.model(
+  "Mark",
+  markSchema
+);
+PART I — Marks Controller
+Create:
+controllers/markController.js
+Add:
+const mongoose = require("mongoose");
+const Mark = require("../models/Mark");
+const Student = require("../models/Student");
+
+exports.createMark = async (req, res, next) => {
+  try {
+    const {
+      student,
+      subject,
+      examType,
+      marks,
+      maxMarks
+    } = req.body;
+
+    if (
+      !student ||
+      !subject ||
+      !examType ||
+      marks === undefined ||
+      maxMarks === undefined
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "All fields are required"
+      });
+    }
+
+    if (!mongoose.isValidObjectId(student)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid student ID"
+      });
+    }
+
+    if (marks > maxMarks) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "Marks cannot be greater than maximum marks"
+      });
+    }
+
+    const existingStudent =
+      await Student.findById(student);
+
+    if (!existingStudent) {
+      return res.status(404).json({
+        success: false,
+        message: "Student not found"
+      });
+    }
+
+    const mark = await Mark.create({
+      student,
+      subject,
+      examType,
+      marks,
+      maxMarks
+    });
+
+    res.status(201).json({
+      success: true,
+      message: "Marks added successfully",
+      mark
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+PART J — Get Marks
+Add:
+exports.getMarks = async (req, res, next) => {
+  try {
+    const { student } = req.query;
+
+    const filter = {};
+
+    if (student) {
+      if (!mongoose.isValidObjectId(student)) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid student ID"
+        });
+      }
+
+      filter.student = student;
+    }
+
+    const marks = await Mark.find(filter)
+      .populate(
+        "student",
+        "name rollNumber branch"
+      )
+      .sort({
+        subject: 1
+      });
+
+    res.status(200).json({
+      success: true,
+      count: marks.length,
+      marks
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+PART K — Marks Summary
+Add:
+exports.getMarksSummary = async (
+  req,
+  res,
+  next
+) => {
+  try {
+    const { student } = req.params;
+
+    if (!mongoose.isValidObjectId(student)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid student ID"
+      });
+    }
+
+    const marks = await Mark.find({
+      student
+    });
+
+    let totalMarks = 0;
+    let totalMaxMarks = 0;
+
+    marks.forEach(mark => {
+      totalMarks += mark.marks;
+      totalMaxMarks += mark.maxMarks;
+    });
+
+    const percentage =
+      totalMaxMarks === 0
+        ? 0
+        : (totalMarks / totalMaxMarks) * 100;
+
+    let grade = "F";
+
+    if (percentage >= 90) {
+      grade = "A+";
+    } else if (percentage >= 80) {
+      grade = "A";
+    } else if (percentage >= 70) {
+      grade = "B";
+    } else if (percentage >= 60) {
+      grade = "C";
+    } else if (percentage >= 50) {
+      grade = "D";
+    }
+
+    res.status(200).json({
+      success: true,
+      summary: {
+        subjects: marks.length,
+        totalMarks,
+        totalMaxMarks,
+        percentage:
+          Number(percentage.toFixed(2)),
+        grade
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+Example
+Suppose:
+Subject
+Marks
+Maximum
+DBMS
+85
+100
+OS
+80
+100
+CN
+75
+100
+DAA
+90
+100
+Total:
+330 / 400 × 100
+= 82.5%
+Grade:
+82.5 → A
+PART L — Marks Routes
+Create:
+routes/markRoutes.js
+Add:
+const express = require("express");
+
+const router = express.Router();
+
+const {
+  createMark,
+  getMarks,
+  getMarksSummary
+} = require("../controllers/markController");
+
+const authMiddleware =
+  require("../middleware/auth");
+
+const adminMiddleware =
+  require("../middleware/admin");
+
+router.get(
+  "/",
+  authMiddleware,
+  getMarks
+);
+
+router.get(
+  "/summary/:student",
+  authMiddleware,
+  getMarksSummary
+);
+
+router.post(
+  "/",
+  authMiddleware,
+  adminMiddleware,
+  createMark
+);
+
+module.exports = router;
+PART M — Connect Marks to Server
+Open:
+server.js
+Add:
+const markRoutes =
+  require("./routes/markRoutes");
+Then:
+app.use(
+  "/api/marks",
+  markRoutes
+);
+PART N — Final Project Structure
+Your project now looks like:
+student-management/
+│
+├── server.js
+├── package.json
+├── .env
+├── .gitignore
+│
+├── models/
+│   ├── User.js
+│   ├── Student.js
+│   ├── Attendance.js
+│   └── Mark.js
+│
+├── controllers/
+│   ├── authController.js
+│   ├── studentController.js
+│   ├── dashboardController.js
+│   ├── attendanceController.js
+│   └── markController.js
+│
+├── routes/
+│   ├── authRoutes.js
+│   ├── studentRoutes.js
+│   ├── dashboardRoutes.js
+│   ├── attendanceRoutes.js
+│   └── markRoutes.js
+│
+├── middleware/
+│   ├── auth.js
+│   ├── admin.js
+│   ├── errorHandler.js
+│   └── rateLimiters.js
+│
+└── public/
+    ├── index.html
+    ├── login.html
+    ├── register.html
+    ├── style.css
+    ├── script.js
+    └── auth.js
+PART O — Test with Postman
+1. Add Attendance
+Method
+POST
+URL
+http://localhost:3000/api/attendance
+Authorization
+Bearer ADMIN_TOKEN
+Body → raw → JSON
+{
+  "student": "STUDENT_ID",
+  "subject": "DBMS",
+  "date": "2026-09-13",
+  "status": "Present"
+}
+2. Get Attendance
+GET
+http://localhost:3000/api/attendance
+Or:
+GET
+http://localhost:3000/api/attendance?student=STUDENT_ID
+3. Attendance Summary
+GET
+http://localhost:3000/api/attendance/summary/STUDENT_ID
+4. Add Marks
+POST
+http://localhost:3000/api/marks
+Body:
+{
+  "student": "STUDENT_ID",
+  "subject": "DBMS",
+  "examType": "Internal",
+  "marks": 85,
+  "maxMarks": 100
+}
+5. Get Marks
+GET
+http://localhost:3000/api/marks?student=STUDENT_ID
+6. Marks Summary
+GET
+http://localhost:3000/api/marks/summary/STUDENT_ID
+PART P — Complete System Flow
+Now your application has become:
+                         COLLEGE MANAGEMENT SYSTEM
+                                  │
+                ┌─────────────────┼─────────────────┐
+                │                 │                 │
+             Student           Attendance          Marks
+                │                 │                 │
+          ┌─────┴─────┐       Subject/Date      Subject/Exam
+          │           │       Present/Absent      Marks
+       Profile     Department                      Grade
+          │
+       Semester
+          │
+          ↓
+       MongoDB
+Backend architecture
+Frontend
+   ↓
+HTTP Request
+   ↓
+Express
+   ↓
+Routes
+   ↓
+Authentication
+   ↓
+Authorization
+   ↓
+Controller
+   ↓
+Mongoose Model
+   ↓
+MongoDB
+   ↓
+JSON Response
+   ↓
+Frontend
+Most important relationships
+Student 1 ──────── * Attendance
+
+Student 1 ──────── * Marks
+Meaning:
+One Student → Many Attendance records
+One Student → Many Mark records
+🔑 Easy Memory Trick
+PROFILE    → Student Model
+ATTENDANCE → Attendance Model
+MARKS      → Mark Model
+
+GET        → View
+POST       → Add
+PUT        → Update
+DELETE     → Remove
+
+401        → Login required
+403        → Permission denied
+404        → Not found
+409        → Duplicate
+500        → Server error
+Next step
+The next major part is Frontend College Dashboard — adding Student Profile page + Attendance table + Attendance percentage + Marks table + Marks/Grade display + navigation between Dashboard, Students, Attendance and Marks, all connected to your existing APIs.
+NEXT — Professional College Dashboard Frontend
+Now we connect the Attendance + Marks APIs we created to your frontend.
+Your application will have:
+Dashboard
+   │
+   ├── Students
+   ├── Attendance
+   ├── Marks
+   └── Logout
+1. Create Navigation Menu
+Open:
+public/index.html
+Inside <body>, near the beginning of the .container, add:
+HTML
+<nav class="navbar">
+  <div class="logo">College Management</div>
+
+  <div class="nav-links">
+    <a href="index.html">Dashboard</a>
+    <a href="#students">Students</a>
+    <a href="#attendance">Attendance</a>
+    <a href="#marks">Marks</a>
+    <button id="logoutBtn">Logout</button>
+  </div>
+</nav>
+Your page will now have:
+┌─────────────────────────────────────────────────────┐
+│ College Management   Dashboard Students Attendance │
+│                                  Marks       Logout │
+└─────────────────────────────────────────────────────┘
+2. Add Attendance Section
+Below your student table, add:
+HTML
+<section class="card" id="attendance">
+  <h2>Attendance Management</h2>
+
+  <div class="search-grid">
+    <div class="form-group">
+      <label>Student ID</label>
+      <input
+        type="text"
+        id="attendanceStudentId"
+        placeholder="Enter Student ID"
+      >
+    </div>
+
+    <button
+      type="button"
+      id="loadAttendanceBtn"
+      class="primary-btn"
+    >
+      Load Attendance
+    </button>
+  </div>
+
+  <div class="attendance-summary">
+    <div class="stat-card">
+      <h3>Total Classes</h3>
+      <p id="totalClasses">0</p>
+    </div>
+
+    <div class="stat-card">
+      <h3>Present</h3>
+      <p id="presentClasses">0</p>
+    </div>
+
+    <div class="stat-card">
+      <h3>Absent</h3>
+      <p id="absentClasses">0</p>
+    </div>
+
+    <div class="stat-card">
+      <h3>Attendance %</h3>
+      <p id="attendancePercentage">0%</p>
+    </div>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Subject</th>
+        <th>Date</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+
+    <tbody id="attendanceTableBody"></tbody>
+  </table>
+</section>
+3. Add Marks Section
+Below Attendance:
+HTML
+<section class="card" id="marks">
+  <h2>Marks Management</h2>
+
+  <div class="search-grid">
+    <div class="form-group">
+      <label>Student ID</label>
+      <input
+        type="text"
+        id="marksStudentId"
+        placeholder="Enter Student ID"
+      >
+    </div>
+
+    <button
+      type="button"
+      id="loadMarksBtn"
+      class="primary-btn"
+    >
+      Load Marks
+    </button>
+  </div>
+
+  <div class="attendance-summary">
+    <div class="stat-card">
+      <h3>Total Marks</h3>
+      <p id="totalMarks">0</p>
+    </div>
+
+    <div class="stat-card">
+      <h3>Maximum Marks</h3>
+      <p id="maxMarks">0</p>
+    </div>
+
+    <div class="stat-card">
+      <h3>Percentage</h3>
+      <p id="marksPercentage">0%</p>
+    </div>
+
+    <div class="stat-card">
+      <h3>Grade</h3>
+      <p id="marksGrade">-</p>
+    </div>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Subject</th>
+        <th>Exam</th>
+        <th>Marks</th>
+        <th>Maximum</th>
+      </tr>
+    </thead>
+
+    <tbody id="marksTableBody"></tbody>
+  </table>
+</section>
+4. Add CSS
+Open:
+public/style.css
+At the bottom add:
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: white;
+  padding: 18px 25px;
+  margin-bottom: 25px;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.logo {
+  font-size: 22px;
+  font-weight: bold;
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.nav-links a {
+  text-decoration: none;
+  font-weight: bold;
+}
+
+.primary-btn {
+  padding: 12px 20px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.attendance-summary {
+  display: grid;
+  grid-template-columns:
+    repeat(4, 1fr);
+  gap: 15px;
+  margin: 20px 0;
+}
+
+.card {
+  background: white;
+  padding: 25px;
+  margin-bottom: 25px;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+@media (max-width: 800px) {
+  .navbar {
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  .nav-links {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .attendance-summary {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+5. Connect Attendance with JavaScript
+Open:
+public/script.js
+Add this code at the bottom:
+const loadAttendanceBtn =
+  document.getElementById("loadAttendanceBtn");
+
+if (loadAttendanceBtn) {
+  loadAttendanceBtn.addEventListener(
+    "click",
+    loadAttendance
+  );
+}
+
+async function loadAttendance() {
+  const studentId =
+    document.getElementById(
+      "attendanceStudentId"
+    ).value.trim();
+
+  if (!studentId) {
+    alert("Please enter Student ID");
+    return;
+  }
+
+  try {
+    const response = await fetch(
+      `/api/attendance?student=${encodeURIComponent(studentId)}`,
+      {
+        headers: {
+          "Authorization": `Bearer ${token}`
+        }
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message);
+    }
+
+    displayAttendance(data.attendance);
+
+    await loadAttendanceSummary(studentId);
+
+  } catch (error) {
+    console.error(error);
+    alert(error.message);
+  }
+}
+6. Display Attendance
+Add:
+function displayAttendance(attendance) {
+  const tableBody =
+    document.getElementById(
+      "attendanceTableBody"
+    );
+
+  tableBody.innerHTML = "";
+
+  if (attendance.length === 0) {
+    tableBody.innerHTML = `
+      <tr>
+        <td colspan="3">
+          No attendance records found
+        </td>
+      </tr>
+    `;
+
+    return;
+  }
+
+  attendance.forEach(record => {
+    const row =
+      document.createElement("tr");
+
+    const date =
+      new Date(record.date)
+        .toLocaleDateString();
+
+    row.innerHTML = `
+      <td>${record.subject}</td>
+      <td>${date}</td>
+      <td>${record.status}</td>
+    `;
+
+    tableBody.appendChild(row);
+  });
+}
+7. Load Attendance Percentage
+Add:
+async function loadAttendanceSummary(
+  studentId
+) {
+  try {
+    const response = await fetch(
+      `/api/attendance/summary/${studentId}`,
+      {
+        headers: {
+          "Authorization": `Bearer ${token}`
+        }
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message);
+    }
+
+    const summary = data.summary;
+
+    document.getElementById(
+      "totalClasses"
+    ).textContent =
+      summary.totalClasses;
+
+    document.getElementById(
+      "presentClasses"
+    ).textContent =
+      summary.presentClasses;
+
+    document.getElementById(
+      "absentClasses"
+    ).textContent =
+      summary.absentClasses;
+
+    document.getElementById(
+      "attendancePercentage"
+    ).textContent =
+      `${summary.attendancePercentage}%`;
+
+  } catch (error) {
+    console.error(error);
+    alert(error.message);
+  }
+}
+8. Connect Marks
+Add:
+const loadMarksBtn =
+  document.getElementById(
+    "loadMarksBtn"
+  );
+
+if (loadMarksBtn) {
+  loadMarksBtn.addEventListener(
+    "click",
+    loadMarks
+  );
+}
+
+async function loadMarks() {
+  const studentId =
+    document.getElementById(
+      "marksStudentId"
+    ).value.trim();
+
+  if (!studentId) {
+    alert("Please enter Student ID");
+    return;
+  }
+
+  try {
+    const response = await fetch(
+      `/api/marks?student=${encodeURIComponent(studentId)}`,
+      {
+        headers: {
+          "Authorization": `Bearer ${token}`
+        }
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message);
+    }
+
+    displayMarks(data.marks);
+
+    await loadMarksSummary(studentId);
+
+  } catch (error) {
+    console.error(error);
+    alert(error.message);
+  }
+}
+9. Display Marks
+Add:
+function displayMarks(marks) {
+  const tableBody =
+    document.getElementById(
+      "marksTableBody"
+    );
+
+  tableBody.innerHTML = "";
+
+  if (marks.length === 0) {
+    tableBody.innerHTML = `
+      <tr>
+        <td colspan="4">
+          No marks found
+        </td>
+      </tr>
+    `;
+
+    return;
+  }
+
+  marks.forEach(mark => {
+    const row =
+      document.createElement("tr");
+
+    row.innerHTML = `
+      <td>${mark.subject}</td>
+      <td>${mark.examType}</td>
+      <td>${mark.marks}</td>
+      <td>${mark.maxMarks}</td>
+    `;
+
+    tableBody.appendChild(row);
+  });
+}
+10. Load Marks Summary
+Add:
+async function loadMarksSummary(
+  studentId
+) {
+  try {
+    const response = await fetch(
+      `/api/marks/summary/${studentId}`,
+      {
+        headers: {
+          "Authorization": `Bearer ${token}`
+        }
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message);
+    }
+
+    const summary = data.summary;
+
+    document.getElementById(
+      "totalMarks"
+    ).textContent =
+      summary.totalMarks;
+
+    document.getElementById(
+      "maxMarks"
+    ).textContent =
+      summary.totalMaxMarks;
+
+    document.getElementById(
+      "marksPercentage"
+    ).textContent =
+      `${summary.percentage}%`;
+
+    document.getElementById(
+      "marksGrade"
+    ).textContent =
+      summary.grade;
+
+  } catch (error) {
+    console.error(error);
+    alert(error.message);
+  }
+}
+11. How Everything Works
+Suppose Student ID is:
+68abc123...
+You enter it in Attendance:
+Student ID
+┌─────────────────────────┐
+│ 68abc123...             │
+└─────────────────────────┘
+
+       ↓
+
+Load Attendance
+       ↓
+
+GET /api/attendance?student=68abc123
+       ↓
+Express
+       ↓
+Attendance Controller
+       ↓
+MongoDB
+       ↓
+Attendance records
+       ↓
+Frontend table
+And percentage:
+GET /api/attendance/summary/68abc123
+                    ↓
+             MongoDB records
+                    ↓
+          Calculate percentage
+                    ↓
+                 85%
+12. Marks Flow
+Student ID
+     ↓
+Load Marks
+     ↓
+GET /api/marks?student=ID
+     ↓
+MongoDB
+     ↓
+DBMS     85/100
+OS       80/100
+CN       75/100
+DAA      90/100
+     ↓
+Marks Summary
+     ↓
+330 / 400
+     ↓
+82.5%
+     ↓
+Grade A
+13. Test the Complete Application
+First start MongoDB.
+Then open VS Code terminal:
+npm run dev
+You should see something similar to:
+Server running on port 3000
+MongoDB connected
+Open:
+http://localhost:3000
+Test order
+1. Register
+      ↓
+2. Login
+      ↓
+3. Admin login
+      ↓
+4. Create Student
+      ↓
+5. Copy Student ID
+      ↓
+6. Add Attendance through Postman
+      ↓
+7. Add Marks through Postman
+      ↓
+8. Open Dashboard
+      ↓
+9. Enter Student ID
+      ↓
+10. View Attendance
+      ↓
+11. View Attendance %
+      ↓
+12. View Marks
+      ↓
+13. View Percentage + Grade
+14. Git Save Point
+After confirming everything works:
+git status
+Then:
+git add .
+Then:
+git commit -m "Added student attendance and marks management"
+Then:
+git push
+🎯 What You Have Built So Far
+Your project has now progressed from a basic CRUD application to a much stronger College Management System:
+┌────────────────────────────────────────────┐
+│          COLLEGE MANAGEMENT SYSTEM         │
+├────────────────────────────────────────────┤
+│ Authentication                             │
+│   ├── Register                             │
+│   └── Login                                │
+│                                            │
+│ Student Management                         │
+│   ├── Add                                  │
+│   ├── View                                 │
+│   ├── Search                               │
+│   ├── Filter                               │
+│   ├── Sort                                 │
+│   ├── Update                               │
+│   └── Delete                               │
+│                                            │
+│ Attendance                                 │
+│   ├── Subject                              │
+│   ├── Date                                 │
+│   ├── Present/Absent/Late                  │
+│   └── Percentage                           │
+│                                            │
+│ Marks                                      │
+│   ├── Subjects                             │
+│   ├── Internal/Mid/Semester                │
+│   ├── Marks                                │
+│   ├── Percentage                           │
+│   └── Grade                                │
+│                                            │
+│ Dashboard                                  │
+│   ├── Statistics                           │
+│   └── Branch Chart                         │
+└────────────────────────────────────────────┘
+Next → Admin Attendance & Marks Entry UI
+Instead of adding attendance and marks through Postman, we'll build proper Add Attendance and Add Marks forms inside the website, with student dropdowns, subject selection, exam type, date, marks, validation, and Admin-only controls.
