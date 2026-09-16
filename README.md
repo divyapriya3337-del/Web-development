@@ -22221,3 +22221,1587 @@ Average age
 Branch chart
 Next → User ↔ Student Linking + Role-Based Student Dashboard
 We'll connect a logged-in User account to a specific Student, so a student can automatically see their own profile, attendance, and marks without entering a Student ID, while Admin can continue managing the entire college.
+NEXT — Admin Attendance & Marks Entry UI
+Now we will remove the need to use Postman for adding attendance and marks.
+The Admin will be able to enter everything directly from the website:
+Admin Dashboard
+      │
+      ├── Add Student
+      │
+      ├── Attendance
+      │     ├── Select Student
+      │     ├── Select Subject
+      │     ├── Select Date
+      │     └── Present / Absent / Late
+      │
+      └── Marks
+            ├── Select Student
+            ├── Subject
+            ├── Exam Type
+            ├── Marks
+            └── Maximum Marks
+1. Attendance Form
+Open:
+public/index.html
+Find your Attendance section.
+Add this above the attendance table:
+HTML
+<div id="attendanceAdminPanel" class="admin-panel">
+
+  <h3>Mark Attendance</h3>
+
+  <form id="attendanceForm">
+
+    <div class="form-group">
+      <label>Student</label>
+
+      <select id="attendanceStudent" required>
+        <option value="">
+          Select Student
+        </option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label>Subject</label>
+
+      <select id="attendanceSubject" required>
+        <option value="">Select Subject</option>
+        <option value="DBMS">DBMS</option>
+        <option value="Operating Systems">Operating Systems</option>
+        <option value="Computer Networks">
+          Computer Networks
+        </option>
+        <option value="DAA">
+          Design and Analysis of Algorithms
+        </option>
+        <option value="Web Development">
+          Web Development
+        </option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label>Date</label>
+
+      <input
+        type="date"
+        id="attendanceDate"
+        required
+      >
+    </div>
+
+    <div class="form-group">
+      <label>Status</label>
+
+      <select id="attendanceStatus" required>
+        <option value="">
+          Select Status
+        </option>
+        <option value="Present">Present</option>
+        <option value="Absent">Absent</option>
+        <option value="Late">Late</option>
+      </select>
+    </div>
+
+    <button
+      type="submit"
+      class="primary-btn"
+    >
+      Save Attendance
+    </button>
+
+  </form>
+
+</div>
+2. Marks Entry Form
+Now find your Marks section.
+Add this above the marks table:
+HTML
+<div id="marksAdminPanel" class="admin-panel">
+
+  <h3>Add Student Marks</h3>
+
+  <form id="marksForm">
+
+    <div class="form-group">
+      <label>Student</label>
+
+      <select id="marksStudent" required>
+        <option value="">
+          Select Student
+        </option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label>Subject</label>
+
+      <select id="marksSubject" required>
+        <option value="">
+          Select Subject
+        </option>
+
+        <option value="DBMS">DBMS</option>
+
+        <option value="Operating Systems">
+          Operating Systems
+        </option>
+
+        <option value="Computer Networks">
+          Computer Networks
+        </option>
+
+        <option value="DAA">
+          Design and Analysis of Algorithms
+        </option>
+
+        <option value="Web Development">
+          Web Development
+        </option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label>Exam Type</label>
+
+      <select id="examType" required>
+        <option value="">
+          Select Exam
+        </option>
+
+        <option value="Internal">
+          Internal
+        </option>
+
+        <option value="Mid">
+          Mid
+        </option>
+
+        <option value="Semester">
+          Semester
+        </option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label>Marks</label>
+
+      <input
+        type="number"
+        id="marks"
+        min="0"
+        required
+        placeholder="Enter marks"
+      >
+    </div>
+
+    <div class="form-group">
+      <label>Maximum Marks</label>
+
+      <input
+        type="number"
+        id="maxMarks"
+        min="1"
+        value="100"
+        required
+      >
+    </div>
+
+    <button
+      type="submit"
+      class="primary-btn"
+    >
+      Save Marks
+    </button>
+
+  </form>
+
+</div>
+3. Add CSS
+Open:
+public/style.css
+Add:
+.admin-panel {
+  background: #f8f9fa;
+  padding: 20px;
+  margin-bottom: 25px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+}
+
+.admin-panel h3 {
+  margin-bottom: 20px;
+}
+
+.admin-panel form {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+}
+
+.admin-panel form button {
+  grid-column: 1 / -1;
+}
+
+select {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 16px;
+  background: white;
+}
+
+@media (max-width: 700px) {
+  .admin-panel form {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-panel form button {
+    grid-column: auto;
+  }
+}
+4. Load Students into Dropdown
+This is very important.
+Instead of asking Admin to type the MongoDB Student ID manually:
+68abc123...
+we will show:
+Select Student
+
+Gyan Kishore - CSE001
+Divya Priya - CSE002
+Rahul - CSE003
+Open:
+public/script.js
+Add:
+async function loadStudentDropdowns() {
+  try {
+
+    const response = await fetch(
+      "/api/students?limit=100",
+      {
+        headers: {
+          "Authorization":
+            `Bearer ${token}`
+        }
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message);
+    }
+
+    const attendanceSelect =
+      document.getElementById(
+        "attendanceStudent"
+      );
+
+    const marksSelect =
+      document.getElementById(
+        "marksStudent"
+      );
+
+    attendanceSelect.innerHTML =
+      `<option value="">
+        Select Student
+      </option>`;
+
+    marksSelect.innerHTML =
+      `<option value="">
+        Select Student
+      </option>`;
+
+    data.students.forEach(student => {
+
+      const option =
+        document.createElement("option");
+
+      option.value = student._id;
+
+      option.textContent =
+        `${student.name} - ${student.rollNumber}`;
+
+      attendanceSelect.appendChild(
+        option.cloneNode(true)
+      );
+
+      marksSelect.appendChild(
+        option
+      );
+
+    });
+
+  } catch (error) {
+
+    console.error(
+      "Student dropdown error:",
+      error
+    );
+
+  }
+}
+5. Call the Function
+At the bottom where you currently have:
+loadStudents();
+loadDashboardStats();
+change it to:
+loadStudents();
+loadDashboardStats();
+loadStudentDropdowns();
+Now the dropdowns will automatically load students.
+6. Submit Attendance
+Add this to script.js:
+const attendanceForm =
+  document.getElementById(
+    "attendanceForm"
+  );
+
+if (attendanceForm) {
+
+  attendanceForm.addEventListener(
+    "submit",
+    async function(event) {
+
+      event.preventDefault();
+
+      const student =
+        document.getElementById(
+          "attendanceStudent"
+        ).value;
+
+      const subject =
+        document.getElementById(
+          "attendanceSubject"
+        ).value;
+
+      const date =
+        document.getElementById(
+          "attendanceDate"
+        ).value;
+
+      const status =
+        document.getElementById(
+          "attendanceStatus"
+        ).value;
+
+      try {
+
+        const response = await fetch(
+          "/api/attendance",
+          {
+            method: "POST",
+
+            headers: {
+              "Content-Type":
+                "application/json",
+
+              "Authorization":
+                `Bearer ${token}`
+            },
+
+            body: JSON.stringify({
+              student,
+              subject,
+              date,
+              status
+            })
+          }
+        );
+
+        const data =
+          await response.json();
+
+        if (!response.ok) {
+          throw new Error(
+            data.message
+          );
+        }
+
+        alert(
+          "Attendance saved successfully!"
+        );
+
+        attendanceForm.reset();
+
+      } catch (error) {
+
+        alert(error.message);
+
+      }
+
+    }
+  );
+}
+7. Submit Marks
+Add:
+const marksForm =
+  document.getElementById(
+    "marksForm"
+  );
+
+if (marksForm) {
+
+  marksForm.addEventListener(
+    "submit",
+    async function(event) {
+
+      event.preventDefault();
+
+      const student =
+        document.getElementById(
+          "marksStudent"
+        ).value;
+
+      const subject =
+        document.getElementById(
+          "marksSubject"
+        ).value;
+
+      const examType =
+        document.getElementById(
+          "examType"
+        ).value;
+
+      const marks =
+        Number(
+          document.getElementById(
+            "marks"
+          ).value
+        );
+
+      const maxMarks =
+        Number(
+          document.getElementById(
+            "maxMarks"
+          ).value
+        );
+
+      if (marks > maxMarks) {
+
+        alert(
+          "Marks cannot be greater than maximum marks."
+        );
+
+        return;
+      }
+
+      try {
+
+        const response = await fetch(
+          "/api/marks",
+          {
+            method: "POST",
+
+            headers: {
+              "Content-Type":
+                "application/json",
+
+              "Authorization":
+                `Bearer ${token}`
+            },
+
+            body: JSON.stringify({
+              student,
+              subject,
+              examType,
+              marks,
+              maxMarks
+            })
+          }
+        );
+
+        const data =
+          await response.json();
+
+        if (!response.ok) {
+          throw new Error(
+            data.message
+          );
+        }
+
+        alert(
+          "Marks saved successfully!"
+        );
+
+        marksForm.reset();
+
+        document.getElementById(
+          "maxMarks"
+        ).value = 100;
+
+      } catch (error) {
+
+        alert(error.message);
+
+      }
+
+    }
+  );
+}
+8. Admin-Only Display
+Remember:
+Admin
+  ↓
+Add Student
+Attendance Entry
+Marks Entry
+Edit
+Delete
+Normal User:
+User
+  ↓
+View Students
+View Attendance
+View Marks
+We already have:
+const isAdmin =
+  currentUser &&
+  currentUser.role === "admin";
+Now add:
+const attendanceAdminPanel =
+  document.getElementById(
+    "attendanceAdminPanel"
+  );
+
+const marksAdminPanel =
+  document.getElementById(
+    "marksAdminPanel"
+  );
+
+if (!isAdmin) {
+
+  if (attendanceAdminPanel) {
+    attendanceAdminPanel.style.display =
+      "none";
+  }
+
+  if (marksAdminPanel) {
+    marksAdminPanel.style.display =
+      "none";
+  }
+
+}
+Important security concept
+Hiding the form is not security.
+The real security is still:
+POST /api/attendance
+        ↓
+authMiddleware
+        ↓
+adminMiddleware
+        ↓
+createAttendance
+and:
+POST /api/marks
+        ↓
+authMiddleware
+        ↓
+adminMiddleware
+        ↓
+createMark
+So even if a normal user manually sends a POST request through Postman, the backend returns:
+403 Forbidden
+Admin access required
+9. Complete Attendance Flow
+Now the Admin experience becomes:
+┌─────────────────────────────────────────────┐
+│ Attendance Management                       │
+│                                             │
+│ Student                                     │
+│ [ Gyan Kishore - CSE001            ▼ ]      │
+│                                             │
+│ Subject                                     │
+│ [ DBMS                             ▼ ]      │
+│                                             │
+│ Date                                        │
+│ [ 15-09-2026                       ]        │
+│                                             │
+│ Status                                      │
+│ [ Present                          ▼ ]      │
+│                                             │
+│ [       SAVE ATTENDANCE       ]             │
+└─────────────────────────────────────────────┘
+Admin clicks:
+Save Attendance
+Then:
+Frontend
+   ↓
+POST /api/attendance
+   ↓
+JWT Authentication
+   ↓
+Admin Authorization
+   ↓
+Attendance Controller
+   ↓
+MongoDB
+   ↓
+Success
+10. Complete Marks Flow
+┌─────────────────────────────────────────────┐
+│ Marks Management                            │
+│                                             │
+│ Student                                     │
+│ [ Gyan Kishore - CSE001            ▼ ]      │
+│                                             │
+│ Subject                                     │
+│ [ DBMS                             ▼ ]      │
+│                                             │
+│ Exam Type                                   │
+│ [ Internal                         ▼ ]      │
+│                                             │
+│ Marks                                       │
+│ [ 85                              ]         │
+│                                             │
+│ Maximum Marks                               │
+│ [ 100                             ]         │
+│                                             │
+│ [          SAVE MARKS          ]             │
+└─────────────────────────────────────────────┘
+11. Test It
+Start your server:
+npm run dev
+Open:
+http://localhost:3000
+Login as your admin.
+Test Attendance
+Scroll to Attendance.
+Select a student.
+Select DBMS.
+Select today's date.
+Select Present.
+Click Save Attendance.
+You should see:
+Attendance saved successfully!
+Test Marks
+Select student.
+Select DBMS.
+Select Internal.
+Enter 85.
+Maximum marks = 100.
+Click Save Marks.
+You should see:
+Marks saved successfully!
+12. Then View the Data
+Enter the same Student ID in the existing:
+Attendance → Load Attendance
+You should see:
+Subject     Date          Status
+--------------------------------
+DBMS        15/09/2026    Present
+And:
+Marks → Load Marks
+You should see:
+Subject    Exam       Marks    Maximum
+--------------------------------------
+DBMS       Internal   85       100
+Summary:
+Total Marks: 85
+Maximum:     100
+Percentage:  85%
+Grade:       A
+13. Your Project Is Becoming a Real College System
+Current modules:
+                 COLLEGE MANAGEMENT
+                         │
+        ┌────────────────┼────────────────┐
+        ↓                ↓                ↓
+    Students        Attendance          Marks
+        │                │                │
+    Profile          Records          Subjects
+    Roll No.         Present          Exams
+    Department       Absent           Marks
+    Semester         Late             Grade
+        │                │                │
+        └────────────────┼────────────────┘
+                         ↓
+                      MongoDB
+You now have:
+✅ Login/Register
+✅ JWT Authentication
+✅ Admin Authorization
+✅ Student CRUD
+✅ Search
+✅ Filtering
+✅ Sorting
+✅ Pagination
+✅ Dashboard Statistics
+✅ Branch Chart
+✅ Student Profile
+✅ Attendance
+✅ Attendance Percentage
+✅ Marks
+✅ Percentage
+✅ Grade
+✅ Admin Attendance Entry
+✅ Admin Marks Entry
+Next → Student Profile Page + Student Details
+We’ll build a proper profile page where clicking View Profile opens:
+Student Profile
+────────────────────────
+Name
+Roll Number
+Email
+Branch
+Department
+Semester
+Phone
+────────────────────────
+Attendance: 85%
+Marks: 82.5%
+Grade: A
+────────────────────────
+Recent Attendance
+Recent Marks
+and connect it to the backend using GET /api/students/:id, attendance summary, and marks summary.
+NEXT — Student Profile Page + Complete Student Details
+Now we’ll create a professional Student Profile page.
+When Admin/User clicks View Profile, it will open:
+Student Profile
+────────────────────────────
+👤 Gyan Kishore
+Roll No: CSE001
+Email: student@gmail.com
+
+Branch: CSE
+Department: Computer Science
+Semester: 5
+Phone: 9876543210
+
+Attendance
+────────────
+Total Classes: 40
+Present: 34
+Absent: 6
+Attendance: 85%
+
+Academic Performance
+────────────────────
+DBMS              85/100
+Operating Systems  80/100
+Computer Networks 90/100
+
+Percentage: 85%
+Grade: A
+1. Create Profile Page
+Inside:
+public/
+create:
+profile.html
+Add:
+HTML
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>Student Profile</title>
+
+  <link
+    rel="stylesheet"
+    href="style.css"
+  >
+
+</head>
+
+<body>
+
+  <div class="container">
+
+    <!-- Navigation -->
+
+    <nav class="navbar">
+
+      <div class="logo">
+        College Management
+      </div>
+
+      <div class="nav-links">
+
+        <a href="index.html">
+          Dashboard
+        </a>
+
+        <button id="logoutBtn">
+          Logout
+        </button>
+
+      </div>
+
+    </nav>
+
+
+    <!-- Profile -->
+
+    <section class="profile-header card">
+
+      <div class="profile-avatar">
+        👤
+      </div>
+
+      <div>
+
+        <h1 id="studentName">
+          Student Name
+        </h1>
+
+        <p id="studentRoll">
+          Roll Number
+        </p>
+
+        <p id="studentEmail">
+          Email
+        </p>
+
+      </div>
+
+    </section>
+
+
+    <!-- Student Information -->
+
+    <section class="card">
+
+      <h2>
+        Student Information
+      </h2>
+
+      <div class="profile-grid">
+
+        <div>
+          <strong>Branch</strong>
+          <p id="studentBranch">-</p>
+        </div>
+
+        <div>
+          <strong>Department</strong>
+          <p id="studentDepartment">-</p>
+        </div>
+
+        <div>
+          <strong>Semester</strong>
+          <p id="studentSemester">-</p>
+        </div>
+
+        <div>
+          <strong>Age</strong>
+          <p id="studentAge">-</p>
+        </div>
+
+        <div>
+          <strong>Phone</strong>
+          <p id="studentPhone">-</p>
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- Attendance -->
+
+    <section class="card">
+
+      <h2>
+        Attendance
+      </h2>
+
+      <div class="stats">
+
+        <div class="stat-card">
+          <h3>Total Classes</h3>
+          <p id="totalClasses">0</p>
+        </div>
+
+        <div class="stat-card">
+          <h3>Present</h3>
+          <p id="presentClasses">0</p>
+        </div>
+
+        <div class="stat-card">
+          <h3>Absent</h3>
+          <p id="absentClasses">0</p>
+        </div>
+
+        <div class="stat-card">
+          <h3>Attendance</h3>
+          <p id="attendancePercentage">
+            0%
+          </p>
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- Marks -->
+
+    <section class="card">
+
+      <h2>
+        Academic Performance
+      </h2>
+
+      <div class="stats">
+
+        <div class="stat-card">
+          <h3>Total Marks</h3>
+          <p id="totalMarks">0</p>
+        </div>
+
+        <div class="stat-card">
+          <h3>Maximum Marks</h3>
+          <p id="maxMarks">0</p>
+        </div>
+
+        <div class="stat-card">
+          <h3>Percentage</h3>
+          <p id="marksPercentage">
+            0%
+          </p>
+        </div>
+
+        <div class="stat-card">
+          <h3>Grade</h3>
+          <p id="marksGrade">-</p>
+        </div>
+
+      </div>
+
+
+      <div class="table-container">
+
+        <table>
+
+          <thead>
+
+            <tr>
+              <th>Subject</th>
+              <th>Exam</th>
+              <th>Marks</th>
+              <th>Maximum</th>
+            </tr>
+
+          </thead>
+
+          <tbody id="marksTableBody">
+
+          </tbody>
+
+        </table>
+
+      </div>
+
+    </section>
+
+
+  </div>
+
+
+  <script src="profile.js"></script>
+
+</body>
+
+</html>
+2. Add Profile CSS
+Open:
+public/style.css
+Add at the bottom:
+.profile-header {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.profile-avatar {
+  width: 80px;
+  height: 80px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+
+  font-size: 40px;
+
+  background: #f0f0f0;
+}
+
+.profile-header h1 {
+  margin-bottom: 8px;
+  text-align: left;
+}
+
+.profile-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(3, 1fr);
+
+  gap: 20px;
+}
+
+.profile-grid div {
+  padding: 15px;
+
+  background: #f7f7f7;
+
+  border-radius: 8px;
+}
+
+.profile-grid strong {
+  display: block;
+
+  margin-bottom: 5px;
+}
+
+.profile-grid p {
+  margin: 0;
+}
+
+.table-container {
+  overflow-x: auto;
+}
+
+@media (max-width: 700px) {
+
+  .profile-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .profile-header {
+    flex-direction: column;
+    text-align: center;
+  }
+
+}
+3. Create profile.js
+Create:
+public/profile.js
+Add:
+const token =
+  localStorage.getItem("token");
+
+const savedUser =
+  localStorage.getItem("user");
+
+if (!token) {
+
+  window.location.href =
+    "login.html";
+
+}
+4. Get Student ID
+We need to know which student's profile should be displayed.
+We'll use the URL:
+profile.html?id=STUDENT_ID
+For example:
+profile.html?id=68abc123
+Add:
+const params =
+  new URLSearchParams(
+    window.location.search
+  );
+
+const studentId =
+  params.get("id");
+
+if (!studentId) {
+
+  alert("Student ID is missing");
+
+  window.location.href =
+    "index.html";
+
+}
+5. Load Student Profile
+Add:
+async function loadStudentProfile() {
+
+  try {
+
+    const response =
+      await fetch(
+        `/api/students/${studentId}`,
+        {
+          headers: {
+            "Authorization":
+              `Bearer ${token}`
+          }
+        }
+      );
+
+    const data =
+      await response.json();
+
+    if (!response.ok) {
+
+      throw new Error(
+        data.message
+      );
+
+    }
+
+    const student =
+      data.student;
+
+    document.getElementById(
+      "studentName"
+    ).textContent =
+      student.name;
+
+    document.getElementById(
+      "studentRoll"
+    ).textContent =
+      `Roll Number: ${student.rollNumber}`;
+
+    document.getElementById(
+      "studentEmail"
+    ).textContent =
+      student.email;
+
+    document.getElementById(
+      "studentBranch"
+    ).textContent =
+      student.branch;
+
+    document.getElementById(
+      "studentDepartment"
+    ).textContent =
+      student.department;
+
+    document.getElementById(
+      "studentSemester"
+    ).textContent =
+      student.semester;
+
+    document.getElementById(
+      "studentAge"
+    ).textContent =
+      student.age;
+
+    document.getElementById(
+      "studentPhone"
+    ).textContent =
+      student.phone || "Not provided";
+
+  } catch (error) {
+
+    console.error(error);
+
+    alert(error.message);
+
+  }
+
+}
+6. Load Attendance Summary
+Add:
+async function loadAttendanceSummary() {
+
+  try {
+
+    const response =
+      await fetch(
+        `/api/attendance/summary/${studentId}`,
+        {
+          headers: {
+            "Authorization":
+              `Bearer ${token}`
+          }
+        }
+      );
+
+    const data =
+      await response.json();
+
+    if (!response.ok) {
+
+      throw new Error(
+        data.message
+      );
+
+    }
+
+    const summary =
+      data.summary;
+
+    document.getElementById(
+      "totalClasses"
+    ).textContent =
+      summary.totalClasses;
+
+    document.getElementById(
+      "presentClasses"
+    ).textContent =
+      summary.presentClasses;
+
+    document.getElementById(
+      "absentClasses"
+    ).textContent =
+      summary.absentClasses;
+
+    document.getElementById(
+      "attendancePercentage"
+    ).textContent =
+      `${summary.attendancePercentage}%`;
+
+  } catch (error) {
+
+    console.error(error);
+
+  }
+
+}
+7. Load Marks
+Add:
+async function loadMarks() {
+
+  try {
+
+    const response =
+      await fetch(
+        `/api/marks?student=${studentId}`,
+        {
+          headers: {
+            "Authorization":
+              `Bearer ${token}`
+          }
+        }
+      );
+
+    const data =
+      await response.json();
+
+    if (!response.ok) {
+
+      throw new Error(
+        data.message
+      );
+
+    }
+
+    displayMarks(data.marks);
+
+    await loadMarksSummary();
+
+  } catch (error) {
+
+    console.error(error);
+
+    alert(error.message);
+
+  }
+
+}
+8. Display Marks
+Add:
+function displayMarks(marks) {
+
+  const tableBody =
+    document.getElementById(
+      "marksTableBody"
+    );
+
+  tableBody.innerHTML = "";
+
+  if (marks.length === 0) {
+
+    tableBody.innerHTML = `
+      <tr>
+        <td colspan="4">
+          No marks available
+        </td>
+      </tr>
+    `;
+
+    return;
+
+  }
+
+  marks.forEach(mark => {
+
+    const row =
+      document.createElement("tr");
+
+    row.innerHTML = `
+      <td>${mark.subject}</td>
+      <td>${mark.examType}</td>
+      <td>${mark.marks}</td>
+      <td>${mark.maxMarks}</td>
+    `;
+
+    tableBody.appendChild(row);
+
+  });
+
+}
+9. Load Marks Summary
+Add:
+async function loadMarksSummary() {
+
+  try {
+
+    const response =
+      await fetch(
+        `/api/marks/summary/${studentId}`,
+        {
+          headers: {
+            "Authorization":
+              `Bearer ${token}`
+          }
+        }
+      );
+
+    const data =
+      await response.json();
+
+    if (!response.ok) {
+
+      throw new Error(
+        data.message
+      );
+
+    }
+
+    const summary =
+      data.summary;
+
+    document.getElementById(
+      "totalMarks"
+    ).textContent =
+      summary.totalMarks;
+
+    document.getElementById(
+      "maxMarks"
+    ).textContent =
+      summary.totalMaxMarks;
+
+    document.getElementById(
+      "marksPercentage"
+    ).textContent =
+      `${summary.percentage}%`;
+
+    document.getElementById(
+      "marksGrade"
+    ).textContent =
+      summary.grade;
+
+  } catch (error) {
+
+    console.error(error);
+
+  }
+
+}
+10. Logout
+Add:
+const logoutBtn =
+  document.getElementById(
+    "logoutBtn"
+  );
+
+if (logoutBtn) {
+
+  logoutBtn.addEventListener(
+    "click",
+    () => {
+
+      localStorage.removeItem(
+        "token"
+      );
+
+      localStorage.removeItem(
+        "user"
+      );
+
+      window.location.href =
+        "login.html";
+
+    }
+  );
+
+}
+11. Start Everything
+At the bottom:
+loadStudentProfile();
+
+loadAttendanceSummary();
+
+loadMarks();
+Your complete flow is now:
+profile.js
+    │
+    ├── GET /api/students/:id
+    │          ↓
+    │       Profile
+    │
+    ├── GET /api/attendance/summary/:id
+    │          ↓
+    │       Attendance %
+    │
+    └── GET /api/marks?student=id
+               ↓
+            Marks
+               ↓
+       GET /api/marks/summary/:id
+               ↓
+          Percentage + Grade
+12. Add "View Profile" Button
+Now go back to:
+public/script.js
+Find the code inside displayStudents() where you currently have:
+<button class="edit-btn"...>
+Add a View Profile button.
+For Admin:
+<button
+  onclick="viewProfile('${student._id}')"
+>
+  View Profile
+</button>
+
+<button
+  class="edit-btn"
+  onclick="openEditModal('${student._id}')"
+>
+  Edit
+</button>
+
+<button
+  class="delete-btn"
+  onclick="deleteStudent('${student._id}')"
+>
+  Delete
+</button>
+For normal users:
+<button
+  onclick="viewProfile('${student._id}')"
+>
+  View Profile
+</button>
+13. Create viewProfile()
+Add to script.js:
+function viewProfile(id) {
+
+  window.location.href =
+    `profile.html?id=${id}`;
+
+}
+Now:
+Student List
+     │
+     │ Click View Profile
+     ↓
+profile.html?id=STUDENT_ID
+     │
+     ├── Student Information
+     ├── Attendance
+     └── Marks
+14. Important Security Improvement
+There is one important issue with your current system.
+Currently:
+GET /api/students/:id
+GET /api/attendance?student=id
+GET /api/marks?student=id
+allows any authenticated user to potentially request another student's information if they know the ID.
+For a real college system, you would normally distinguish:
+Admin
+ ↓
+Can view all students
+
+Student
+ ↓
+Can view only their own profile
+To implement that properly, the User document should be linked to the corresponding Student.
+For example:
+User
+ │
+ └── studentId
+          ↓
+       Student
+          │
+     ┌────┴─────┐
+     ↓          ↓
+Attendance     Marks
+This is the next security/architecture improvement we'll make.
+15. Final Project Flow
+Your application is now:
+                         COLLEGE MANAGEMENT
+                                │
+       ┌────────────────────────┼───────────────────────┐
+       │                        │                       │
+   Dashboard                Students               Profile
+       │                        │                       │
+   Statistics              Search/Filter          Information
+   Branch Chart             Pagination            Attendance
+       │                        │                   Marks
+       │                        │
+       └────────────────────────┼───────────────────────
+                                │
+                         Authentication
+                                │
+                     ┌──────────┴──────────┐
+                     │                     │
+                   Admin                 User
+                     │                     │
+              Full Management          View Access
+                     │
+          ┌──────────┼───────────┐
+          ↓          ↓           ↓
+       Students  Attendance    Marks
+Current features
+Authentication
+Register
+Login
+JWT
+bcrypt
+Logout
+Authorization
+Admin
+Normal User
+Protected APIs
+Admin-only modification
+Students
+Add
+View
+Edit
+Delete
+Search
+Filter
+Sort
+Pagination
+Profile
+Attendance
+Student selection
+Subject
+Date
+Present
+Absent
+Late
+Attendance percentage
+Marks
+Subject
+Internal/Mid/Semester
+Marks
+Maximum marks
+Percentage
+Grade
+Dashboard
+Total students
+CSE students
+Other branches
+Average age
+Branch chart
+Next → User ↔ Student Linking + Role-Based Student Dashboard
+We'll connect a logged-in User account to a specific Student, so a student can automatically see their own profile, attendance, and marks without entering a Student ID, while Admin can continue managing the entire college.
