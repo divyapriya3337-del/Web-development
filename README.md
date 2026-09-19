@@ -23805,3 +23805,6 @@ Average age
 Branch chart
 Next → User ↔ Student Linking + Role-Based Student Dashboard
 We'll connect a logged-in User account to a specific Student, so a student can automatically see their own profile, attendance, and marks without entering a Student ID, while Admin can continue managing the entire college.
+🚀 NEXT — Subjects CRUD
+Add, View, Update & Delete College Subjects
+Now we continue from Departments and build the **Subjects
