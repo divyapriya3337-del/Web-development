@@ -23805,6 +23805,1016 @@ Average age
 Branch chart
 Next → User ↔ Student Linking + Role-Based Student Dashboard
 We'll connect a logged-in User account to a specific Student, so a student can automatically see their own profile, attendance, and marks without entering a Student ID, while Admin can continue managing the entire college.
-🚀 NEXT — Subjects CRUD
-Add, View, Update & Delete College Subjects
-Now we continue from Departments and build the **Subjects
+NEXT — Professional Student Dashboard & Profile 🎓
+Now we will improve the Student Dashboard so it looks like a real College ERP.
+We will add:
+Student Dashboard
+│
+├── Welcome / Profile
+├── Attendance Summary Cards
+├── Academic Performance Cards
+├── Subject-wise Attendance
+├── Subject-wise Marks
+└── Logout
+1. Update student-dashboard.html
+Open:
+public/student-dashboard.html
+Inside <body>, use this dashboard structure:
+HTML
+<div class="dashboard-container">
+
+  <!-- Header -->
+  <header class="dashboard-header">
+    <div>
+      <h1>Student Dashboard</h1>
+      <p>College ERP</p>
+    </div>
+
+    <button id="logoutBtn">
+      Logout
+    </button>
+  </header>
+
+
+  <!-- Student Profile -->
+  <section class="profile-card">
+
+    <h2>Welcome, <span id="studentName">Student</span></h2>
+
+    <div class="profile-details">
+
+      <div>
+        <strong>Roll Number</strong>
+        <p id="studentRollNumber">-</p>
+      </div>
+
+      <div>
+        <strong>Email</strong>
+        <p id="studentEmail">-</p>
+      </div>
+
+    </div>
+
+  </section>
+
+
+  <!-- Attendance Cards -->
+  <h2>Attendance Overview</h2>
+
+  <section class="stats-grid">
+
+    <div class="stat-card">
+      <h3>Total Classes</h3>
+      <p id="totalClasses">0</p>
+    </div>
+
+    <div class="stat-card">
+      <h3>Present</h3>
+      <p id="totalPresent">0</p>
+    </div>
+
+    <div class="stat-card">
+      <h3>Absent</h3>
+      <p id="totalAbsent">0</p>
+    </div>
+
+    <div class="stat-card">
+      <h3>Attendance</h3>
+      <p id="attendancePercentage">0%</p>
+    </div>
+
+  </section>
+
+
+  <!-- Marks Cards -->
+  <h2>Academic Performance</h2>
+
+  <section class="stats-grid">
+
+    <div class="stat-card">
+      <h3>Total Marks</h3>
+      <p id="totalMarks">0</p>
+    </div>
+
+    <div class="stat-card">
+      <h3>Maximum Marks</h3>
+      <p id="maximumMarks">0</p>
+    </div>
+
+    <div class="stat-card">
+      <h3>Percentage</h3>
+      <p id="marksPercentage">0%</p>
+    </div>
+
+    <div class="stat-card">
+      <h3>Grade</h3>
+      <p id="overallGrade">-</p>
+    </div>
+
+  </section>
+
+
+  <!-- Subject Attendance -->
+  <section class="table-section">
+
+    <h2>Subject-wise Attendance</h2>
+
+    <table>
+
+      <thead>
+        <tr>
+          <th>Subject</th>
+          <th>Total</th>
+          <th>Present</th>
+          <th>Absent</th>
+          <th>Late</th>
+          <th>Percentage</th>
+        </tr>
+      </thead>
+
+      <tbody id="subjectAttendanceBody">
+      </tbody>
+
+    </table>
+
+  </section>
+
+
+  <!-- Subject Marks -->
+  <section class="table-section">
+
+    <h2>Subject-wise Marks</h2>
+
+    <table>
+
+      <thead>
+        <tr>
+          <th>Subject</th>
+          <th>Total Marks</th>
+          <th>Maximum</th>
+          <th>Percentage</th>
+          <th>Exams</th>
+        </tr>
+      </thead>
+
+      <tbody id="subjectMarksBody">
+      </tbody>
+
+    </table>
+
+  </section>
+
+</div>
+2. Add Dashboard CSS
+Open:
+public/student-dashboard.css
+If the file doesn't exist, create it.
+Add:
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #f4f6f9;
+  color: #222;
+}
+
+.dashboard-container {
+  width: 90%;
+  max-width: 1200px;
+  margin: 30px auto;
+}
+
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  margin-bottom: 25px;
+}
+
+.dashboard-header h1 {
+  margin: 0;
+}
+
+.dashboard-header p {
+  margin: 5px 0 0;
+  color: #777;
+}
+
+button {
+  border: none;
+  padding: 10px 18px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.profile-card {
+  background: white;
+  padding: 25px;
+  border-radius: 12px;
+  margin-bottom: 25px;
+}
+
+.profile-details {
+  display: flex;
+  gap: 80px;
+  margin-top: 20px;
+}
+
+.profile-details p {
+  color: #555;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns:
+    repeat(4, 1fr);
+
+  gap: 20px;
+
+  margin-bottom: 30px;
+}
+
+.stat-card {
+  background: white;
+  padding: 25px;
+  border-radius: 12px;
+  text-align: center;
+}
+
+.stat-card h3 {
+  margin-bottom: 15px;
+  font-size: 16px;
+}
+
+.stat-card p {
+  font-size: 28px;
+  font-weight: bold;
+  margin: 0;
+}
+
+.table-section {
+  background: white;
+  padding: 25px;
+  border-radius: 12px;
+  margin-bottom: 30px;
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 15px;
+}
+
+th,
+td {
+  padding: 12px;
+  border-bottom: 1px solid #ddd;
+  text-align: left;
+}
+
+th {
+  font-weight: bold;
+}
+
+@media (max-width: 768px) {
+
+  .stats-grid {
+    grid-template-columns:
+      repeat(2, 1fr);
+  }
+
+  .profile-details {
+    flex-direction: column;
+    gap: 10px;
+  }
+}
+
+@media (max-width: 500px) {
+
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboard-container {
+    width: 95%;
+  }
+}
+3. Link CSS
+At the top of student-dashboard.html, inside <head>:
+HTML
+<link
+  rel="stylesheet"
+  href="student-dashboard.css"
+>
+4. Update JavaScript
+Open:
+public/student-dashboard.js
+Add this function:
+function displayStudentProfile(student) {
+
+  const name =
+    document.getElementById("studentName");
+
+  const rollNumber =
+    document.getElementById(
+      "studentRollNumber"
+    );
+
+  const email =
+    document.getElementById(
+      "studentEmail"
+    );
+
+  if (name) {
+    name.textContent =
+      student.name || "Student";
+  }
+
+  if (rollNumber) {
+    rollNumber.textContent =
+      student.rollNumber || "-";
+  }
+
+  if (email) {
+    email.textContent =
+      student.email || "-";
+  }
+}
+5. Calculate Overall Attendance
+Add:
+function calculateAttendance(
+  subjectAttendance
+) {
+
+  let total = 0;
+  let present = 0;
+  let absent = 0;
+
+  subjectAttendance.forEach(item => {
+
+    total += item.total;
+    present += item.present;
+    absent += item.absent;
+
+  });
+
+  const percentage =
+    total > 0
+      ? ((present / total) * 100).toFixed(2)
+      : 0;
+
+  document.getElementById(
+    "totalClasses"
+  ).textContent = total;
+
+  document.getElementById(
+    "totalPresent"
+  ).textContent = present;
+
+  document.getElementById(
+    "totalAbsent"
+  ).textContent = absent;
+
+  document.getElementById(
+    "attendancePercentage"
+  ).textContent =
+    `${percentage}%`;
+}
+6. Calculate Overall Marks
+Add:
+function calculateMarks(subjectMarks) {
+
+  let totalMarks = 0;
+  let maximumMarks = 0;
+
+  subjectMarks.forEach(item => {
+
+    totalMarks += item.totalMarks;
+    maximumMarks += item.maxMarks;
+
+  });
+
+  const percentage =
+    maximumMarks > 0
+      ? (
+          (totalMarks / maximumMarks) *
+          100
+        ).toFixed(2)
+      : 0;
+
+  let grade = "F";
+
+  if (percentage >= 90) {
+    grade = "A+";
+  } else if (percentage >= 80) {
+    grade = "A";
+  } else if (percentage >= 70) {
+    grade = "B";
+  } else if (percentage >= 60) {
+    grade = "C";
+  } else if (percentage >= 50) {
+    grade = "D";
+  }
+
+  document.getElementById(
+    "totalMarks"
+  ).textContent = totalMarks;
+
+  document.getElementById(
+    "maximumMarks"
+  ).textContent = maximumMarks;
+
+  document.getElementById(
+    "marksPercentage"
+  ).textContent =
+    `${percentage}%`;
+
+  document.getElementById(
+    "overallGrade"
+  ).textContent = grade;
+}
+7. Update loadSubjectDetails()
+Replace your existing function with:
+async function loadSubjectDetails() {
+
+  try {
+
+    const token =
+      localStorage.getItem("token");
+
+    if (!token) {
+      window.location.href =
+        "login.html";
+
+      return;
+    }
+
+    const response = await fetch(
+      "/api/student-dashboard/me",
+      {
+        headers: {
+          Authorization:
+            `Bearer ${token}`
+        }
+      }
+    );
+
+    const data =
+      await response.json();
+
+    if (!data.success) {
+
+      alert(
+        data.message ||
+        "Failed to load dashboard"
+      );
+
+      return;
+    }
+
+    // Student profile
+    displayStudentProfile(
+      data.student
+    );
+
+    // Attendance
+    displaySubjectAttendance(
+      data.subjectAttendance
+    );
+
+    calculateAttendance(
+      data.subjectAttendance
+    );
+
+    // Marks
+    displaySubjectMarks(
+      data.subjectMarks
+    );
+
+    calculateMarks(
+      data.subjectMarks
+    );
+
+  } catch (error) {
+
+    console.error(
+      "Dashboard error:",
+      error
+    );
+
+  }
+}
+8. Logout
+Add:
+const logoutBtn =
+  document.getElementById(
+    "logoutBtn"
+  );
+
+if (logoutBtn) {
+
+  logoutBtn.addEventListener(
+    "click",
+    function () {
+
+      localStorage.removeItem(
+        "token"
+      );
+
+      localStorage.removeItem(
+        "user"
+      );
+
+      window.location.href =
+        "login.html";
+    }
+  );
+
+}
+At the bottom:
+loadSubjectDetails();
+9. Test
+Save everything:
+Ctrl + S
+Start server:
+npm run dev
+Open:
+http://localhost:3000/login.html
+Login as a student.
+You should now see:
+┌─────────────────────────────────────┐
+│       Student Dashboard             │
+│                         Logout      │
+├─────────────────────────────────────┤
+│ Welcome, Ravi                       │
+│ Roll Number: 23CSE101               │
+│ Email: ravi@gmail.com               │
+├─────────────────────────────────────┤
+│ Attendance Overview                 │
+│                                     │
+│ Total    Present   Absent   %       │
+│  60        52        8     86.67%   │
+├─────────────────────────────────────┤
+│ Academic Performance                │
+│                                     │
+│ Marks    Maximum   %      Grade     │
+│ 420       500      84%      A        │
+├─────────────────────────────────────┤
+│ Subject-wise Attendance             │
+│ DBMS       20   18   2   0   90%    │
+│ Java       20   17   3   0   85%    │
+├─────────────────────────────────────┤
+│ Subject-wise Marks                  │
+│ DBMS       82   100   82%           │
+│ Java       85   100   85%           │
+└─────────────────────────────────────┘
+Current ERP Status
+Authentication          ✅
+Users                   ✅
+Students                ✅
+Departments             ✅
+Subjects                ✅
+Faculty                 ✅
+Timetable               ✅
+Attendance              ✅
+Marks                   ✅
+Admin Dashboard         ✅
+Student Dashboard       ✅
+Subject-wise Attendance ✅
+Subject-wise Marks      ✅
+Edit/Delete             ✅
+Responsive UI           ✅
+Next → We can �⁠build the Admin Dashboard sidebar navigation properly: Dashboard → Students → Departments → Subjects → Faculty → Timetable → Attendance → Marks → Users, with each section opening without page reload.
+NEXT — Professional Admin Sidebar Navigation 🚀
+Now we will make the Admin Dashboard behave like a proper ERP application.
+Final navigation
+College ERP
+│
+├── Dashboard
+├── Students
+├── Departments
+├── Subjects
+├── Faculty
+├── Timetable
+├── Attendance
+├── Marks
+├── Users
+└── Logout
+Clicking a menu item will show only that section.
+1. Open public/index.html
+Find your sidebar.
+Replace it with:
+<aside class="sidebar">
+
+  <div class="sidebar-header">
+    <h2>College ERP</h2>
+    <p>Admin Panel</p>
+  </div>
+
+  <nav class="sidebar-nav">
+
+    <button
+      class="nav-btn active"
+      data-section="dashboardSection">
+      Dashboard
+    </button>
+
+    <button
+      class="nav-btn"
+      data-section="studentsSection">
+      Students
+    </button>
+
+    <button
+      class="nav-btn"
+      data-section="departmentsSection">
+      Departments
+    </button>
+
+    <button
+      class="nav-btn"
+      data-section="subjectsSection">
+      Subjects
+    </button>
+
+    <button
+      class="nav-btn"
+      data-section="facultySection">
+      Faculty
+    </button>
+
+    <button
+      class="nav-btn"
+      data-section="timetableSection">
+      Timetable
+    </button>
+
+    <button
+      class="nav-btn"
+      data-section="attendanceSection">
+      Attendance
+    </button>
+
+    <button
+      class="nav-btn"
+      data-section="marksSection">
+      Marks
+    </button>
+
+    <button
+      class="nav-btn"
+      data-section="usersSection">
+      Users
+    </button>
+
+    <button
+      class="nav-btn logout-btn"
+      id="adminLogoutBtn">
+      Logout
+    </button>
+
+  </nav>
+
+</aside>
+2. Give IDs to Your Sections
+This is important.
+Your existing sections should have these IDs.
+Dashboard
+<section
+  id="dashboardSection"
+  class="admin-section">
+Students
+<section
+  id="studentsSection"
+  class="admin-section">
+Departments
+<section
+  id="departmentsSection"
+  class="admin-section">
+Subjects
+<section
+  id="subjectsSection"
+  class="admin-section">
+Faculty
+<section
+  id="facultySection"
+  class="admin-section">
+Timetable
+<section
+  id="timetableSection"
+  class="admin-section">
+Attendance
+<section
+  id="attendanceSection"
+  class="admin-section">
+Marks
+<section
+  id="marksSection"
+  class="admin-section">
+Users
+<section
+  id="usersSection"
+  class="admin-section">
+If you already have <section> tags, don't create new ones. Just add the appropriate id and class.
+3. Add Admin CSS
+Open:
+public/style.css
+Add:
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #f4f6f9;
+}
+
+.sidebar {
+  position: fixed;
+  left: 0;
+  top: 0;
+
+  width: 240px;
+  height: 100vh;
+
+  background: #1f2937;
+  color: white;
+
+  overflow-y: auto;
+}
+
+.sidebar-header {
+  padding: 25px 20px;
+  border-bottom: 1px solid #374151;
+}
+
+.sidebar-header h2 {
+  margin: 0;
+}
+
+.sidebar-header p {
+  margin: 5px 0 0;
+  opacity: 0.7;
+}
+
+.sidebar-nav {
+  padding: 15px 10px;
+}
+
+.nav-btn {
+  width: 100%;
+  border: none;
+
+  background: transparent;
+  color: white;
+
+  text-align: left;
+
+  padding: 13px 15px;
+  margin-bottom: 5px;
+
+  border-radius: 6px;
+
+  cursor: pointer;
+
+  font-size: 15px;
+}
+
+.nav-btn:hover {
+  background: #374151;
+}
+
+.nav-btn.active {
+  background: #4b5563;
+}
+
+.logout-btn {
+  margin-top: 20px;
+}
+
+.main-content {
+  margin-left: 240px;
+  padding: 30px;
+}
+
+.admin-section {
+  display: none;
+}
+
+.admin-section.active-section {
+  display: block;
+}
+
+@media (max-width: 768px) {
+
+  .sidebar {
+    width: 190px;
+  }
+
+  .main-content {
+    margin-left: 190px;
+    padding: 15px;
+  }
+
+}
+4. Important: Main Content
+Your main content should be inside:
+<main class="main-content">
+
+  <!-- All sections go here -->
+
+</main>
+For example:
+<main class="main-content">
+
+  <section
+    id="dashboardSection"
+    class="admin-section active-section">
+
+    <h1>Dashboard</h1>
+
+    <!-- Dashboard content -->
+
+  </section>
+
+
+  <section
+    id="studentsSection"
+    class="admin-section">
+
+    <h1>Students</h1>
+
+    <!-- Student management -->
+
+  </section>
+
+
+  <section
+    id="departmentsSection"
+    class="admin-section">
+
+    <h1>Departments</h1>
+
+    <!-- Department management -->
+
+  </section>
+
+</main>
+Continue the same pattern for all sections.
+5. Add Navigation JavaScript
+Open:
+public/script.js
+Add:
+const navButtons =
+  document.querySelectorAll(
+    ".nav-btn"
+  );
+
+const adminSections =
+  document.querySelectorAll(
+    ".admin-section"
+  );
+
+navButtons.forEach(button => {
+
+  button.addEventListener(
+    "click",
+    function () {
+
+      const sectionId =
+        this.dataset.section;
+
+      // Logout
+      if (this.id === "adminLogoutBtn") {
+
+        localStorage.removeItem(
+          "token"
+        );
+
+        localStorage.removeItem(
+          "user"
+        );
+
+        window.location.href =
+          "login.html";
+
+        return;
+      }
+
+      // Remove active button
+      navButtons.forEach(btn => {
+        btn.classList.remove("active");
+      });
+
+      // Activate clicked button
+      this.classList.add("active");
+
+      // Hide all sections
+      adminSections.forEach(section => {
+        section.classList.remove(
+          "active-section"
+        );
+      });
+
+      // Show selected section
+      const selectedSection =
+        document.getElementById(
+          sectionId
+        );
+
+      if (selectedSection) {
+        selectedSection.classList.add(
+          "active-section"
+        );
+      }
+
+    }
+  );
+
+});
+6. Default Dashboard
+Make sure Dashboard has:
+class="admin-section active-section"
+while every other section has:
+class="admin-section"
+So initially:
+Dashboard        → SHOW ✅
+
+Students         → Hidden
+Departments      → Hidden
+Subjects         → Hidden
+Faculty          → Hidden
+Timetable        → Hidden
+Attendance       → Hidden
+Marks            → Hidden
+Users            → Hidden
+7. Test It
+Save:
+Ctrl + S
+Start server:
+npm run dev
+Open:
+http://localhost:3000
+Login as Admin.
+Now click:
+Dashboard
+You see Dashboard.
+Click:
+Students
+Only Students section appears.
+Click:
+Subjects
+Only Subjects appears.
+Click:
+Attendance
+Only Attendance appears.
+Click:
+Marks
+Only Marks appears.
+8. Final Admin Layout
+Your application will now work like:
+┌──────────────────┬─────────────────────────────────┐
+│                  │                                 │
+│   COLLEGE ERP    │        Dashboard                │
+│   Admin Panel    │                                 │
+│                  │   Total Students                │
+│ Dashboard   ←    │   Departments                   │
+│ Students         │   Subjects                      │
+│ Departments      │                                 │
+│ Subjects         │   Charts / Statistics           │
+│ Faculty          │                                 │
+│ Timetable        │                                 │
+│ Attendance       │                                 │
+│ Marks            │                                 │
+│ Users            │                                 │
+│                  │                                 │
+│ Logout           │                                 │
+│                  │                                 │
+└──────────────────┴─────────────────────────────────┘
+Current project architecture
+College ERP
+│
+├── Frontend
+│   ├── Admin Dashboard
+│   ├── Student Dashboard
+│   ├── Profile
+│   └── Login
+│
+├── Backend
+│   ├── Authentication
+│   ├── Students
+│   ├── Departments
+│   ├── Subjects
+│   ├── Faculty
+│   ├── Timetable
+│   ├── Attendance
+│   ├── Marks
+│   └── Users
+│
+└── Database
+    └── MongoDB
+Next → We will add a proper Admin Dashboard with real statistics and charts: Total Students, Departments, Subjects, Faculty, Attendance %, and Marks performance.
