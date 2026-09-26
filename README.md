@@ -24818,3 +24818,650 @@ College ERP
 └── Database
     └── MongoDB
 Next → We will add a proper Admin Dashboard with real statistics and charts: Total Students, Departments, Subjects, Faculty, Attendance %, and Marks performance.
+NEXT — Admin Dashboard: Real Statistics + Charts 📊
+Now we will make the Dashboard show real data from MongoDB instead of static numbers.
+We will display:
+Total Students
+Total Departments
+Total Subjects
+Total Faculty
+        ↓
+Attendance Overview
+        ↓
+Student/Department Statistics
+        ↓
+Charts
+1. Update Dashboard Controller
+Open:
+controllers/dashboardController.js
+Replace its contents with:
+const Student = require("../models/Student");
+const Department = require("../models/Department");
+const Subject = require("../models/Subject");
+const Faculty = require("../models/Faculty");
+const Attendance = require("../models/Attendance");
+
+exports.getDashboardStats = async (req, res, next) => {
+  try {
+
+    // Total counts
+    const totalStudents =
+      await Student.countDocuments();
+
+    const totalDepartments =
+      await Department.countDocuments();
+
+    const totalSubjects =
+      await Subject.countDocuments();
+
+    const totalFaculty =
+      await Faculty.countDocuments();
+
+
+    // Attendance
+    const attendanceRecords =
+      await Attendance.find();
+
+    let totalClasses =
+      attendanceRecords.length;
+
+    let presentCount = 0;
+    let absentCount = 0;
+    let lateCount = 0;
+
+    attendanceRecords.forEach(record => {
+
+      if (record.status === "Present") {
+        presentCount++;
+      }
+
+      if (record.status === "Absent") {
+        absentCount++;
+      }
+
+      if (record.status === "Late") {
+        lateCount++;
+      }
+
+    });
+
+    const attendancePercentage =
+      totalClasses > 0
+        ? (
+            (presentCount / totalClasses) *
+            100
+          ).toFixed(2)
+        : 0;
+
+
+    // Students by department
+    const departmentStats =
+      await Student.aggregate([
+        {
+          $group: {
+            _id: "$department",
+            count: {
+              $sum: 1
+            }
+          }
+        }
+      ]);
+
+
+    res.status(200).json({
+
+      success: true,
+
+      statistics: {
+
+        totalStudents,
+
+        totalDepartments,
+
+        totalSubjects,
+
+        totalFaculty,
+
+        attendance: {
+          totalClasses,
+          present: presentCount,
+          absent: absentCount,
+          late: lateCount,
+          percentage:
+            Number(attendancePercentage)
+        },
+
+        departmentStats
+
+      }
+
+    });
+
+  } catch (error) {
+
+    next(error);
+
+  }
+};
+2. Check Dashboard Route
+Open:
+routes/dashboardRoutes.js
+It should look like:
+const express = require("express");
+
+const router = express.Router();
+
+const authMiddleware =
+  require("../middleware/auth");
+
+const adminMiddleware =
+  require("../middleware/admin");
+
+const {
+  getDashboardStats
+} = require(
+  "../controllers/dashboardController"
+);
+
+router.get(
+  "/stats",
+  authMiddleware,
+  adminMiddleware,
+  getDashboardStats
+);
+
+module.exports = router;
+3. Check server.js
+Make sure this exists:
+const dashboardRoutes =
+  require("./routes/dashboardRoutes");
+
+app.use(
+  "/api/dashboard",
+  dashboardRoutes
+);
+<div class="stats-grid">
+
+  <div class="stat-card">
+
+    <h3>Total Students</h3>
+
+    <p id="dashboardTotalStudents">
+      0
+    </p>
+
+  </div>
+
+
+  <div class="stat-card">
+
+    <h3>Departments</h3>
+
+    <p id="dashboardTotalDepartments">
+      0
+    </p>
+
+  </div>
+
+
+  <div class="stat-card">
+
+    <h3>Subjects</h3>
+
+    <p id="dashboardTotalSubjects">
+      0
+    </p>
+
+  </div>
+
+
+  <div class="stat-card">
+
+    <h3>Faculty</h3>
+
+    <p id="dashboardTotalFaculty">
+      0
+    </p>
+
+  </div>
+
+</div>
+4. Add Statistics Cards
+Open:
+public/index.html
+Inside the Dashboard section, add:
+HTML
+<div class="stats-grid">
+
+  <div class="stat-card">
+
+    <h3>Total Classes</h3>
+
+    <p id="dashboardTotalClasses">
+      0
+    </p>
+
+  </div>
+
+
+  <div class="stat-card">
+
+    <h3>Present</h3>
+
+    <p id="dashboardPresent">
+      0
+    </p>
+
+  </div>
+
+
+  <div class="stat-card">
+
+    <h3>Absent</h3>
+
+    <p id="dashboardAbsent">
+      0
+    </p>
+
+  </div>
+
+
+  <div class="stat-card">
+
+    <h3>Attendance %</h3>
+
+    <p id="dashboardAttendancePercentage">
+      0%
+    </p>
+
+  </div>
+
+</div>
+5. Attendance Statistics
+Below the cards add:
+HTML
+6. Add Chart.js
+Inside <head> of:
+public/index.html
+add:
+HTML
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+This library will create our charts.
+7. Add Chart Containers
+Below the statistics cards:
+<div class="charts-container">
+
+  <div class="chart-card">
+
+    <h2>Attendance Overview</h2>
+
+    <canvas
+      id="attendanceChart">
+    </canvas>
+
+  </div>
+
+
+  <div class="chart-card">
+
+    <h2>College Statistics</h2>
+
+    <canvas
+      id="collegeStatsChart">
+    </canvas>
+
+  </div>
+
+</div>
+HTML
+8. Add CSS
+Open:
+public/style.css
+Add:
+.stats-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(4, 1fr);
+
+  gap: 20px;
+
+  margin-bottom: 25px;
+}
+
+.stat-card {
+  background: white;
+
+  padding: 25px;
+
+  border-radius: 12px;
+
+  box-shadow:
+    0 2px 8px
+    rgba(0, 0, 0, 0.08);
+
+  text-align: center;
+}
+
+.stat-card h3 {
+  margin: 0 0 12px;
+}
+
+.stat-card p {
+  font-size: 30px;
+
+  font-weight: bold;
+
+  margin: 0;
+}
+
+.charts-container {
+  display: grid;
+
+  grid-template-columns:
+    repeat(2, 1fr);
+
+  gap: 25px;
+}
+
+.chart-card {
+  background: white;
+
+  padding: 25px;
+
+  border-radius: 12px;
+
+  min-height: 350px;
+}
+
+.chart-card canvas {
+  max-height: 280px;
+}
+
+@media (max-width: 900px) {
+
+  .stats-grid {
+    grid-template-columns:
+      repeat(2, 1fr);
+  }
+
+  .charts-container {
+    grid-template-columns: 1fr;
+  }
+
+}
+
+@media (max-width: 500px) {
+
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+}
+9. Load Dashboard Statistics
+Open:
+public/script.js
+Add:
+async function loadDashboardStats() {
+
+  try {
+
+    const response =
+      await fetch(
+        "/api/dashboard/stats",
+        {
+          headers: {
+            Authorization:
+              `Bearer ${token}`
+          }
+        }
+      );
+
+    const data =
+      await response.json();
+
+    if (!data.success) {
+
+      console.error(
+        data.message
+      );
+
+      return;
+    }
+
+    const stats =
+      data.statistics;
+
+
+    // Main statistics
+
+    document.getElementById(
+      "dashboardTotalStudents"
+    ).textContent =
+      stats.totalStudents;
+
+
+    document.getElementById(
+      "dashboardTotalDepartments"
+    ).textContent =
+      stats.totalDepartments;
+
+
+    document.getElementById(
+      "dashboardTotalSubjects"
+    ).textContent =
+      stats.totalSubjects;
+
+
+    document.getElementById(
+      "dashboardTotalFaculty"
+    ).textContent =
+      stats.totalFaculty;
+
+
+    // Attendance
+
+    document.getElementById(
+      "dashboardTotalClasses"
+    ).textContent =
+      stats.attendance.totalClasses;
+
+
+    document.getElementById(
+      "dashboardPresent"
+    ).textContent =
+      stats.attendance.present;
+
+
+    document.getElementById(
+      "dashboardAbsent"
+    ).textContent =
+      stats.attendance.absent;
+
+
+    document.getElementById(
+      "dashboardAttendancePercentage"
+    ).textContent =
+      `${stats.attendance.percentage}%`;
+
+
+    // Charts
+
+    createAttendanceChart(
+      stats.attendance
+    );
+
+    createCollegeStatsChart(
+      stats
+    );
+
+  } catch (error) {
+
+    console.error(
+      "Dashboard error:",
+      error
+    );
+
+  }
+
+}
+10. Attendance Chart
+Add:
+let attendanceChart;
+
+function createAttendanceChart(
+  attendance
+) {
+
+  const canvas =
+    document.getElementById(
+      "attendanceChart"
+    );
+
+  if (!canvas) return;
+
+  if (attendanceChart) {
+    attendanceChart.destroy();
+  }
+
+  attendanceChart =
+    new Chart(canvas, {
+
+      type: "doughnut",
+
+      data: {
+
+        labels: [
+          "Present",
+          "Absent",
+          "Late"
+        ],
+
+        datasets: [
+
+          {
+            data: [
+              attendance.present,
+              attendance.absent,
+              attendance.late
+            ]
+          }
+
+        ]
+
+      },
+
+      options: {
+
+        responsive: true,
+
+        maintainAspectRatio: false
+
+      }
+
+    });
+
+}
+11. College Statistics Chart
+Add:
+let collegeStatsChart;
+
+function createCollegeStatsChart(
+  stats
+) {
+
+  const canvas =
+    document.getElementById(
+      "collegeStatsChart"
+    );
+
+  if (!canvas) return;
+
+  if (collegeStatsChart) {
+    collegeStatsChart.destroy();
+  }
+
+  collegeStatsChart =
+    new Chart(canvas, {
+
+      type: "bar",
+
+      data: {
+
+        labels: [
+          "Students",
+          "Departments",
+          "Subjects",
+          "Faculty"
+        ],
+
+        datasets: [
+
+          {
+            label:
+              "College Statistics",
+
+            data: [
+              stats.totalStudents,
+              stats.totalDepartments,
+              stats.totalSubjects,
+              stats.totalFaculty
+            ]
+          }
+
+        ]
+
+      },
+
+      options: {
+
+        responsive: true,
+
+        maintainAspectRatio: false,
+
+        scales: {
+
+          y: {
+            beginAtZero: true
+          }
+
+        }
+
+      }
+
+    });
+
+}
+12. Call the Function
+At the bottom of script.js:
+loadDashboardStats();
+If you already have a dashboard-loading section, call it there instead of creating duplicate calls.
+13. Run the Project
+Save:
+Ctrl + S
+Start:
+npm run dev
+Open:
+http://localhost:3000
+Login as Admin.
+Your dashboard should now show real MongoDB data:
+┌─────────────────────────────────────────────┐
+│              COLLEGE ERP                    │
+├──────────────┬──────────────────────────────┤
+│              │ Dashboard                    │
+│ Dashboard    │                              │
+│ Students     │  Students   Departments      │
+│ Departments  │     150          8            │
+│ Subjects     │                              │
+│ Faculty      │  Subjects   Faculty          │
+│ Timetable    │     42         35             │
+│ Attendance   │                              │
+│ Marks        │  Attendance: 86.5%            │
+│ Users        │                              │
+│              │  📊 Attendance Chart         │
+│ Logout       │                              │
+│              │  📊 College Statistics       │
+└──────────────┴──────────────────────────────┘
+One important database note
+The departmentStats aggregation assumes your Student model uses department as a Department ObjectId. If your current Student model still stores department as a plain string, the department statistics will not group by Department correctly. Before the next module, we should standardize the Student model and handle any old student records.
+Next → We will fix and finalize the Student model: Roll Number + Department + Semester + Phone, connect it properly to Department, and make Student CRUD fully professional.
