@@ -25465,3 +25465,17 @@ Your dashboard should now show real MongoDB data:
 One important database note
 The departmentStats aggregation assumes your Student model uses department as a Department ObjectId. If your current Student model still stores department as a plain string, the department statistics will not group by Department correctly. Before the next module, we should standardize the Student model and handle any old student records.
 Next → We will fix and finalize the Student model: Roll Number + Department + Semester + Phone, connect it properly to Department, and make Student CRUD fully professional.
+College ERP Project — Next Step: Finalize the Student Model
+Now we will connect Students with Departments properly and prepare the Student module for professional CRUD operations (Create, Read, Update, Delete).
+We will do this in order:
+Update the Student model.
+Update the Student controller.
+Connect the Student API to Departments.
+Test the API.
+Prepare the frontend student form.
+Step 1: Open models/Student.js
+In VS Code:
+Open your College ERP project folder.
+Find the models folder.
+Click Student.js.
+Select all the old code and replace it with the code below.
