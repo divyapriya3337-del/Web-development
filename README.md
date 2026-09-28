@@ -25479,3 +25479,398 @@ Open your College ERP project folder.
 Find the models folder.
 Click Student.js.
 Select all the old code and replace it with the code below.
+Step 2 — Update studentController.js
+Open:
+controllers → studentController.js
+Select all old code → press Ctrl + A → replace it with this:
+const mongoose = require("mongoose");
+
+const Student = require("../models/Student");
+const Department = require("../models/Department");
+
+// CREATE STUDENT
+exports.createStudent = async (req, res, next) => {
+  try {
+    const {
+      name,
+      rollNumber,
+      email,
+      age,
+      phone,
+      department,
+      semester
+    } = req.body;
+
+    // Check required fields
+    if (
+      !name ||
+      !rollNumber ||
+      !email ||
+      age === undefined ||
+      !department ||
+      semester === undefined
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "All required student fields are required"
+      });
+    }
+
+    // Validate department ID
+    if (!mongoose.Types.ObjectId.isValid(department)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid department ID"
+      });
+    }
+
+    // Check department exists
+    const existingDepartment =
+      await Department.findById(department);
+
+    if (!existingDepartment) {
+      return res.status(404).json({
+        success: false,
+        message: "Department not found"
+      });
+    }
+
+    // Create student
+    const student = await Student.create({
+      name,
+      rollNumber,
+      email,
+      age: Number(age),
+      phone,
+      department,
+      semester: Number(semester)
+    });
+
+    // Get department details
+    await student.populate("department", "name code");
+
+    res.status(201).json({
+      success: true,
+      message: "Student created successfully",
+      student
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+
+// GET ALL STUDENTS
+exports.getStudents = async (req, res, next) => {
+  try {
+    const {
+      search,
+      department,
+      semester,
+      page = 1,
+      limit = 10,
+      sortBy = "createdAt",
+      order = "desc"
+    } = req.query;
+
+    const filter = {};
+
+    // Search by name, roll number or email
+    if (search) {
+      const escapedSearch = search.replace(
+        /[.*+?^${}()|[\]\\]/g,
+        "\\$&"
+      );
+
+      const searchRegex = new RegExp(
+        escapedSearch,
+        "i"
+      );
+
+      filter.$or = [
+        { name: searchRegex },
+        { rollNumber: searchRegex },
+        { email: searchRegex }
+      ];
+    }
+
+    // Filter by department
+    if (department) {
+      if (!mongoose.Types.ObjectId.isValid(department)) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid department ID"
+        });
+      }
+
+      filter.department = department;
+    }
+
+    // Filter by semester
+    if (semester) {
+      filter.semester = Number(semester);
+    }
+
+    const pageNumber = Math.max(Number(page), 1);
+    const limitNumber = Math.min(
+      Math.max(Number(limit), 1),
+      100
+    );
+
+    const skip =
+      (pageNumber - 1) * limitNumber;
+
+    const sortOrder =
+      order === "asc" ? 1 : -1;
+
+    const students = await Student.find(filter)
+      .populate("department", "name code")
+      .sort({
+        [sortBy]: sortOrder
+      })
+      .skip(skip)
+      .limit(limitNumber);
+
+    const totalStudents =
+      await Student.countDocuments(filter);
+
+    res.status(200).json({
+      success: true,
+      students,
+      pagination: {
+        total: totalStudents,
+        page: pageNumber,
+        limit: limitNumber,
+        totalPages: Math.ceil(
+          totalStudents / limitNumber
+        )
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+
+// GET SINGLE STUDENT
+exports.getStudent = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid student ID"
+      });
+    }
+
+    const student = await Student.findById(id)
+      .populate("department", "name code");
+
+    if (!student) {
+      return res.status(404).json({
+        success: false,
+        message: "Student not found"
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      student
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+
+// UPDATE STUDENT
+exports.updateStudent = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+
+    const {
+      name,
+      rollNumber,
+      email,
+      age,
+      phone,
+      department,
+      semester
+    } = req.body;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid student ID"
+      });
+    }
+
+    if (
+      !name ||
+      !rollNumber ||
+      !email ||
+      age === undefined ||
+      !department ||
+      semester === undefined
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "All required student fields are required"
+      });
+    }
+
+    if (!mongoose.Types.ObjectId.isValid(department)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid department ID"
+      });
+    }
+
+    const existingDepartment =
+      await Department.findById(department);
+
+    if (!existingDepartment) {
+      return res.status(404).json({
+        success: false,
+        message: "Department not found"
+      });
+    }
+
+    const student =
+      await Student.findByIdAndUpdate(
+        id,
+        {
+          name,
+          rollNumber,
+          email,
+          age: Number(age),
+          phone,
+          department,
+          semester: Number(semester)
+        },
+        {
+          new: true,
+          runValidators: true
+        }
+      ).populate("department", "name code");
+
+    if (!student) {
+      return res.status(404).json({
+        success: false,
+        message: "Student not found"
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Student updated successfully",
+      student
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+
+// DELETE STUDENT
+exports.deleteStudent = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid student ID"
+      });
+    }
+
+    const student =
+      await Student.findByIdAndDelete(id);
+
+    if (!student) {
+      return res.status(404).json({
+        success: false,
+        message: "Student not found"
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Student deleted successfully"
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+Step 3 — Save
+Press:
+Ctrl + S
+Step 4 — Check your routes
+Open:
+routes → studentRoutes.js
+It should look like this:
+const express = require("express");
+
+const router = express.Router();
+
+const {
+  createStudent,
+  getStudents,
+  getStudent,
+  updateStudent,
+  deleteStudent
+} = require("../controllers/studentController");
+
+const authMiddleware = require("../middleware/auth");
+const adminMiddleware = require("../middleware/admin");
+
+router.get(
+  "/",
+  authMiddleware,
+  getStudents
+);
+
+router.get(
+  "/:id",
+  authMiddleware,
+  getStudent
+);
+
+router.post(
+  "/",
+  authMiddleware,
+  adminMiddleware,
+  createStudent
+);
+
+router.put(
+  "/:id",
+  authMiddleware,
+  adminMiddleware,
+  updateStudent
+);
+
+router.delete(
+  "/:id",
+  authMiddleware,
+  adminMiddleware,
+  deleteStudent
+);
+
+module.exports = router;
+Save with Ctrl + S.
+What we completed
+Your Student backend now supports:
+Create Student       ✅
+View All Students    ✅
+View One Student     ✅
+Search Students      ✅
+Filter by Department ✅
+Filter by Semester   ✅
+Pagination           ✅
+Sorting              ✅
+Update Student       ✅
+Delete Student       ✅
+Department connection ✅
+Next: We will create the Student form in the Admin Dashboard with fields for Name, Roll Number, Email, Age, Phone, Department dropdown, and Semester dropdown, and connect it to this API.
