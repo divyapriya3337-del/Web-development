@@ -25874,3 +25874,816 @@ Update Student       ✅
 Delete Student       ✅
 Department connection ✅
 Next: We will create the Student form in the Admin Dashboard with fields for Name, Roll Number, Email, Age, Phone, Department dropdown, and Semester dropdown, and connect it to this API.
+Step 3 — Create the Student Form in Admin Dashboard
+Now we will connect the Admin Dashboard → Students section to the new Student API.
+We will add:
+Student Name
+Roll Number
+<section id="studentsSection" class="admin-section">
+
+  <h1>Students</h1>
+
+  <div class="form-card">
+
+    <h2>Add Student</h2>
+
+    <form id="studentForm">
+
+      <div class="form-group">
+        <label for="studentName">
+          Student Name
+        </label>
+
+        <input
+          type="text"
+          id="studentName"
+          placeholder="Enter student name"
+          required
+        >
+      </div>
+
+
+      <div class="form-group">
+        <label for="studentRollNumber">
+          Roll Number
+        </label>
+
+        <input
+          type="text"
+          id="studentRollNumber"
+          placeholder="Example: CSE001"
+          required
+        >
+      </div>
+
+
+      <div class="form-group">
+        <label for="studentEmail">
+          Email
+        </label>
+
+        <input
+          type="email"
+          id="studentEmail"
+          placeholder="student@example.com"
+          required
+        >
+      </div>
+
+
+      <div class="form-group">
+        <label for="studentAge">
+          Age
+        </label>
+
+        <input
+          type="number"
+          id="studentAge"
+          placeholder="Enter age"
+          min="1"
+          max="100"
+          required
+        >
+      </div>
+
+
+      <div class="form-group">
+        <label for="studentPhone">
+          Phone
+        </label>
+
+        <input
+          type="tel"
+          id="studentPhone"
+          placeholder="Enter phone number"
+      >
+      </div>
+
+
+      <div class="form-group">
+        <label for="studentDepartment">
+          Department
+        </label>
+
+        <select
+          id="studentDepartment"
+          required
+        >
+          <option value="">
+            Select Department
+          </option>
+        </select>
+      </div>
+
+
+      <div class="form-group">
+        <label for="studentSemester">
+          Semester
+        </label>
+
+        <select
+          id="studentSemester"
+          required
+        >
+          <option value="">
+            Select Semester
+          </option>
+
+          <option value="1">Semester 1</option>
+          <option value="2">Semester 2</option>
+          <option value="3">Semester 3</option>
+          <option value="4">Semester 4</option>
+          <option value="5">Semester 5</option>
+          <option value="6">Semester 6</option>
+          <option value="7">Semester 7</option>
+          <option value="8">Semester 8</option>
+        </select>
+      </div>
+
+
+      <button type="submit">
+        Add Student
+      </button>
+
+    </form>
+
+  </div>
+
+
+  <div class="table-section">
+
+    <h2>Student List</h2>
+
+    <table>
+
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Roll Number</th>
+          <th>Email</th>
+          <th>Age</th>
+          <th>Phone</th>
+          <th>Department</th>
+          <th>Semester</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+
+      <tbody id="studentTableBody">
+      </tbody>
+
+    </table>
+
+  </div>
+
+</section>
+Email
+Age
+Phone
+Department dropdown
+Semester dropdown
+Add Student button
+Student table
+Edit
+Delete
+1. Open public/index.html
+In VS Code:
+public
+ └── index.html
+Find your existing:
+HTML
+<section id="studentsSection" class="admin-section">
+Replace the entire Students section with:
+HTML
+Save
+Press:
+Ctrl + S
+2. Open public/script.js
+Now we connect this form to your backend.
+Open:
+public
+ └── script.js
+Go to the bottom of the file.
+Add this complete code:
+// ==========================================
+// STUDENT MANAGEMENT
+// ==========================================
+
+
+// LOAD DEPARTMENTS INTO STUDENT DROPDOWN
+async function loadStudentDepartments() {
+  const departmentDropdown =
+    document.getElementById("studentDepartment");
+
+  if (!departmentDropdown) return;
+
+  try {
+    const response = await fetch(
+      "/api/departments",
+      {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      }
+    );
+
+    const data = await response.json();
+
+    if (!data.success) {
+      console.error(data.message);
+      return;
+    }
+
+    departmentDropdown.innerHTML =
+      '<option value="">Select Department</option>';
+
+    data.departments.forEach(department => {
+
+      const option =
+        document.createElement("option");
+
+      option.value = department._id;
+
+      option.textContent =
+        `${department.code} - ${department.name}`;
+
+      departmentDropdown.appendChild(option);
+    });
+
+  } catch (error) {
+    console.error(
+      "Error loading departments:",
+      error
+    );
+  }
+}
+
+
+
+// LOAD STUDENTS
+async function loadStudents() {
+
+  try {
+
+    const response = await fetch(
+      "/api/students",
+      {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      }
+    );
+
+    const data = await response.json();
+
+    if (!data.success) {
+
+      console.error(data.message);
+
+      return;
+    }
+
+    displayStudents(data.students);
+
+  } catch (error) {
+
+    console.error(
+      "Error loading students:",
+      error
+    );
+
+  }
+}
+
+
+
+// DISPLAY STUDENTS
+function displayStudents(students) {
+
+  const tbody =
+    document.getElementById(
+      "studentTableBody"
+    );
+
+  if (!tbody) return;
+
+  tbody.innerHTML = "";
+
+
+  if (students.length === 0) {
+
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="8">
+          No students found
+        </td>
+      </tr>
+    `;
+
+    return;
+  }
+
+
+  students.forEach(student => {
+
+    const row =
+      document.createElement("tr");
+
+
+    row.innerHTML = `
+
+      <td>
+        ${student.name}
+      </td>
+
+      <td>
+        ${student.rollNumber}
+      </td>
+
+      <td>
+        ${student.email}
+      </td>
+
+      <td>
+        ${student.age}
+      </td>
+
+      <td>
+        ${student.phone || "N/A"}
+      </td>
+
+      <td>
+        ${
+          student.department
+            ? `${student.department.code} - ${student.department.name}`
+            : "N/A"
+        }
+      </td>
+
+      <td>
+        ${student.semester}
+      </td>
+
+      <td>
+
+        <button
+          onclick="editStudent('${student._id}')"
+        >
+          Edit
+        </button>
+
+        <button
+          onclick="deleteStudent('${student._id}')"
+        >
+          Delete
+        </button>
+
+      </td>
+
+    `;
+
+    tbody.appendChild(row);
+
+  });
+
+}
+
+
+
+// ADD STUDENT
+const studentForm =
+  document.getElementById("studentForm");
+
+
+if (studentForm) {
+
+  studentForm.addEventListener(
+    "submit",
+    async function (event) {
+
+      event.preventDefault();
+
+
+      const name =
+        document.getElementById(
+          "studentName"
+        ).value.trim();
+
+
+      const rollNumber =
+        document.getElementById(
+          "studentRollNumber"
+        ).value.trim();
+
+
+      const email =
+        document.getElementById(
+          "studentEmail"
+        ).value.trim();
+
+
+      const age =
+        document.getElementById(
+          "studentAge"
+        ).value;
+
+
+      const phone =
+        document.getElementById(
+          "studentPhone"
+        ).value.trim();
+
+
+      const department =
+        document.getElementById(
+          "studentDepartment"
+        ).value;
+
+
+      const semester =
+        document.getElementById(
+          "studentSemester"
+        ).value;
+
+
+      if (
+        !name ||
+        !rollNumber ||
+        !email ||
+        !age ||
+        !department ||
+        !semester
+      ) {
+
+        alert(
+          "Please fill all required fields"
+        );
+
+        return;
+      }
+
+
+      try {
+
+        const response = await fetch(
+          "/api/students",
+          {
+            method: "POST",
+
+            headers: {
+              "Content-Type":
+                "application/json",
+
+              Authorization:
+                `Bearer ${token}`
+            },
+
+            body: JSON.stringify({
+
+              name,
+
+              rollNumber,
+
+              email,
+
+              age: Number(age),
+
+              phone,
+
+              department,
+
+              semester: Number(semester)
+
+            })
+          }
+        );
+
+
+        const data =
+          await response.json();
+
+
+        if (data.success) {
+
+          alert(
+            "Student added successfully!"
+          );
+
+          studentForm.reset();
+
+          loadStudents();
+
+        } else {
+
+          alert(
+            data.message ||
+            "Failed to add student"
+          );
+
+        }
+
+      } catch (error) {
+
+        console.error(error);
+
+        alert(
+          "Server error while adding student"
+        );
+
+      }
+
+    }
+  );
+
+}
+
+
+
+// DELETE STUDENT
+async function deleteStudent(id) {
+
+  const confirmDelete =
+    confirm(
+      "Are you sure you want to delete this student?"
+    );
+
+
+  if (!confirmDelete) return;
+
+
+  try {
+
+    const response =
+      await fetch(
+        `/api/students/${id}`,
+        {
+          method: "DELETE",
+
+          headers: {
+            Authorization:
+              `Bearer ${token}`
+          }
+        }
+      );
+
+
+    const data =
+      await response.json();
+
+
+    if (data.success) {
+
+      alert(
+        "Student deleted successfully!"
+      );
+
+      loadStudents();
+
+    } else {
+
+      alert(
+        data.message ||
+        "Failed to delete student"
+      );
+
+    }
+
+  } catch (error) {
+
+    console.error(error);
+
+    alert(
+      "Server error while deleting student"
+    );
+
+  }
+
+}
+
+
+
+// EDIT STUDENT
+async function editStudent(id) {
+
+  try {
+
+    const response =
+      await fetch(
+        `/api/students/${id}`,
+        {
+          headers: {
+            Authorization:
+              `Bearer ${token}`
+          }
+        }
+      );
+
+
+    const data =
+      await response.json();
+
+
+    if (!data.success) {
+
+      alert(
+        data.message ||
+        "Student not found"
+      );
+
+      return;
+    }
+
+
+    const student =
+      data.student;
+
+
+    const name =
+      prompt(
+        "Enter student name:",
+        student.name
+      );
+
+    if (name === null) return;
+
+
+    const rollNumber =
+      prompt(
+        "Enter roll number:",
+        student.rollNumber
+      );
+
+    if (rollNumber === null) return;
+
+
+    const email =
+      prompt(
+        "Enter email:",
+        student.email
+      );
+
+    if (email === null) return;
+
+
+    const age =
+      prompt(
+        "Enter age:",
+        student.age
+      );
+
+    if (age === null) return;
+
+
+    const phone =
+      prompt(
+        "Enter phone:",
+        student.phone || ""
+      );
+
+    if (phone === null) return;
+
+
+    const semester =
+      prompt(
+        "Enter semester (1-8):",
+        student.semester
+      );
+
+    if (semester === null) return;
+
+
+    const updateResponse =
+      await fetch(
+        `/api/students/${id}`,
+        {
+          method: "PUT",
+
+          headers: {
+            "Content-Type":
+              "application/json",
+
+            Authorization:
+              `Bearer ${token}`
+          },
+
+          body: JSON.stringify({
+
+            name: name.trim(),
+
+            rollNumber:
+              rollNumber.trim(),
+
+            email:
+              email.trim(),
+
+            age:
+              Number(age),
+
+            phone:
+              phone.trim(),
+
+            department:
+              student.department._id,
+
+            semester:
+              Number(semester)
+
+          })
+        }
+      );
+
+
+    const updateData =
+      await updateResponse.json();
+
+
+    if (updateData.success) {
+
+      alert(
+        "Student updated successfully!"
+      );
+
+      loadStudents();
+
+    } else {
+
+      alert(
+        updateData.message ||
+        "Failed to update student"
+      );
+
+    }
+
+  } catch (error) {
+
+    console.error(error);
+
+    alert(
+      "Server error while updating student"
+    );
+
+  }
+
+}
+
+
+
+// INITIAL LOAD
+loadStudentDepartments();
+loadStudents();
+Press:
+Ctrl + S
+3. Important check
+Your Admin Dashboard should now have:
+College ERP
+│
+├── Dashboard
+├── Students
+│   ├── Add Student Form
+│   └── Student List
+├── Departments
+├── Subjects
+├── Faculty
+├── Timetable
+├── Attendance
+├── Marks
+├── Users
+└── Logout
+4. Start the server
+Open VS Code terminal:
+Ctrl + `
+Type:
+npm run dev
+You should see something similar to:
+Server running on port 3000
+MongoDB connected
+5. Test Student creation
+Open your browser:
+http://localhost:3000/login.html
+Login as Admin.
+Go to:
+Students
+You should see the form.
+Fill an example
+Student Name: Divya Priya
+Roll Number: CSE001
+Email: divya@example.com
+Age: 20
+Phone: 9876543210
+Department: CSE - Computer Science and Engineering
+Semester: 5
+Click:
+Add Student
+Then the student should appear in the table.
+⚠️ If Department dropdown is empty
+First go to:
+Admin Dashboard → Departments
+Create at least one department, for example:
+Name: Computer Science and Engineering
+Code: CSE
+Then refresh the Admin Dashboard.
+The Student form should show:
+CSE - Computer Science and Engineering
+One important improvement
+The current Edit function uses browser prompt() boxes, which is okay for testing but not ideal for the final ERP UI.
+Next, we should replace it with a proper Edit Student form/modal, and also make the student subject dropdown automatically filter subjects according to the student's Department + Semester.
