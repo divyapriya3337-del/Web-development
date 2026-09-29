@@ -26687,3 +26687,581 @@ CSE - Computer Science and Engineering
 One important improvement
 The current Edit function uses browser prompt() boxes, which is okay for testing but not ideal for the final ERP UI.
 Next, we should replace it with a proper Edit Student form/modal, and also make the student subject dropdown automatically filter subjects according to the student's Department + Semester.
+Step 4 — Professional Student Edit + Department/Semester Subject Filtering
+We’ll improve two things now:
+Replace the basic prompt() editing with a proper Edit Student form.
+Make subjects load according to the student's Department + Semester, instead of showing every subject.
+1. Add the Edit Student form
+Open:
+public/index.html
+Inside the studentsSection, after the Add Student form and before the Student List, add:
+HTML
+<div class="form-card" id="editStudentCard" style="display: none;">
+
+  <h2>Edit Student</h2>
+
+  <form id="editStudentForm">
+
+    <input
+      type="hidden"
+      id="editStudentId"
+    >
+
+    <div class="form-group">
+      <label for="editStudentName">
+        Student Name
+      </label>
+
+      <input
+        type="text"
+        id="editStudentName"
+        required
+      >
+    </div>
+
+    <div class="form-group">
+      <label for="editStudentRollNumber">
+        Roll Number
+      </label>
+
+      <input
+        type="text"
+        id="editStudentRollNumber"
+        required
+      >
+    </div>
+
+    <div class="form-group">
+      <label for="editStudentEmail">
+        Email
+      </label>
+
+      <input
+        type="email"
+        id="editStudentEmail"
+        required
+      >
+    </div>
+
+    <div class="form-group">
+      <label for="editStudentAge">
+        Age
+      </label>
+
+      <input
+        type="number"
+        id="editStudentAge"
+        min="1"
+        max="100"
+        required
+      >
+    </div>
+
+    <div class="form-group">
+      <label for="editStudentPhone">
+        Phone
+      </label>
+
+      <input
+        type="tel"
+        id="editStudentPhone"
+      >
+    </div>
+
+    <div class="form-group">
+      <label for="editStudentDepartment">
+        Department
+      </label>
+
+      <select
+        id="editStudentDepartment"
+        required
+      >
+        <option value="">
+          Select Department
+        </option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label for="editStudentSemester">
+        Semester
+      </label>
+
+      <select
+        id="editStudentSemester"
+        required
+      >
+        <option value="">
+          Select Semester
+        </option>
+
+        <option value="1">Semester 1</option>
+        <option value="2">Semester 2</option>
+        <option value="3">Semester 3</option>
+        <option value="4">Semester 4</option>
+        <option value="5">Semester 5</option>
+        <option value="6">Semester 6</option>
+        <option value="7">Semester 7</option>
+        <option value="8">Semester 8</option>
+      </select>
+    </div>
+
+    <button type="submit">
+      Update Student
+    </button>
+
+    <button
+      type="button"
+      id="cancelEditStudent"
+    >
+      Cancel
+    </button>
+
+  </form>
+
+</div>
+Press:
+Ctrl + S
+2. Replace the old editStudent() function
+Open:
+public/script.js
+Find:
+async function editStudent(id) {
+Delete the entire old editStudent() function.
+Replace it with:
+async function editStudent(id) {
+
+  try {
+
+    const response = await fetch(
+      `/api/students/${id}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      }
+    );
+
+    const data = await response.json();
+
+    if (!data.success) {
+      alert(data.message || "Student not found");
+      return;
+    }
+
+    const student = data.student;
+
+    document.getElementById(
+      "editStudentCard"
+    ).style.display = "block";
+
+    document.getElementById(
+      "editStudentId"
+    ).value = student._id;
+
+    document.getElementById(
+      "editStudentName"
+    ).value = student.name;
+
+    document.getElementById(
+      "editStudentRollNumber"
+    ).value = student.rollNumber;
+
+    document.getElementById(
+      "editStudentEmail"
+    ).value = student.email;
+
+    document.getElementById(
+      "editStudentAge"
+    ).value = student.age;
+
+    document.getElementById(
+      "editStudentPhone"
+    ).value = student.phone || "";
+
+    await loadEditStudentDepartments();
+
+    document.getElementById(
+      "editStudentDepartment"
+    ).value = student.department._id;
+
+    document.getElementById(
+      "editStudentSemester"
+    ).value = student.semester;
+
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth"
+    });
+
+  } catch (error) {
+
+    console.error(error);
+
+    alert(
+      "Error loading student details"
+    );
+  }
+}
+3. Add department loading for Edit
+Below the existing loadStudentDepartments() function, add:
+async function loadEditStudentDepartments() {
+
+  const dropdown =
+    document.getElementById(
+      "editStudentDepartment"
+    );
+
+  if (!dropdown) return;
+
+  try {
+
+    const response = await fetch(
+      "/api/departments",
+      {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      }
+    );
+
+    const data = await response.json();
+
+    if (!data.success) {
+      console.error(data.message);
+      return;
+    }
+
+    dropdown.innerHTML =
+      '<option value="">Select Department</option>';
+
+    data.departments.forEach(department => {
+
+      const option =
+        document.createElement("option");
+
+      option.value = department._id;
+
+      option.textContent =
+        `${department.code} - ${department.name}`;
+
+      dropdown.appendChild(option);
+
+    });
+
+  } catch (error) {
+
+    console.error(
+      "Error loading edit departments:",
+      error
+    );
+
+  }
+}
+4. Add Update Student functionality
+Still in:
+public/script.js
+Add this:
+const editStudentForm =
+  document.getElementById(
+    "editStudentForm"
+  );
+
+
+if (editStudentForm) {
+
+  editStudentForm.addEventListener(
+    "submit",
+    async function (event) {
+
+      event.preventDefault();
+
+      const id =
+        document.getElementById(
+          "editStudentId"
+        ).value;
+
+      const name =
+        document.getElementById(
+          "editStudentName"
+        ).value.trim();
+
+      const rollNumber =
+        document.getElementById(
+          "editStudentRollNumber"
+        ).value.trim();
+
+      const email =
+        document.getElementById(
+          "editStudentEmail"
+        ).value.trim();
+
+      const age =
+        document.getElementById(
+          "editStudentAge"
+        ).value;
+
+      const phone =
+        document.getElementById(
+          "editStudentPhone"
+        ).value.trim();
+
+      const department =
+        document.getElementById(
+          "editStudentDepartment"
+        ).value;
+
+      const semester =
+        document.getElementById(
+          "editStudentSemester"
+        ).value;
+
+
+      if (
+        !id ||
+        !name ||
+        !rollNumber ||
+        !email ||
+        !age ||
+        !department ||
+        !semester
+      ) {
+
+        alert(
+          "Please fill all required fields"
+        );
+
+        return;
+      }
+
+
+      try {
+
+        const response = await fetch(
+          `/api/students/${id}`,
+          {
+            method: "PUT",
+
+            headers: {
+              "Content-Type":
+                "application/json",
+
+              Authorization:
+                `Bearer ${token}`
+            },
+
+            body: JSON.stringify({
+
+              name,
+
+              rollNumber,
+
+              email,
+
+              age: Number(age),
+
+              phone,
+
+              department,
+
+              semester: Number(semester)
+
+            })
+          }
+        );
+
+
+        const data =
+          await response.json();
+
+
+        if (data.success) {
+
+          alert(
+            "Student updated successfully!"
+          );
+
+          editStudentForm.reset();
+
+          document.getElementById(
+            "editStudentCard"
+          ).style.display = "none";
+
+          loadStudents();
+
+        } else {
+
+          alert(
+            data.message ||
+            "Failed to update student"
+          );
+
+        }
+
+      } catch (error) {
+
+        console.error(error);
+
+        alert(
+          "Server error while updating student"
+        );
+
+      }
+
+    }
+  );
+}
+5. Add Cancel button
+Add:
+const cancelEditStudent =
+  document.getElementById(
+    "cancelEditStudent"
+  );
+
+if (cancelEditStudent) {
+
+  cancelEditStudent.addEventListener(
+    "click",
+    function () {
+
+      document.getElementById(
+        "editStudentForm"
+      ).reset();
+
+      document.getElementById(
+        "editStudentCard"
+      ).style.display = "none";
+
+    }
+  );
+
+}
+Save:
+Ctrl + S
+6. Test Edit Student
+Run your server:
+npm run dev
+Open:
+http://localhost:3000/login.html
+Login as Admin.
+Go to:
+Students
+You should see:
+Student List
+
+Name | Roll No | Email | Age | Phone | Department | Semester | Actions
+
+Divya | CSE001 | ... | 20 | ... | CSE | 5 | Edit Delete
+Click:
+Edit
+A proper Edit Student form should appear.
+Change the information and click:
+Update Student
+7. Next improvement — Subject filtering
+Currently your Attendance/Marks subject dropdown can show all subjects.
+We want this:
+Student
+   ↓
+Department + Semester
+   ↓
+Matching Subjects
+   ↓
+Subject Dropdown
+For example:
+Student: CSE001
+Department: CSE
+Semester: 5
+
+Subjects:
+ ├── DBMS
+ ├── Computer Networks
+ ├── Operating Systems
+ └── Compiler Design
+But an ECE Semester-5 student should see only the subjects belonging to ECE + Semester 5.
+To support this properly, your GET /api/subjects controller needs department/semester filtering.
+In subjectController.js
+Find your getSubjects function.
+Change the beginning to support:
+exports.getSubjects = async (req, res, next) => {
+  try {
+
+    const {
+      department,
+      semester
+    } = req.query;
+
+    const filter = {};
+
+    if (department) {
+
+      if (
+        !mongoose.Types.ObjectId.isValid(
+          department
+        )
+      ) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid department ID"
+        });
+      }
+
+      filter.department = department;
+    }
+
+    if (semester) {
+      filter.semester = Number(semester);
+    }
+
+    const subjects = await Subject.find(filter)
+      .populate(
+        "department",
+        "name code"
+      )
+      .sort({
+        semester: 1,
+        name: 1
+      });
+
+    res.status(200).json({
+      success: true,
+      subjects
+    });
+
+  } catch (error) {
+
+    next(error);
+
+  }
+};
+Make sure the top of subjectController.js contains:
+const mongoose = require("mongoose");
+const Subject = require("../models/Subject");
+const Department = require("../models/Department");
+Save with:
+Ctrl + S
+Now the API can accept:
+/api/subjects?department=DEPARTMENT_ID&semester=5
+and return only matching subjects.
+Current project progress
+College ERP
+│
+├── Authentication       ✅
+├── Users                ✅
+├── Students             ✅
+│   ├── Model            ✅
+│   ├── CRUD             ✅
+│   ├── Department       ✅
+│   ├── Semester         ✅
+│   └── Professional Edit ✅
+│
+├── Departments          ✅
+├── Subjects             ✅
+│   └── Department/Semester filter ✅
+├── Faculty              ✅
+├── Timetable            ✅
+├── Attendance           ✅
+├── Marks                ✅
+├── Admin Dashboard      ✅
+└── Student Dashboard    ✅
+Next: We should connect the Student → Department + Semester → Subjects filtering to the Attendance and Marks forms, so the correct subjects automatically appear when you select a student.
