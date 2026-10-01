@@ -27265,3 +27265,408 @@ College ERP
 ├── Admin Dashboard      ✅
 └── Student Dashboard    ✅
 Next: We should connect the Student → Department + Semester → Subjects filtering to the Attendance and Marks forms, so the correct subjects automatically appear when you select a student.
+Step 5 — Connect Student → Department + Semester → Subjects
+Now we will make the Attendance and Marks subject dropdowns intelligent.
+When you select a student:
+Student
+   ↓
+Student's Department
+   +
+Student's Semester
+   ↓
+Matching Subjects
+   ↓
+Subject Dropdown
+So you won't see unrelated subjects.
+1. Update the Subjects API
+Open:
+controllers/subjectController.js
+Make sure the top has:
+const mongoose = require("mongoose");
+
+const Subject = require("../models/Subject");
+const Department = require("../models/Department");
+Now find:
+exports.getSubjects = async (req, res, next) => {
+Replace the entire getSubjects function with:
+exports.getSubjects = async (req, res, next) => {
+  try {
+    const {
+      department,
+      semester
+    } = req.query;
+
+    const filter = {};
+
+    // Filter by department
+    if (department) {
+
+      if (
+        !mongoose.Types.ObjectId.isValid(department)
+      ) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid department ID"
+        });
+      }
+
+      filter.department = department;
+    }
+
+    // Filter by semester
+    if (semester) {
+
+      const semesterNumber = Number(semester);
+
+      if (
+        !Number.isInteger(semesterNumber) ||
+        semesterNumber < 1 ||
+        semesterNumber > 12
+      ) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid semester"
+        });
+      }
+
+      filter.semester = semesterNumber;
+    }
+
+    const subjects = await Subject.find(filter)
+      .populate(
+        "department",
+        "name code"
+      )
+      .sort({
+        semester: 1,
+        name: 1
+      });
+
+    res.status(200).json({
+      success: true,
+      subjects
+    });
+
+  } catch (error) {
+    next(error);
+  }
+};
+Press:
+Ctrl + S
+2. Test the API
+Start your server:
+npm run dev
+You need a real Department ID.
+You can get it from:
+Admin Dashboard
+→ Departments
+Suppose the Department ID is:
+68xxxxxxxxxxxxxxxxxxxx
+Open this in your browser:
+http://localhost:3000/api/subjects?department=68xxxxxxxxxxxxxxxxxxxx&semester=5
+Because this API requires authentication, your browser may return:
+Authentication required
+That's okay.
+We will test it through the Admin Dashboard next.
+3. Replace the old subject-loading function
+Open:
+public/script.js
+Find the existing function:
+async function loadSubjectsForStudent(studentId, subjectDropdownId)
+Delete the whole old function.
+Replace it with:
+async function loadSubjectsForStudent(
+  studentId,
+  subjectDropdownId
+) {
+
+  const subjectDropdown =
+    document.getElementById(
+      subjectDropdownId
+    );
+
+  if (!subjectDropdown) return;
+
+
+  subjectDropdown.innerHTML =
+    '<option value="">Loading subjects...</option>';
+
+
+  if (!studentId) {
+
+    subjectDropdown.innerHTML =
+      '<option value="">Select Subject</option>';
+
+    return;
+  }
+
+
+  try {
+
+    // Get student details
+    const studentResponse =
+      await fetch(
+        `/api/students/${studentId}`,
+        {
+          headers: {
+            Authorization:
+              `Bearer ${token}`
+          }
+        }
+      );
+
+
+    const studentData =
+      await studentResponse.json();
+
+
+    if (!studentData.success) {
+
+      subjectDropdown.innerHTML =
+        '<option value="">Student not found</option>';
+
+      return;
+    }
+
+
+    const student =
+      studentData.student;
+
+
+    // Get department ID
+    const departmentId =
+      student.department?._id ||
+      student.department;
+
+
+    // Get semester
+    const semester =
+      student.semester;
+
+
+    if (!departmentId || !semester) {
+
+      subjectDropdown.innerHTML =
+        '<option value="">Department/Semester missing</option>';
+
+      return;
+    }
+
+
+    // Get matching subjects
+    const subjectResponse =
+      await fetch(
+        `/api/subjects?department=${departmentId}&semester=${semester}`,
+        {
+          headers: {
+            Authorization:
+              `Bearer ${token}`
+          }
+        }
+      );
+
+
+    const subjectData =
+      await subjectResponse.json();
+
+
+    if (!subjectData.success) {
+
+      subjectDropdown.innerHTML =
+        '<option value="">No subjects found</option>';
+
+      return;
+    }
+
+
+    subjectDropdown.innerHTML =
+      '<option value="">Select Subject</option>';
+
+
+    if (
+      subjectData.subjects.length === 0
+    ) {
+
+      subjectDropdown.innerHTML =
+        '<option value="">No subjects available</option>';
+
+      return;
+    }
+
+
+    subjectData.subjects.forEach(
+      subject => {
+
+        const option =
+          document.createElement(
+            "option"
+          );
+
+        option.value =
+          subject._id;
+
+        option.textContent =
+          `${subject.code} - ${subject.name}`;
+
+        subjectDropdown.appendChild(
+          option
+        );
+
+      }
+    );
+
+  } catch (error) {
+
+    console.error(
+      "Error loading subjects:",
+      error
+    );
+
+    subjectDropdown.innerHTML =
+      '<option value="">Error loading subjects</option>';
+  }
+}
+Save:
+Ctrl + S
+4. Student change events
+Your existing code should already contain:
+const attendanceStudent =
+  document.getElementById(
+    "attendanceStudent"
+  );
+
+if (attendanceStudent) {
+
+  attendanceStudent.addEventListener(
+    "change",
+    function () {
+
+      loadSubjectsForStudent(
+        this.value,
+        "attendanceSubject"
+      );
+
+    }
+  );
+}
+And:
+const marksStudent =
+  document.getElementById(
+    "marksStudent"
+  );
+
+if (marksStudent) {
+
+  marksStudent.addEventListener(
+    "change",
+    function () {
+
+      loadSubjectsForStudent(
+        this.value,
+        "marksSubject"
+      );
+
+    }
+  );
+}
+Do not add duplicates if these already exist.
+5. Test Attendance
+Open:
+http://localhost:3000/login.html
+Login as Admin.
+Go to:
+Attendance
+You should see:
+Student
+[ Select Student ▼ ]
+
+Subject
+[ Select Subject ▼ ]
+First select a student.
+The application will:
+1. Get student ID
+       ↓
+2. Get student's department
+       ↓
+3. Get student's semester
+       ↓
+4. Request matching subjects
+       ↓
+5. Fill Subject dropdown
+For example:
+Student: CSE001
+
+Department: CSE
+Semester: 5
+
+Subject:
+  DBMS
+  Computer Networks
+  Operating Systems
+  Compiler Design
+6. Test Marks
+Go to:
+Marks
+Select a student.
+The Subject dropdown should automatically show only the subjects belonging to that student's:
+Department + Semester
+Then select:
+Exam Type
+Marks
+Maximum Marks
+and click:
+Add Marks
+7. Important database check
+For this filtering to work, your data must be connected correctly.
+Example:
+Department
+CSE
+Department ID: ABC123
+Student
+Roll Number: CSE001
+Department: ABC123
+Semester: 5
+Subject
+DBMS
+Department: ABC123
+Semester: 5
+Then:
+CSE001
+   ↓
+CSE
+   ↓
+Semester 5
+   ↓
+DBMS
+If the Subject has:
+Department: ECE
+Semester: 5
+it will not appear for the CSE student.
+8. One important improvement
+There is currently a possible problem in the Attendance/Marks backend:
+A malicious or accidental request could submit a student and a subject that don't belong to the student's department/semester.
+The frontend filtering helps the user, but backend validation is also necessary.
+So our next backend improvement should validate:
+Attendance:
+Student + Subject must match
+
+Marks:
+Student + Subject must match
+This gives the ERP proper data integrity:
+Frontend validation
+        +
+Backend validation
+        +
+MongoDB validation
+        ↓
+Reliable College ERP
+Current progress
+Student Model                  ✅
+Student CRUD                   ✅
+Department connection          ✅
+Student Edit Form              ✅
+Subject Department filter      ✅
+Subject Semester filter        ✅
+Attendance subject filtering   ✅
+Marks subject filtering        ✅
+Next → We will add backend validation for Attendance and Marks so incorrect student-subject combinations cannot be saved.
