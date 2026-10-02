@@ -27670,3 +27670,420 @@ Subject Semester filter        ✅
 Attendance subject filtering   ✅
 Marks subject filtering        ✅
 Next → We will add backend validation for Attendance and Marks so incorrect student-subject combinations cannot be saved.
+Step 6 — Backend Validation for Attendance & Marks
+Now we will make the ERP secure and data-correct.
+The rule will be:
+A student can receive Attendance/Marks only for a Subject belonging to the student's Department + Semester.
+We will update Attendance first, then Marks.
+1. Update attendanceController.js
+Open:
+controllers/attendanceController.js
+At the top, make sure you have:
+const mongoose = require("mongoose");
+
+const Attendance = require("../models/Attendance");
+const Student = require("../models/Student");
+const Subject = require("../models/Subject");
+Replace createAttendance
+Find:
+exports.createAttendance = async (req, res, next) => {
+Replace the complete function with:
+exports.createAttendance = async (req, res, next) => {
+  try {
+    const {
+      student,
+      subject,
+      date,
+      status
+    } = req.body;
+
+    // Check required fields
+    if (!student || !subject || !date || !status) {
+      return res.status(400).json({
+        success: false,
+        message: "All attendance fields are required"
+      });
+    }
+
+    // Validate IDs
+    if (
+      !mongoose.Types.ObjectId.isValid(student) ||
+      !mongoose.Types.ObjectId.isValid(subject)
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid student or subject ID"
+      });
+    }
+
+    // Validate status
+    const validStatuses = [
+      "Present",
+      "Absent",
+      "Late"
+    ];
+
+    if (!validStatuses.includes(status)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid attendance status"
+      });
+    }
+
+    // Find student
+    const studentRecord =
+      await Student.findById(student);
+
+    if (!studentRecord) {
+      return res.status(404).json({
+        success: false,
+        message: "Student not found"
+      });
+    }
+
+    // Find subject
+    const subjectRecord =
+      await Subject.findById(subject);
+
+    if (!subjectRecord) {
+      return res.status(404).json({
+        success: false,
+        message: "Subject not found"
+      });
+    }
+
+    // IMPORTANT:
+    // Check student's department and semester
+    const sameDepartment =
+      studentRecord.department.toString() ===
+      subjectRecord.department.toString();
+
+    const sameSemester =
+      studentRecord.semester ===
+      subjectRecord.semester;
+
+    if (!sameDepartment || !sameSemester) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "This subject does not belong to the student's department and semester"
+      });
+    }
+
+    // Create attendance
+    const attendance =
+      await Attendance.create({
+        student,
+        subject,
+        date,
+        status
+      });
+
+    await attendance.populate(
+      "student",
+      "name rollNumber"
+    );
+
+    await attendance.populate(
+      "subject",
+      "name code"
+    );
+
+    res.status(201).json({
+      success: true,
+      message:
+        "Attendance added successfully",
+      attendance
+    });
+
+  } catch (error) {
+    next(error);
+  }
+};
+Save:
+Ctrl + S
+2. Update Attendance Edit Validation
+Find your existing:
+exports.updateAttendance = async (req, res, next) => {
+Replace it with:
+exports.updateAttendance = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+
+    const {
+      student,
+      subject,
+      date,
+      status
+    } = req.body;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid attendance ID"
+      });
+    }
+
+    if (!student || !subject || !date || !status) {
+      return res.status(400).json({
+        success: false,
+        message: "All attendance fields are required"
+      });
+    }
+
+    if (
+      !mongoose.Types.ObjectId.isValid(student) ||
+      !mongoose.Types.ObjectId.isValid(subject)
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid student or subject ID"
+      });
+    }
+
+    const validStatuses = [
+      "Present",
+      "Absent",
+      "Late"
+    ];
+
+    if (!validStatuses.includes(status)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid attendance status"
+      });
+    }
+
+    // Find student
+    const studentRecord =
+      await Student.findById(student);
+
+    if (!studentRecord) {
+      return res.status(404).json({
+        success: false,
+        message: "Student not found"
+      });
+    }
+
+    // Find subject
+    const subjectRecord =
+      await Subject.findById(subject);
+
+    if (!subjectRecord) {
+      return res.status(404).json({
+        success: false,
+        message: "Subject not found"
+      });
+    }
+
+    // Check department + semester
+    const sameDepartment =
+      studentRecord.department.toString() ===
+      subjectRecord.department.toString();
+
+    const sameSemester =
+      studentRecord.semester ===
+      subjectRecord.semester;
+
+    if (!sameDepartment || !sameSemester) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "This subject does not belong to the student's department and semester"
+      });
+    }
+
+    const updatedAttendance =
+      await Attendance.findByIdAndUpdate(
+        id,
+        {
+          student,
+          subject,
+          date,
+          status
+        },
+        {
+          new: true,
+          runValidators: true
+        }
+      )
+      .populate(
+        "student",
+        "name rollNumber"
+      )
+      .populate(
+        "subject",
+        "name code"
+      );
+
+    if (!updatedAttendance) {
+      return res.status(404).json({
+        success: false,
+        message:
+          "Attendance record not found"
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message:
+        "Attendance updated successfully",
+      attendance: updatedAttendance
+    });
+
+  } catch (error) {
+    next(error);
+  }
+};
+Save with:
+Ctrl + S
+3. Now update markController.js
+Open:
+controllers/markController.js
+At the top make sure you have:
+const mongoose = require("mongoose");
+
+const Mark = require("../models/Mark");
+const Student = require("../models/Student");
+const Subject = require("../models/Subject");
+4. Replace createMark
+Find:
+exports.createMark = async (req, res, next) => {
+Replace the entire function with:
+exports.createMark = async (req, res, next) => {
+  try {
+    const {
+      student,
+      subject,
+      examType,
+      marks,
+      maxMarks
+    } = req.body;
+
+    // Required fields
+    if (
+      !student ||
+      !subject ||
+      !examType ||
+      marks === undefined ||
+      maxMarks === undefined
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "All mark fields are required"
+      });
+    }
+
+    // Validate IDs
+    if (
+      !mongoose.Types.ObjectId.isValid(student) ||
+      !mongoose.Types.ObjectId.isValid(subject)
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid student or subject ID"
+      });
+    }
+
+    // Validate exam type
+    const validExamTypes = [
+      "Internal",
+      "Mid",
+      "Semester"
+    ];
+
+    if (!validExamTypes.includes(examType)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid exam type"
+      });
+    }
+
+    const marksNumber = Number(marks);
+    const maxMarksNumber = Number(maxMarks);
+
+    if (
+      isNaN(marksNumber) ||
+      isNaN(maxMarksNumber)
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "Marks must be numbers"
+      });
+    }
+
+    if (marksNumber < 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Marks cannot be negative"
+      });
+    }
+
+    if (maxMarksNumber <= 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Maximum marks must be greater than 0"
+      });
+    }
+
+    if (marksNumber > maxMarksNumber) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "Marks cannot be greater than maximum marks"
+      });
+    }
+
+    // Find student
+    const studentRecord =
+      await Student.findById(student);
+
+    if (!studentRecord) {
+      return res.status(404).json({
+        success: false,
+        message: "Student not found"
+      });
+    }
+
+    // Find subject
+    const subjectRecord =
+      await Subject.findById(subject);
+
+    if (!subjectRecord) {
+      return res.status(404).json({
+        success: false,
+        message: "Subject not found"
+      });
+    }
+
+    // IMPORTANT:
+    // Student department must match subject department
+    const sameDepartment =
+      studentRecord.department.toString() ===
+      subjectRecord.department.toString();
+
+    // Student semester must match subject semester
+    const sameSemester =
+      studentRecord.semester ===
+      subjectRecord.semester;
+
+    if (!sameDepartment || !sameSemester) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "This subject does not belong to the student's department and semester"
+      });
+    }
+
+    // Create mark
+    const mark = await Mark.create({
+      student,
+      subject,
+      examType,
+      marks: marksNumber,
+      maxMarks: maxMarksNumber
+    });
+
+    await mark.populate(
+      "student",
+      "name
