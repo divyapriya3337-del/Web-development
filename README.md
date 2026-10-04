@@ -28086,4 +28086,974 @@ exports.createMark = async (req, res, next) => {
 
     await mark.populate(
       "student",
-      "name
+    Next: Faculty Management Module
+We will build:
+Faculty → Add Faculty → Department dropdown → Faculty list → Edit → Delete
+Step 1: Open public/index.html
+Find your existing:
+HTML
+<section id="facultySection">
+Replace the entire Faculty section with this:
+Writing
+<section id="facultySection" class="admin-section">
+
+  <h1>Faculty</h1>
+
+  <!-- ADD FACULTY -->
+  <div class="form-card">
+
+    <h2>Add Faculty</h2>
+
+    <form id="facultyForm">
+
+      <div class="form-group">
+        <label for="facultyName">Faculty Name</label>
+        <input
+          type="text"
+          id="facultyName"
+          placeholder="Enter faculty name"
+          required
+        >
+      </div>
+
+      <div class="form-group">
+        <label for="facultyEmail">Email</label>
+        <input
+          type="email"
+          id="facultyEmail"
+          placeholder="faculty@example.com"
+          required
+        >
+      </div>
+
+      <div class="form-group">
+        <label for="facultyPhone">Phone</label>
+        <input
+          type="tel"
+          id="facultyPhone"
+          placeholder="Enter phone number"
+        >
+      </div>
+
+      <div class="form-group">
+        <label for="facultyDesignation">Designation</label>
+        <input
+          type="text"
+          id="facultyDesignation"
+          placeholder="Example: Assistant Professor"
+          required
+        >
+      </div>
+
+      <div class="form-group">
+        <label for="facultyDepartment">Department</label>
+
+        <select id="facultyDepartment" required>
+          <option value="">Select Department</option>
+        </select>
+
+      </div>
+
+      <button type="submit">
+        Add Faculty
+      </button>
+
+    </form>
+
+  </div>
+
+
+  <!-- EDIT FACULTY -->
+  <div
+    class="form-card"
+    id="editFacultyCard"
+    style="display: none;"
+  >
+
+    <h2>Edit Faculty</h2>
+
+    <form id="editFacultyForm">
+
+      <input
+        type="hidden"
+        id="editFacultyId"
+      >
+
+      <div class="form-group">
+        <label for="editFacultyName">
+          Faculty Name
+        </label>
+
+        <input
+          type="text"
+          id="editFacultyName"
+          required
+        >
+      </div>
+
+
+      <div class="form-group">
+        <label for="editFacultyEmail">
+          Email
+        </label>
+
+        <input
+          type="email"
+          id="editFacultyEmail"
+          required
+        >
+      </div>
+
+
+      <div class="form-group">
+        <label for="editFacultyPhone">
+          Phone
+        </label>
+
+        <input
+          type="tel"
+          id="editFacultyPhone"
+        >
+      </div>
+
+
+      <div class="form-group">
+        <label for="editFacultyDesignation">
+          Designation
+        </label>
+
+        <input
+          type="text"
+          id="editFacultyDesignation"
+          required
+        >
+      </div>
+
+
+      <div class="form-group">
+        <label for="editFacultyDepartment">
+          Department
+        </label>
+
+        <select
+          id="editFacultyDepartment"
+          required
+        >
+          <option value="">
+            Select Department
+          </option>
+        </select>
+
+      </div>
+
+
+      <button type="submit">
+        Update Faculty
+      </button>
+
+      <button
+        type="button"
+        id="cancelEditFaculty"
+      >
+        Cancel
+      </button>
+
+    </form>
+
+  </div>
+
+
+  <!-- FACULTY TABLE -->
+  <div class="table-section">
+
+    <h2>Faculty List</h2>
+
+    <table>
+
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Email</th>
+          <th>Phone</th>
+          <th>Designation</th>
+          <th>Department</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+
+      <tbody id="facultyTableBody"></tbody>
+
+    </table>
+
+  </div>
+
+</section>
+Now press:
+Ctrl + S
+Step 2: Open public/script.js
+Go to the bottom of the file.
+Add the following Faculty JavaScript:
+Writing
+// ===============================
+// FACULTY MANAGEMENT
+// ===============================
+
+
+// LOAD DEPARTMENTS FOR ADD FACULTY
+async function loadFacultyDepartments() {
+
+  const departmentDropdown =
+    document.getElementById("facultyDepartment");
+
+  if (!departmentDropdown) return;
+
+  try {
+
+    const response = await fetch(
+      "/api/departments",
+      {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      }
+    );
+
+    const data = await response.json();
+
+    if (!data.success) {
+      alert(data.message || "Failed to load departments");
+      return;
+    }
+
+    departmentDropdown.innerHTML =
+      '<option value="">Select Department</option>';
+
+    data.departments.forEach(department => {
+
+      const option =
+        document.createElement("option");
+
+      option.value = department._id;
+
+      option.textContent =
+        `${department.code} - ${department.name}`;
+
+      departmentDropdown.appendChild(option);
+
+    });
+
+  } catch (error) {
+
+    console.error(
+      "Error loading faculty departments:",
+      error
+    );
+
+  }
+}
+
+
+// LOAD DEPARTMENTS FOR EDIT FACULTY
+async function loadEditFacultyDepartments(
+  selectedDepartmentId = ""
+) {
+
+  const departmentDropdown =
+    document.getElementById(
+      "editFacultyDepartment"
+    );
+
+  if (!departmentDropdown) return;
+
+  try {
+
+    const response = await fetch(
+      "/api/departments",
+      {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      }
+    );
+
+    const data = await response.json();
+
+    if (!data.success) {
+      alert(data.message || "Failed to load departments");
+      return;
+    }
+
+    departmentDropdown.innerHTML =
+      '<option value="">Select Department</option>';
+
+    data.departments.forEach(department => {
+
+      const option =
+        document.createElement("option");
+
+      option.value = department._id;
+
+      option.textContent =
+        `${department.code} - ${department.name}`;
+
+      if (
+        department._id === selectedDepartmentId
+      ) {
+        option.selected = true;
+      }
+
+      departmentDropdown.appendChild(option);
+
+    });
+
+  } catch (error) {
+
+    console.error(
+      "Error loading edit departments:",
+      error
+    );
+
+  }
+}
+
+
+// LOAD FACULTY
+async function loadFaculty() {
+
+  const tableBody =
+    document.getElementById(
+      "facultyTableBody"
+    );
+
+  if (!tableBody) return;
+
+  tableBody.innerHTML =
+    "<tr><td colspan='6'>Loading...</td></tr>";
+
+  try {
+
+    const response = await fetch(
+      "/api/faculty",
+      {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      }
+    );
+
+    const data = await response.json();
+
+    if (!data.success) {
+
+      tableBody.innerHTML =
+        `<tr>
+          <td colspan="6">
+            ${data.message || "Failed to load faculty"}
+          </td>
+        </tr>`;
+
+      return;
+    }
+
+    displayFaculty(data.faculty);
+
+  } catch (error) {
+
+    console.error(
+      "Error loading faculty:",
+      error
+    );
+
+    tableBody.innerHTML =
+      `<tr>
+        <td colspan="6">
+          Server error while loading faculty
+        </td>
+      </tr>`;
+
+  }
+}
+
+
+// DISPLAY FACULTY
+function displayFaculty(facultyList) {
+
+  const tableBody =
+    document.getElementById(
+      "facultyTableBody"
+    );
+
+  if (!tableBody) return;
+
+  tableBody.innerHTML = "";
+
+  if (!facultyList || facultyList.length === 0) {
+
+    tableBody.innerHTML =
+      `<tr>
+        <td colspan="6">
+          No faculty found
+        </td>
+      </tr>`;
+
+    return;
+  }
+
+  facultyList.forEach(faculty => {
+
+    const row =
+      document.createElement("tr");
+
+    const departmentName =
+      faculty.department
+        ? `${faculty.department.code} - ${faculty.department.name}`
+        : "Not assigned";
+
+    row.innerHTML = `
+
+      <td>${faculty.name}</td>
+
+      <td>${faculty.email}</td>
+
+      <td>${faculty.phone || "-"}</td>
+
+      <td>${faculty.designation}</td>
+
+      <td>${departmentName}</td>
+
+      <td>
+
+        <button
+          onclick="editFaculty('${faculty._id}')"
+        >
+          Edit
+        </button>
+
+        <button
+          onclick="deleteFaculty('${faculty._id}')"
+        >
+          Delete
+        </button>
+
+      </td>
+
+    `;
+
+    tableBody.appendChild(row);
+
+  });
+
+}
+
+
+// ADD FACULTY
+const facultyForm =
+  document.getElementById("facultyForm");
+
+if (facultyForm) {
+
+  facultyForm.addEventListener(
+    "submit",
+    async function (e) {
+
+      e.preventDefault();
+
+      const name =
+        document.getElementById(
+          "facultyName"
+        ).value.trim();
+
+      const email =
+        document.getElementById(
+          "facultyEmail"
+        ).value.trim();
+
+      const phone =
+        document.getElementById(
+          "facultyPhone"
+        ).value.trim();
+
+      const designation =
+        document.getElementById(
+          "facultyDesignation"
+        ).value.trim();
+
+      const department =
+        document.getElementById(
+          "facultyDepartment"
+        ).value;
+
+
+      if (
+        !name ||
+        !email ||
+        !designation ||
+        !department
+      ) {
+
+        alert(
+          "Please fill all required fields"
+        );
+
+        return;
+      }
+
+
+      try {
+
+        const response = await fetch(
+          "/api/faculty",
+          {
+            method: "POST",
+
+            headers: {
+              "Content-Type":
+                "application/json",
+
+              "Authorization":
+                `Bearer ${token}`
+            },
+
+            body: JSON.stringify({
+              name,
+              email,
+              phone,
+              designation,
+              department
+            })
+          }
+        );
+
+
+        const data =
+          await response.json();
+
+
+        if (data.success) {
+
+          alert(
+            "Faculty added successfully!"
+          );
+
+          facultyForm.reset();
+
+          loadFaculty();
+
+        } else {
+
+          alert(
+            data.message ||
+            "Failed to add faculty"
+          );
+
+        }
+
+      } catch (error) {
+
+        console.error(error);
+
+        alert(
+          "Server error while adding faculty"
+        );
+
+      }
+
+    }
+  );
+
+}
+
+
+// EDIT FACULTY
+async function editFaculty(id) {
+
+  try {
+
+    const response = await fetch(
+      `/api/faculty/${id}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      }
+    );
+
+
+    const data =
+      await response.json();
+
+
+    if (!data.success) {
+
+      alert(
+        data.message ||
+        "Failed to load faculty"
+      );
+
+      return;
+    }
+
+
+    const faculty =
+      data.faculty;
+
+
+    document.getElementById(
+      "editFacultyCard"
+    ).style.display = "block";
+
+
+    document.getElementById(
+      "editFacultyId"
+    ).value = faculty._id;
+
+
+    document.getElementById(
+      "editFacultyName"
+    ).value = faculty.name;
+
+
+    document.getElementById(
+      "editFacultyEmail"
+    ).value = faculty.email;
+
+
+    document.getElementById(
+      "editFacultyPhone"
+    ).value = faculty.phone || "";
+
+
+    document.getElementById(
+      "editFacultyDesignation"
+    ).value = faculty.designation;
+
+
+    const departmentId =
+      faculty.department?._id ||
+      faculty.department ||
+      "";
+
+
+    await loadEditFacultyDepartments(
+      departmentId
+    );
+
+
+    document.getElementById(
+      "editFacultyCard"
+    ).scrollIntoView({
+      behavior: "smooth"
+    });
+
+  } catch (error) {
+
+    console.error(error);
+
+    alert(
+      "Server error while loading faculty"
+    );
+
+  }
+
+}
+
+
+// UPDATE FACULTY
+const editFacultyForm =
+  document.getElementById(
+    "editFacultyForm"
+  );
+
+if (editFacultyForm) {
+
+  editFacultyForm.addEventListener(
+    "submit",
+    async function (e) {
+
+      e.preventDefault();
+
+
+      const id =
+        document.getElementById(
+          "editFacultyId"
+        ).value;
+
+
+      const name =
+        document.getElementById(
+          "editFacultyName"
+        ).value.trim();
+
+
+      const email =
+        document.getElementById(
+          "editFacultyEmail"
+        ).value.trim();
+
+
+      const phone =
+        document.getElementById(
+          "editFacultyPhone"
+        ).value.trim();
+
+
+      const designation =
+        document.getElementById(
+          "editFacultyDesignation"
+        ).value.trim();
+
+
+      const department =
+        document.getElementById(
+          "editFacultyDepartment"
+        ).value;
+
+
+      if (
+        !id ||
+        !name ||
+        !email ||
+        !designation ||
+        !department
+      ) {
+
+        alert(
+          "Please fill all required fields"
+        );
+
+        return;
+      }
+
+
+      try {
+
+        const response = await fetch(
+          `/api/faculty/${id}`,
+          {
+            method: "PUT",
+
+            headers: {
+              "Content-Type":
+                "application/json",
+
+              "Authorization":
+                `Bearer ${token}`
+            },
+
+            body: JSON.stringify({
+              name,
+              email,
+              phone,
+              designation,
+              department
+            })
+          }
+        );
+
+
+        const data =
+          await response.json();
+
+
+        if (data.success) {
+
+          alert(
+            "Faculty updated successfully!"
+          );
+
+
+          editFacultyForm.reset();
+
+
+          document.getElementById(
+            "editFacultyCard"
+          ).style.display = "none";
+
+
+          loadFaculty();
+
+        } else {
+
+          alert(
+            data.message ||
+            "Failed to update faculty"
+          );
+
+        }
+
+      } catch (error) {
+
+        console.error(error);
+
+        alert(
+          "Server error while updating faculty"
+        );
+
+      }
+
+    }
+  );
+
+}
+
+
+// CANCEL EDIT
+const cancelEditFaculty =
+  document.getElementById(
+    "cancelEditFaculty"
+  );
+
+if (cancelEditFaculty) {
+
+  cancelEditFaculty.addEventListener(
+    "click",
+    function () {
+
+      document.getElementById(
+        "editFacultyForm"
+      ).reset();
+
+      document.getElementById(
+        "editFacultyCard"
+      ).style.display = "none";
+
+    }
+  );
+
+}
+
+
+// DELETE FACULTY
+async function deleteFaculty(id) {
+
+  const confirmed =
+    confirm(
+      "Are you sure you want to delete this faculty?"
+    );
+
+  if (!confirmed) return;
+
+
+  try {
+
+    const response = await fetch(
+      `/api/faculty/${id}`,
+      {
+        method: "DELETE",
+
+        headers: {
+          Authorization:
+            `Bearer ${token}`
+        }
+      }
+    );
+
+
+    const data =
+      await response.json();
+
+
+    if (data.success) {
+
+      alert(
+        "Faculty deleted successfully!"
+      );
+
+      loadFaculty();
+
+    } else {
+
+      alert(
+        data.message ||
+        "Failed to delete faculty"
+      );
+
+    }
+
+  } catch (error) {
+
+    console.error(error);
+
+    alert(
+      "Server error while deleting faculty"
+    );
+
+  }
+
+}
+
+
+// INITIAL FACULTY LOAD
+loadFacultyDepartments();
+loadFaculty();
+Step 3: Save
+Press:
+Ctrl + S
+Step 4: Start the server
+Open the VS Code terminal.
+Type:
+Bash
+npm run dev
+You should see something similar to:
+Server running on port 3000
+MongoDB connected successfully
+Step 5: Open the website
+Open Chrome and go to:
+http://localhost:3000
+Login with your admin account.
+Step 6: Test Faculty
+Click:
+Faculty
+You should see:
+Faculty
+
+Add Faculty
+--------------------------------
+Faculty Name
+Email
+Phone
+Designation
+Department
+[Add Faculty]
+
+Faculty List
+--------------------------------
+Name | Email | Phone | Designation | Department | Actions
+Enter example:
+Faculty Name: Ravi Kumar
+Email: ravi@college.com
+Phone: 9876543210
+Designation: Assistant Professor
+Department: CSE
+Then click:
+Add Faculty
+You should get:
+Faculty added successfully!
+and the faculty should appear in the table.
+Step 7: Test Edit
+In the Faculty table click:
+Edit
+The Edit Faculty form will open.
+Change something, for example:
+Designation:
+Professor
+Then click:
+Update Faculty
+You should see:
+Faculty updated successfully!
+Step 8: Test Delete
+Click:
+Delete
+You will get:
+Are you sure you want to delete this faculty?
+Click:
+OK
+You should see:
+Faculty deleted successfully!
+Important
+If you get an error such as:
+/api/departments 404
+or
+Failed to load departments
+stop there and send me the screenshot/error. We will fix that before moving to the next module.
+After Faculty works, the next module will be Timetable Management.
