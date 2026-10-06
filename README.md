@@ -29057,3 +29057,1161 @@ or
 Failed to load departments
 stop there and send me the screenshot/error. We will fix that before moving to the next module.
 After Faculty works, the next module will be Timetable Management.
+Next: Timetable Management 📅
+Now we will build the Timetable module with:
+Department → Semester → Subject → Faculty → Day → Time → Room → Add/Edit/Delete
+Step 1 — Open public/index.html
+Find your existing:
+HTML
+<section id="timetableSection">
+Replace the entire timetable section with this:
+Writing
+<section id="timetableSection" class="admin-section">
+
+  <h1>Timetable</h1>
+
+  <!-- ADD TIMETABLE -->
+  <div class="form-card">
+
+    <h2>Add Timetable</h2>
+
+    <form id="timetableForm">
+
+      <div class="form-group">
+        <label for="timetableDepartment">
+          Department
+        </label>
+
+        <select id="timetableDepartment" required>
+          <option value="">Select Department</option>
+        </select>
+      </div>
+
+
+      <div class="form-group">
+        <label for="timetableSemester">
+          Semester
+        </label>
+
+        <select id="timetableSemester" required>
+          <option value="">Select Semester</option>
+          <option value="1">Semester 1</option>
+          <option value="2">Semester 2</option>
+          <option value="3">Semester 3</option>
+          <option value="4">Semester 4</option>
+          <option value="5">Semester 5</option>
+          <option value="6">Semester 6</option>
+          <option value="7">Semester 7</option>
+          <option value="8">Semester 8</option>
+        </select>
+      </div>
+
+
+      <div class="form-group">
+        <label for="timetableSubject">
+          Subject
+        </label>
+
+        <select id="timetableSubject" required>
+          <option value="">Select Subject</option>
+        </select>
+      </div>
+
+
+      <div class="form-group">
+        <label for="timetableFaculty">
+          Faculty
+        </label>
+
+        <select id="timetableFaculty" required>
+          <option value="">Select Faculty</option>
+        </select>
+      </div>
+
+
+      <div class="form-group">
+        <label for="timetableDay">
+          Day
+        </label>
+
+        <select id="timetableDay" required>
+
+          <option value="">
+            Select Day
+          </option>
+
+          <option value="Monday">
+            Monday
+          </option>
+
+          <option value="Tuesday">
+            Tuesday
+          </option>
+
+          <option value="Wednesday">
+            Wednesday
+          </option>
+
+          <option value="Thursday">
+            Thursday
+          </option>
+
+          <option value="Friday">
+            Friday
+          </option>
+
+          <option value="Saturday">
+            Saturday
+          </option>
+
+        </select>
+      </div>
+
+
+      <div class="form-group">
+        <label for="timetableStartTime">
+          Start Time
+        </label>
+
+        <input
+          type="time"
+          id="timetableStartTime"
+          required
+        >
+      </div>
+
+
+      <div class="form-group">
+        <label for="timetableEndTime">
+          End Time
+        </label>
+
+        <input
+          type="time"
+          id="timetableEndTime"
+          required
+        >
+      </div>
+
+
+      <div class="form-group">
+        <label for="timetableRoom">
+          Room
+        </label>
+
+        <input
+          type="text"
+          id="timetableRoom"
+          placeholder="Example: CSE-101"
+          required
+        >
+      </div>
+
+
+      <button type="submit">
+        Add Timetable
+      </button>
+
+    </form>
+
+  </div>
+
+
+  <!-- EDIT TIMETABLE -->
+
+  <div
+    class="form-card"
+    id="editTimetableCard"
+    style="display: none;"
+  >
+
+    <h2>Edit Timetable</h2>
+
+    <form id="editTimetableForm">
+
+      <input
+        type="hidden"
+        id="editTimetableId"
+      >
+
+
+      <div class="form-group">
+        <label for="editTimetableDepartment">
+          Department
+        </label>
+
+        <select
+          id="editTimetableDepartment"
+          required
+        >
+          <option value="">
+            Select Department
+          </option>
+        </select>
+      </div>
+
+
+      <div class="form-group">
+        <label for="editTimetableSemester">
+          Semester
+        </label>
+
+        <select
+          id="editTimetableSemester"
+          required
+        >
+          <option value="">
+            Select Semester
+          </option>
+
+          <option value="1">Semester 1</option>
+          <option value="2">Semester 2</option>
+          <option value="3">Semester 3</option>
+          <option value="4">Semester 4</option>
+          <option value="5">Semester 5</option>
+          <option value="6">Semester 6</option>
+          <option value="7">Semester 7</option>
+          <option value="8">Semester 8</option>
+
+        </select>
+      </div>
+
+
+      <div class="form-group">
+        <label for="editTimetableSubject">
+          Subject
+        </label>
+
+        <select
+          id="editTimetableSubject"
+          required
+        >
+          <option value="">
+            Select Subject
+          </option>
+        </select>
+      </div>
+
+
+      <div class="form-group">
+        <label for="editTimetableFaculty">
+          Faculty
+        </label>
+
+        <select
+          id="editTimetableFaculty"
+          required
+        >
+          <option value="">
+            Select Faculty
+          </option>
+        </select>
+      </div>
+
+
+      <div class="form-group">
+        <label for="editTimetableDay">
+          Day
+        </label>
+
+        <select
+          id="editTimetableDay"
+          required
+        >
+          <option value="">
+            Select Day
+          </option>
+
+          <option value="Monday">Monday</option>
+          <option value="Tuesday">Tuesday</option>
+          <option value="Wednesday">Wednesday</option>
+          <option value="Thursday">Thursday</option>
+          <option value="Friday">Friday</option>
+          <option value="Saturday">Saturday</option>
+
+        </select>
+      </div>
+
+
+      <div class="form-group">
+        <label for="editTimetableStartTime">
+          Start Time
+        </label>
+
+        <input
+          type="time"
+          id="editTimetableStartTime"
+          required
+        >
+      </div>
+
+
+      <div class="form-group">
+        <label for="editTimetableEndTime">
+          End Time
+        </label>
+
+        <input
+          type="time"
+          id="editTimetableEndTime"
+          required
+        >
+      </div>
+
+
+      <div class="form-group">
+        <label for="editTimetableRoom">
+          Room
+        </label>
+
+        <input
+          type="text"
+          id="editTimetableRoom"
+          required
+        >
+      </div>
+
+
+      <button type="submit">
+        Update Timetable
+      </button>
+
+      <button
+        type="button"
+        id="cancelEditTimetable"
+      >
+        Cancel
+      </button>
+
+    </form>
+
+  </div>
+
+
+  <!-- TIMETABLE LIST -->
+
+  <div class="table-section">
+
+    <h2>Timetable List</h2>
+
+    <table>
+
+      <thead>
+
+        <tr>
+          <th>Department</th>
+          <th>Semester</th>
+          <th>Subject</th>
+          <th>Faculty</th>
+          <th>Day</th>
+          <th>Time</th>
+          <th>Room</th>
+          <th>Actions</th>
+        </tr>
+
+      </thead>
+
+      <tbody id="timetableTableBody"></tbody>
+
+    </table>
+
+  </div>
+
+</section>
+Press Ctrl + S.
+Step 2 — Add Timetable JavaScript
+Open:
+public/script.js
+Go to the bottom of the file.
+Paste this code:
+Writing
+// =====================================
+// TIMETABLE MANAGEMENT
+// =====================================
+
+
+// LOAD DEPARTMENTS
+async function loadTimetableDepartments(
+  dropdownId,
+  selectedId = ""
+) {
+
+  const dropdown =
+    document.getElementById(dropdownId);
+
+  if (!dropdown) return;
+
+  try {
+
+    const response = await fetch(
+      "/api/departments",
+      {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      }
+    );
+
+    const data = await response.json();
+
+    if (!data.success) {
+      alert(data.message || "Failed to load departments");
+      return;
+    }
+
+    dropdown.innerHTML =
+      '<option value="">Select Department</option>';
+
+    data.departments.forEach(department => {
+
+      const option =
+        document.createElement("option");
+
+      option.value = department._id;
+
+      option.textContent =
+        `${department.code} - ${department.name}`;
+
+      if (department._id === selectedId) {
+        option.selected = true;
+      }
+
+      dropdown.appendChild(option);
+
+    });
+
+  } catch (error) {
+
+    console.error(
+      "Department loading error:",
+      error
+    );
+
+  }
+}
+
+
+// LOAD SUBJECTS
+async function loadTimetableSubjects(
+  departmentId,
+  semester,
+  dropdownId,
+  selectedId = ""
+) {
+
+  const dropdown =
+    document.getElementById(dropdownId);
+
+  if (!dropdown) return;
+
+  dropdown.innerHTML =
+    '<option value="">Loading subjects...</option>';
+
+  if (!departmentId || !semester) {
+
+    dropdown.innerHTML =
+      '<option value="">Select Subject</option>';
+
+    return;
+  }
+
+  try {
+
+    const response = await fetch(
+      `/api/subjects?department=${departmentId}&semester=${semester}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      }
+    );
+
+    const data = await response.json();
+
+    if (!data.success) {
+
+      dropdown.innerHTML =
+        '<option value="">No subjects found</option>';
+
+      return;
+    }
+
+    dropdown.innerHTML =
+      '<option value="">Select Subject</option>';
+
+    data.subjects.forEach(subject => {
+
+      const option =
+        document.createElement("option");
+
+      option.value = subject._id;
+
+      option.textContent =
+        `${subject.code} - ${subject.name}`;
+
+      if (subject._id === selectedId) {
+        option.selected = true;
+      }
+
+      dropdown.appendChild(option);
+
+    });
+
+  } catch (error) {
+
+    console.error(
+      "Subject loading error:",
+      error
+    );
+
+    dropdown.innerHTML =
+      '<option value="">Error loading subjects</option>';
+
+  }
+
+}
+
+
+// LOAD FACULTY
+async function loadTimetableFaculty(
+  departmentId,
+  dropdownId,
+  selectedId = ""
+) {
+
+  const dropdown =
+    document.getElementById(dropdownId);
+
+  if (!dropdown) return;
+
+  dropdown.innerHTML =
+    '<option value="">Loading faculty...</option>';
+
+  if (!departmentId) {
+
+    dropdown.innerHTML =
+      '<option value="">Select Faculty</option>';
+
+    return;
+  }
+
+  try {
+
+    const response = await fetch(
+      "/api/faculty",
+      {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      }
+    );
+
+    const data = await response.json();
+
+    if (!data.success) {
+
+      dropdown.innerHTML =
+        '<option value="">No faculty found</option>';
+
+      return;
+    }
+
+    dropdown.innerHTML =
+      '<option value="">Select Faculty</option>';
+
+    const facultyList =
+      data.faculty.filter(faculty => {
+
+        const facultyDepartment =
+          faculty.department?._id ||
+          faculty.department;
+
+        return (
+          facultyDepartment === departmentId
+        );
+
+      });
+
+    facultyList.forEach(faculty => {
+
+      const option =
+        document.createElement("option");
+
+      option.value = faculty._id;
+
+      option.textContent =
+        `${faculty.name} - ${faculty.designation}`;
+
+      if (faculty._id === selectedId) {
+        option.selected = true;
+      }
+
+      dropdown.appendChild(option);
+
+    });
+
+  } catch (error) {
+
+    console.error(
+      "Faculty loading error:",
+      error
+    );
+
+    dropdown.innerHTML =
+      '<option value="">Error loading faculty</option>';
+
+  }
+
+}
+
+
+// LOAD TIMETABLE
+async function loadTimetable() {
+
+  const tableBody =
+    document.getElementById(
+      "timetableTableBody"
+    );
+
+  if (!tableBody) return;
+
+  tableBody.innerHTML =
+    "<tr><td colspan='8'>Loading...</td></tr>";
+
+  try {
+
+    const response = await fetch(
+      "/api/timetable",
+      {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      }
+    );
+
+    const data = await response.json();
+
+    if (!data.success) {
+
+      tableBody.innerHTML =
+        `<tr>
+          <td colspan="8">
+            ${data.message || "Failed to load timetable"}
+          </td>
+        </tr>`;
+
+      return;
+    }
+
+    displayTimetable(data.timetable);
+
+  } catch (error) {
+
+    console.error(error);
+
+    tableBody.innerHTML =
+      `<tr>
+        <td colspan="8">
+          Server error while loading timetable
+        </td>
+      </tr>`;
+
+  }
+
+}
+
+
+// DISPLAY TIMETABLE
+function displayTimetable(timetableList) {
+
+  const tableBody =
+    document.getElementById(
+      "timetableTableBody"
+    );
+
+  if (!tableBody) return;
+
+  tableBody.innerHTML = "";
+
+  if (
+    !timetableList ||
+    timetableList.length === 0
+  ) {
+
+    tableBody.innerHTML =
+      `<tr>
+        <td colspan="8">
+          No timetable records found
+        </td>
+      </tr>`;
+
+    return;
+  }
+
+
+  timetableList.forEach(record => {
+
+    const row =
+      document.createElement("tr");
+
+
+    const department =
+      record.department
+        ? `${record.department.code} - ${record.department.name}`
+        : "-";
+
+
+    const subject =
+      record.subject
+        ? `${record.subject.code} - ${record.subject.name}`
+        : "-";
+
+
+    const faculty =
+      record.faculty
+        ? record.faculty.name
+        : "-";
+
+
+    const time =
+      `${record.startTime} - ${record.endTime}`;
+
+
+    row.innerHTML = `
+
+      <td>${department}</td>
+
+      <td>${record.semester}</td>
+
+      <td>${subject}</td>
+
+      <td>${faculty}</td>
+
+      <td>${record.dayOfWeek}</td>
+
+      <td>${time}</td>
+
+      <td>${record.room}</td>
+
+      <td>
+
+        <button
+          onclick="editTimetable('${record._id}')"
+        >
+          Edit
+        </button>
+
+        <button
+          onclick="deleteTimetable('${record._id}')"
+        >
+          Delete
+        </button>
+
+      </td>
+
+    `;
+
+
+    tableBody.appendChild(row);
+
+  });
+
+}
+
+
+// DEPARTMENT CHANGE
+const timetableDepartment =
+  document.getElementById(
+    "timetableDepartment"
+  );
+
+if (timetableDepartment) {
+
+  timetableDepartment.addEventListener(
+    "change",
+    async function () {
+
+      const departmentId =
+        this.value;
+
+      const semester =
+        document.getElementById(
+          "timetableSemester"
+        ).value;
+
+
+      await loadTimetableFaculty(
+        departmentId,
+        "timetableFaculty"
+      );
+
+
+      await loadTimetableSubjects(
+        departmentId,
+        semester,
+        "timetableSubject"
+      );
+
+    }
+  );
+
+}
+
+
+// SEMESTER CHANGE
+const timetableSemester =
+  document.getElementById(
+    "timetableSemester"
+  );
+
+if (timetableSemester) {
+
+  timetableSemester.addEventListener(
+    "change",
+    function () {
+
+      const departmentId =
+        document.getElementById(
+          "timetableDepartment"
+        ).value;
+
+      const semester =
+        this.value;
+
+
+      loadTimetableSubjects(
+        departmentId,
+        semester,
+        "timetableSubject"
+      );
+
+    }
+  );
+
+}
+
+
+// ADD TIMETABLE
+const timetableForm =
+  document.getElementById(
+    "timetableForm"
+  );
+
+if (timetableForm) {
+
+  timetableForm.addEventListener(
+    "submit",
+    async function (e) {
+
+      e.preventDefault();
+
+
+      const department =
+        document.getElementById(
+          "timetableDepartment"
+        ).value;
+
+
+      const semester =
+        document.getElementById(
+          "timetableSemester"
+        ).value;
+
+
+      const subject =
+        document.getElementById(
+          "timetableSubject"
+        ).value;
+
+
+      const faculty =
+        document.getElementById(
+          "timetableFaculty"
+        ).value;
+
+
+      const dayOfWeek =
+        document.getElementById(
+          "timetableDay"
+        ).value;
+
+
+      const startTime =
+        document.getElementById(
+          "timetableStartTime"
+        ).value;
+
+
+      const endTime =
+        document.getElementById(
+          "timetableEndTime"
+        ).value;
+
+
+      const room =
+        document.getElementById(
+          "timetableRoom"
+        ).value.trim();
+
+
+      if (
+        !department ||
+        !semester ||
+        !subject ||
+        !faculty ||
+        !dayOfWeek ||
+        !startTime ||
+        !endTime ||
+        !room
+      ) {
+
+        alert(
+          "Please fill all timetable fields"
+        );
+
+        return;
+      }
+
+
+      if (startTime >= endTime) {
+
+        alert(
+          "End time must be later than start time"
+        );
+
+        return;
+      }
+
+
+      try {
+
+        const response = await fetch(
+          "/api/timetable",
+          {
+            method: "POST",
+
+            headers: {
+              "Content-Type":
+                "application/json",
+
+              "Authorization":
+                `Bearer ${token}`
+            },
+
+            body: JSON.stringify({
+              department,
+              semester: Number(semester),
+              subject,
+              faculty,
+              dayOfWeek,
+              startTime,
+              endTime,
+              room
+            })
+          }
+        );
+
+
+        const data =
+          await response.json();
+
+
+        if (data.success) {
+
+          alert(
+            "Timetable added successfully!"
+          );
+
+          timetableForm.reset();
+
+          document.getElementById(
+            "timetableSubject"
+          ).innerHTML =
+            '<option value="">Select Subject</option>';
+
+          document.getElementById(
+            "timetableFaculty"
+          ).innerHTML =
+            '<option value="">Select Faculty</option>';
+
+          loadTimetable();
+
+        } else {
+
+          alert(
+            data.message ||
+            "Failed to add timetable"
+          );
+
+        }
+
+      } catch (error) {
+
+        console.error(error);
+
+        alert(
+          "Server error while adding timetable"
+        );
+
+      }
+
+    }
+  );
+
+}
+
+
+// EDIT TIMETABLE
+async function editTimetable(id) {
+
+  try {
+
+    const response = await fetch(
+      `/api/timetable/${id}`,
+      {
+        headers: {
+          Authorization:
+            `Bearer ${token}`
+        }
+      }
+    );
+
+
+    const data =
+      await response.json();
+
+
+    if (!data.success) {
+
+      alert(
+        data.message ||
+        "Failed to load timetable"
+      );
+
+      return;
+    }
+
+
+    const record =
+      data.timetable;
+
+
+    document.getElementById(
+      "editTimetableCard"
+    ).style.display = "block";
+
+
+    document.getElementById(
+      "editTimetableId"
+    ).value = record._id;
+
+
+    const departmentId =
+      record.department?._id ||
+      record.department;
+
+
+    const subjectId =
+      record.subject?._id ||
+      record.subject;
+
+
+    const facultyId =
+      record.faculty?._id ||
+      record.faculty;
+
+
+    await loadTimetableDepartments(
+      "editTimetableDepartment",
+      departmentId
+    );
+
+
+    document.getElementById(
+      "editTimetableSemester"
+    ).value = record.semester;
+
+
+    await loadTimetableSubjects(
+      departmentId,
+      record.semester,
+      "editTimetableSubject",
+      subjectId
+    );
+
+
+    await loadTimetableFaculty(
+      departmentId,
+      "editTimetableFaculty",
+      facultyId
+    );
+
+
+    document.getElementById(
+      "editTimetableDay"
+    ).value = record.dayOfWeek;
+
+
+    document.getElementById(
+      "editTimetableStartTime"
+    ).value = record.startTime;
+
+
+    document.getElementById(
+      "editTimetableEndTime"
+    ).value = record.endTime;
+
+
+    document.getElementById(
+      "editTimetableRoom"
+    ).value = record.room;
+
+
+    document.getElementById(
+      "editTimetableCard"
+    ).scrollIntoView({
+      behavior: "smooth"
+    });
+
+  } catch (error) {
+
+    console.error(error);
+
+    alert(
+      "Server error while loading timetable"
+    );
+
+  }
+
+}
+
+
+// EDIT DEPARTMENT CHANGE
+const editTimetableDepartment =
+  document.getElementById(
+    "editTimetableDepartment"
+  );
+
+if (editTimetableDepartment) {
+
+  editTimetableDepartment.addEventListener(
+    "change",
+    async function () {
+
+      const departmentId =
+        this.value;
+
+      const semester =
+        document.getElementById(
+          "editTimetableSemester"
+        ).value;
+
+
+      await loadTimetableSubjects(
+        departmentId,
+        semester,
+        "editTimetableSubject"
+      );
+
+
+      await loadT
