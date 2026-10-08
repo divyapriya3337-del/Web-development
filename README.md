@@ -30215,3 +30215,561 @@ if (editTimetableDepartment) {
 
 
       await loadT
+Next: Attendance Management 📊
+We already have the Attendance backend and basic Add/Edit/Delete functionality. Now we’ll make the Attendance module more professional and easier to use.
+The flow will be:
+Select Student
+      ↓
+Subject automatically filtered
+      ↓
+Select Date
+      ↓
+Present / Absent / Late
+      ↓
+Add Attendance
+      ↓
+Attendance Table
+Step 1 — Open public/index.html
+Find:
+HTML
+<section id="attendanceSection">
+Replace the complete Attendance section with this:
+Writing
+<section id="attendanceSection" class="admin-section">
+
+  <h1>Attendance Management</h1>
+
+  <!-- ADD ATTENDANCE -->
+  <div class="form-card">
+
+    <h2>Mark Attendance</h2>
+
+    <form id="attendanceForm">
+
+      <div class="form-group">
+        <label for="attendanceStudent">
+          Student
+        </label>
+
+        <select
+          id="attendanceStudent"
+          required
+        >
+          <option value="">
+            Select Student
+          </option>
+        </select>
+      </div>
+
+
+      <div class="form-group">
+        <label for="attendanceSubject">
+          Subject
+        </label>
+
+        <select
+          id="attendanceSubject"
+          required
+        >
+          <option value="">
+            Select Student First
+          </option>
+        </select>
+      </div>
+
+
+      <div class="form-group">
+        <label for="attendanceDate">
+          Date
+        </label>
+
+        <input
+          type="date"
+          id="attendanceDate"
+          required
+        >
+      </div>
+
+
+      <div class="form-group">
+        <label for="attendanceStatus">
+          Attendance Status
+        </label>
+
+        <select
+          id="attendanceStatus"
+          required
+        >
+          <option value="">
+            Select Status
+          </option>
+
+          <option value="Present">
+            Present
+          </option>
+
+          <option value="Absent">
+            Absent
+          </option>
+
+          <option value="Late">
+            Late
+          </option>
+
+        </select>
+      </div>
+
+
+      <button type="submit">
+        Mark Attendance
+      </button>
+
+    </form>
+
+  </div>
+
+
+  <!-- EDIT ATTENDANCE -->
+
+  <div
+    class="form-card"
+    id="editAttendanceCard"
+    style="display: none;"
+  >
+
+    <h2>Edit Attendance</h2>
+
+    <form id="editAttendanceForm">
+
+      <input
+        type="hidden"
+        id="editAttendanceId"
+      >
+
+
+      <div class="form-group">
+
+        <label for="editAttendanceStudent">
+          Student
+        </label>
+
+        <select
+          id="editAttendanceStudent"
+          required
+        >
+          <option value="">
+            Select Student
+          </option>
+        </select>
+
+      </div>
+
+
+      <div class="form-group">
+
+        <label for="editAttendanceSubject">
+          Subject
+        </label>
+
+        <select
+          id="editAttendanceSubject"
+          required
+        >
+          <option value="">
+            Select Subject
+          </option>
+        </select>
+
+      </div>
+
+
+      <div class="form-group">
+
+        <label for="editAttendanceDate">
+          Date
+        </label>
+
+        <input
+          type="date"
+          id="editAttendanceDate"
+          required
+        >
+
+      </div>
+
+
+      <div class="form-group">
+
+        <label for="editAttendanceStatus">
+          Status
+        </label>
+
+        <select
+          id="editAttendanceStatus"
+          required
+        >
+
+          <option value="">
+            Select Status
+          </option>
+
+          <option value="Present">
+            Present
+          </option>
+
+          <option value="Absent">
+            Absent
+          </option>
+
+          <option value="Late">
+            Late
+          </option>
+
+        </select>
+
+      </div>
+
+
+      <button type="submit">
+        Update Attendance
+      </button>
+
+      <button
+        type="button"
+        id="cancelEditAttendance"
+      >
+        Cancel
+      </button>
+
+    </form>
+
+  </div>
+
+
+  <!-- ATTENDANCE TABLE -->
+
+  <div class="table-section">
+
+    <h2>Attendance Records</h2>
+
+    <table>
+
+      <thead>
+
+        <tr>
+          <th>Student</th>
+          <th>Roll Number</th>
+          <th>Subject</th>
+          <th>Date</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+
+      </thead>
+
+      <tbody id="attendanceTableBody"></tbody>
+
+    </table>
+
+  </div>
+
+</section>
+Press Ctrl + S.
+Step 2 — Add/replace Attendance JavaScript
+Open:
+public/script.js
+We already have Attendance JavaScript. Do not paste duplicate functions.
+Find the existing functions:
+loadAttendance()
+displayAttendance()
+deleteAttendance()
+editAttendance()
+If you already have the versions from our previous steps, keep them.
+Now add this small improvement at the bottom of script.js:
+Writing
+// =====================================
+// ATTENDANCE IMPROVEMENTS
+// =====================================
+
+
+// LOAD STUDENTS FOR ATTENDANCE
+async function loadAttendanceStudents(
+  dropdownId,
+  selectedId = ""
+) {
+
+  const dropdown =
+    document.getElementById(dropdownId);
+
+  if (!dropdown) return;
+
+  try {
+
+    const response = await fetch(
+      "/api/students",
+      {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      }
+    );
+
+    const data = await response.json();
+
+    if (!data.success) {
+
+      dropdown.innerHTML =
+        '<option value="">Failed to load students</option>';
+
+      return;
+    }
+
+    dropdown.innerHTML =
+      '<option value="">Select Student</option>';
+
+
+    data.students.forEach(student => {
+
+      const option =
+        document.createElement("option");
+
+      option.value =
+        student._id;
+
+      option.textContent =
+        `${student.rollNumber} - ${student.name}`;
+
+      if (
+        student._id === selectedId
+      ) {
+        option.selected = true;
+      }
+
+      dropdown.appendChild(option);
+
+    });
+
+  } catch (error) {
+
+    console.error(
+      "Error loading attendance students:",
+      error
+    );
+
+    dropdown.innerHTML =
+      '<option value="">Error loading students</option>';
+
+  }
+}
+
+
+// SET TODAY'S DATE
+function setAttendanceToday() {
+
+  const dateInput =
+    document.getElementById(
+      "attendanceDate"
+    );
+
+  if (!dateInput) return;
+
+  const today =
+    new Date()
+      .toISOString()
+      .split("T")[0];
+
+  dateInput.value = today;
+
+}
+
+
+// STUDENT CHANGE
+const attendanceStudentDropdown =
+  document.getElementById(
+    "attendanceStudent"
+  );
+
+if (attendanceStudentDropdown) {
+
+  attendanceStudentDropdown.addEventListener(
+    "change",
+    function () {
+
+      loadSubjectsForStudent(
+        this.value,
+        "attendanceSubject"
+      );
+
+    }
+  );
+
+}
+
+
+// EDIT STUDENT CHANGE
+const editAttendanceStudentDropdown =
+  document.getElementById(
+    "editAttendanceStudent"
+  );
+
+if (editAttendanceStudentDropdown) {
+
+  editAttendanceStudentDropdown.addEventListener(
+    "change",
+    function () {
+
+      loadSubjectsForStudent(
+        this.value,
+        "editAttendanceSubject"
+      );
+
+    }
+  );
+
+}
+
+
+// INITIAL ATTENDANCE SETUP
+
+loadAttendanceStudents(
+  "attendanceStudent"
+);
+
+loadAttendanceStudents(
+  "editAttendanceStudent"
+);
+
+setAttendanceToday();
+
+loadAttendance();
+Press Ctrl + S.
+Step 3 — Start server
+In VS Code Terminal:
+npm run dev
+You should see:
+Server running on port 3000
+MongoDB connected successfully
+Step 4 — Test Attendance
+Open:
+http://localhost:3000
+Login as Admin.
+Click:
+Attendance
+You should see:
+Mark Attendance
+----------------------------
+
+Student
+[ Select Student ]
+
+Subject
+[ Select Student First ]
+
+Date
+[ 06/10/2026 ]
+
+Attendance Status
+[ Select Status ]
+
+[ Mark Attendance ]
+Step 5 — Select a student
+For example:
+CSE001 - Divya
+After selecting the student, the Subject dropdown should automatically change.
+For example:
+CSE101 - Data Structures
+CSE102 - DBMS
+CSE103 - Computer Networks
+Only subjects matching that student's department + semester should appear.
+Step 6 — Mark attendance
+Select:
+Student:
+CSE001 - Divya
+
+Subject:
+CSE101 - Data Structures
+
+Date:
+Today
+
+Status:
+Present
+Click:
+Mark Attendance
+Expected message:
+Attendance added successfully!
+Step 7 — Check table
+The table should show:
+Student
+Roll Number
+Subject
+Date
+Status
+Actions
+Divya
+CSE001
+Data Structures
+Today
+Present
+Edit / Delete
+Step 8 — Test duplicate protection
+Try adding the same student + same subject + same date again.
+Because we created a unique database index:
+student + subject + date
+MongoDB should reject the duplicate.
+You should receive an error similar to:
+Duplicate value already exists
+This is important because a student should not have two attendance records for the same subject on the same date.
+Step 9 — Test Edit
+Click:
+Edit
+Change:
+Present
+to:
+Absent
+Click:
+Update Attendance
+Expected:
+Attendance updated successfully!
+Step 10 — Test Delete
+Click:
+Delete
+Confirm:
+Are you sure you want to delete this attendance?
+Click OK.
+The record should disappear.
+Our ERP progress
+✅ Authentication
+✅ Users
+✅ Students
+✅ Departments
+✅ Subjects
+✅ Faculty
+✅ Timetable
+✅ Attendance
+⬅️ We are here
+⏳ Marks
+⏳ Admin Dashboard improvements
+⏳ Student Dashboard
+⏳ Profile
+⏳ Final security testing
+⏳ GitHub
+⏳ MongoDB Atlas
+⏳ Render Deployment
+Next module: Marks Management 📚
+We will make Marks work with:
+Student
+   ↓
+Subject automatically filtered
+   ↓
+Exam Type
+   ↓
+Marks
+   ↓
+Maximum Marks
+   ↓
+Percentage
+   ↓
+Grade
+   ↓
+Add / Edit / Delete
