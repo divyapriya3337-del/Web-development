@@ -30773,3 +30773,314 @@ Percentage
 Grade
    ↓
 Add / Edit / Delete
+HTML
+
+<section id="marksSection" class="admin-section">
+
+  <h1>Marks Management</h1>
+
+  <div class="form-card">
+    <h2>Add Marks</h2>
+
+    <form id="marksForm">
+
+      <div class="form-group">
+        <label for="marksStudent">Student</label>
+        <select id="marksStudent" required>
+          <option value="">Select Student</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="marksSubject">Subject</label>
+        <select id="marksSubject" required>
+          <option value="">Select Student First</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="examType">Exam Type</label>
+        <select id="examType" required>
+          <option value="">Select Exam</option>
+          <option value="Internal">Internal</option>
+          <option value="Mid">Mid</option>
+          <option value="Semester">Semester</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="marks">Marks Obtained</label>
+        <input
+          type="number"
+          id="marks"
+          min="0"
+          required
+          placeholder="Enter marks"
+        >
+      </div>
+
+      <div class="form-group">
+        <label for="maxMarks">Maximum Marks</label>
+        <input
+          type="number"
+          id="maxMarks"
+          min="1"
+          required
+          placeholder="Enter maximum marks"
+        >
+      </div>
+
+      <p>
+        Percentage: <strong id="marksPreview">0.00%</strong>
+      </p>
+
+      <button type="submit">Add Marks</button>
+
+    </form>
+  </div>
+
+  <div class="table-section">
+    <h2>Marks Records</h2>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Student</th>
+          <th>Roll Number</th>
+          <th>Subject</th>
+          <th>Exam</th>
+          <th>Marks</th>
+          <th>Maximum</th>
+          <th>Percentage</th>
+          <th>Grade</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+
+      <tbody id="marksTableBody"></tbody>
+    </table>
+  </div>
+
+</section>
+next we will complete the Marks Management module in your College ERP project.
+We already created the Marks backend, add form, edit form, and student-to-subject filtering. Now we’ll improve the module with automatic percentage and grade calculation, marks validation, and a professional results table.
+Step 1: Update public/index.html
+Open public/index.html in VS Code. Find your existing marksSection and make sure the Add Marks form contains these IDs.
+HTML
+
+<section id="marksSection" class="admin-section">
+
+  <h1>Marks Management</h1>
+
+  <div class="form-card">
+    <h2>Add Marks</h2>
+
+    <form id="marksForm">
+
+      <div class="form-group">
+        <label for="marksStudent">Student</label>
+        <select id="marksStudent" required>
+          <option value="">Select Student</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="marksSubject">Subject</label>
+        <select id="marksSubject" required>
+          <option value="">Select Student First</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="examType">Exam Type</label>
+        <select id="examType" required>
+          <option value="">Select Exam</option>
+          <option value="Internal">Internal</option>
+          <option value="Mid">Mid</option>
+          <option value="Semester">Semester</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="marks">Marks Obtained</label>
+        <input
+          type="number"
+          id="marks"
+          min="0"
+          required
+          placeholder="Enter marks"
+        >
+      </div>
+
+      <div class="form-group">
+        <label for="maxMarks">Maximum Marks</label>
+        <input
+          type="number"
+          id="maxMarks"
+          min="1"
+          required
+          placeholder="Enter maximum marks"
+        >
+      </div>
+
+      <p>
+        Percentage: <strong id="marksPreview">0.00%</strong>
+      </p>
+
+      <button type="submit">Add Marks</button>
+
+    </form>
+  </div>
+
+  <div class="table-section">
+    <h2>Marks Records</h2>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Student</th>
+          <th>Roll Number</th>
+          <th>Subject</th>
+          <th>Exam</th>
+          <th>Marks</th>
+          <th>Maximum</th>
+          <th>Percentage</th>
+          <th>Grade</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+
+      <tbody id="marksTableBody"></tbody>
+    </table>
+  </div>
+
+</section>
+Step 2: Add automatic percentage calculation
+Open public/script.js. Add this code at the bottom.
+
+function calculateMarksPreview() {
+  const marksInput = document.getElementById("marks");
+  const maxInput = document.getElementById("maxMarks");
+  const preview = document.getElementById("marksPreview");
+
+  if (!marksInput || !maxInput || !preview) return;
+
+  const marks = Number(marksInput.value);
+  const maxMarks = Number(maxInput.value);
+
+  if (
+    marksInput.value === "" ||
+    maxInput.value === "" ||
+    maxMarks <= 0 ||
+    marks < 0 ||
+    marks > maxMarks
+  ) {
+    preview.textContent = "Enter valid marks";
+    return;
+  }
+
+  const percentage = (marks / maxMarks) * 100;
+
+  preview.textContent = percentage.toFixed(2) + "%";
+}
+
+const marksInputElement = document.getElementById("marks");
+const maxMarksInputElement = document.getElementById("maxMarks");
+
+if (marksInputElement) {
+  marksInputElement.addEventListener("input", calculateMarksPreview);
+}
+Step 3: Add grade calculation
+At the bottom of public/script.js, add:
+
+if (maxMarksInputElement) {
+  maxMarksInputElement.addEventListener("input", calculateMarksPreview);
+}
+
+function calculateGrade(percentage) {
+  if (percentage >= 90) return "A+";
+  if (percentage >= 80) return "A";
+  if (percentage >= 70) return "B";
+  if (percentage >= 60) return "C";
+  if (percentage >= 50) return "D";
+  return "F";
+}
+These are example project grading rules, not official rules for every college. You can change them to match your college's grading policy.
+Step 4: Display percentage and grade in the table
+Find your existing displayMarks() function in public/script.js.
+Replace that function with the following. This version expects the backend's marks response to include populated student and subject objects.
+
+function displayMarks(marksList) {
+  const tableBody = document.getElementById("marksTableBody");
+
+  if (!tableBody) return;
+
+  tableBody.replaceChildren();
+
+  if (!marksList || marksList.length === 0) {
+    tableBody.innerHTML =
+      '<tr><td colspan="9">No marks records found</td></tr>';
+    return;
+  }
+
+  marksList.forEach(record => {
+    const row = document.createElement("tr");
+
+    const studentName = record.student?.name || "-";
+    const rollNumber = record.student?.rollNumber || "-";
+    const subjectName = record.subject?.name || "-";
+
+    const percentage =
+      record.maxMarks > 0
+        ? (record.marks / record.maxMarks) * 100
+        : 0;
+
+    const grade = calculateGrade(percentage);
+
+    const values = [
+      studentName,
+      rollNumber,
+      subjectName,
+      record.examType || "-",
+      record.marks,
+      record.maxMarks,
+      percentage.toFixed(2) + "%",
+      grade
+    ];
+
+    values.forEach(value => {
+      const cell = document.createElement("td");
+      cell.textContent = String(value);
+      row.appendChild(cell);
+    });
+
+    const actionsCell = document.createElement("td");
+
+    const editButton = document.createElement("button");
+    editButton.textContent = "Edit";
+    editButton.addEventListener("click", () => editMark(record._id));
+
+    const deleteButton = document.createElement("button");
+    deleteButton.textContent = "Delete";
+    deleteButton.addEventListener("click", () => deleteMark(record._id));
+
+    actionsCell.append(editButton, deleteButton);
+    row.appendChild(actionsCell);
+    tableBody.appendChild(row);
+  });
+}
+Step 6: Test the project
+Save all files using Ctrl + S.
+Open the VS Code terminal.
+Run npm run dev if the server is not already running.
+Open http://localhost:3000.
+Log in as Admin and click Marks.
+Select a student, then select a subject.
+Choose Internal as the exam type.
+Enter 42 for Marks Obtained and 50 for Maximum Marks.
+Confirm the preview displays 84.00%.
+Click Add Marks and check the table.
+Expected example:
+Marks Maximum Percentage Grade
+42 50 84.00% A
+If the table displays an error, check the browser console with F12 → Console and the VS Code terminal.
