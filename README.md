@@ -31084,3 +31084,502 @@ Expected example:
 Marks Maximum Percentage Grade
 42 50 84.00% A
 If the table displays an error, check the browser console with F12 → Console and the VS Code terminal.
+The subject does not belong to the student's department and semester.
+The student or subject ID is invalid.
+Your existing backend was designed to check these conditions. Keep those checks in place.
+Step 6: Test the project
+Save all files using Ctrl + S.
+Open the VS Code terminal.
+Run npm run dev if the server is not already running.
+Open http://localhost:3000.
+Log in as Admin and click Marks.
+Select a student, then select a subject.
+Choose Internal as the exam type.
+Enter 42 for Marks Obtained and 50 for Maximum Marks.
+Confirm the preview displays 84.00%.
+Click Add Marks and check the table.
+Expected example:
+Marks Maximum Percentage Grade
+42 50 84.00% A
+If the table displays an error, check the browser console with F12 → Console and the VS Code terminal.Module: Admin Dashboard Improvements 📊
+We will add:
+Total Students
+Total Departments
+Total Subjects
+Total Faculty
+Attendance Statistics
+Department-wise Student Chart
+Attendance Chart
+Refresh Dashboard functionality
+Your backend already has a dashboard controller, so we'll connect the frontend to it.
+Step 1: Open public/index.html
+Open VS Code → Explorer → public → index.html.
+Find your existing:
+HTML
+<section id="dashboardSection">
+Replace the entire dashboard section with the following code.
+Writing
+<section id="dashboardSection" class="admin-section">
+
+  <div class="dashboard-header">
+    <div>
+      <h1>Admin Dashboard</h1>
+      <p>College ERP overview and statistics</p>
+    </div>
+
+    <button
+      type="button"
+      id="refreshDashboardBtn"
+    >
+      Refresh Dashboard
+    </button>
+  </div>
+
+  <!-- SUMMARY CARDS -->
+  <div class="dashboard-cards">
+
+    <div class="dashboard-card">
+      <h3>Total Students</h3>
+      <p id="totalStudents">0</p>
+    </div>
+
+    <div class="dashboard-card">
+      <h3>Total Departments</h3>
+      <p id="totalDepartments">0</p>
+    </div>
+
+    <div class="dashboard-card">
+      <h3>Total Subjects</h3>
+      <p id="totalSubjects">0</p>
+    </div>
+
+    <div class="dashboard-card">
+      <h3>Total Faculty</h3>
+      <p id="totalFaculty">0</p>
+    </div>
+
+  </div>
+
+  <!-- ATTENDANCE SUMMARY -->
+  <div class="dashboard-cards">
+
+    <div class="dashboard-card">
+      <h3>Total Attendance Records</h3>
+      <p id="dashboardTotalClasses">0</p>
+    </div>
+
+    <div class="dashboard-card">
+      <h3>Present</h3>
+      <p id="dashboardPresent">0</p>
+    </div>
+
+    <div class="dashboard-card">
+      <h3>Absent</h3>
+      <p id="dashboardAbsent">0</p>
+    </div>
+
+    <div class="dashboard-card">
+      <h3>Late</h3>
+      <p id="dashboardLate">0</p>
+    </div>
+
+    <div class="dashboard-card">
+      <h3>Attendance Percentage</h3>
+      <p id="dashboardAttendancePercentage">0%</p>
+    </div>
+
+  </div>
+
+  <!-- CHARTS -->
+  <div class="dashboard-charts">
+
+    <div class="chart-card">
+      <h2>Attendance Statistics</h2>
+      <canvas id="attendanceChart"></canvas>
+    </div>
+
+    <div class="chart-card">
+      <h2>Department-wise Students</h2>
+      <canvas id="departmentChart"></canvas>
+    </div>
+
+  </div>
+
+  <p id="dashboardMessage" role="status"></p>
+
+</section>
+Save: Press Ctrl + S.
+Step 2: Add Dashboard CSS
+Open:
+public/style.css
+Go to the bottom and add:
+Writing
+/* ADMIN DASHBOARD */
+
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.dashboard-header h1 {
+  margin-bottom: 6px;
+}
+
+.dashboard-header p {
+  margin-top: 0;
+}
+
+.dashboard-cards {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 20px;
+  margin-bottom: 24px;
+}
+
+.dashboard-card {
+  background: white;
+  padding: 22px;
+  border-radius: 12px;
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08);
+}
+
+.dashboard-card h3 {
+  font-size: 15px;
+  margin-top: 0;
+}
+
+.dashboard-card p {
+  font-size: 28px;
+  font-weight: bold;
+  margin-bottom: 0;
+}
+
+.dashboard-charts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
+  margin-top: 24px;
+}
+
+.chart-card {
+  background: white;
+  padding: 22px;
+  border-radius: 12px;
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08);
+  min-width: 0;
+}
+
+.chart-card h2 {
+  font-size: 19px;
+  margin-top: 0;
+}
+
+.chart-card canvas {
+  max-width: 100%;
+}
+
+#dashboardMessage {
+  margin-top: 16px;
+}
+
+@media (max-width: 1000px) {
+  .dashboard-cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .dashboard-charts {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 500px) {
+  .dashboard-cards {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboard-card p {
+    font-size: 24px;
+  }
+}
+Save: Ctrl + S.
+If your stylesheet has a different filename, use the stylesheet already linked in index.html.
+Step 3: Check Chart.js
+Your dashboard uses Chart.js to draw charts.
+Open public/index.html and look for the Chart.js script.
+If it is already present, do not add it again.
+If it is missing, add this before your script.js script tag:
+HTML
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="script.js"></script>
+Keep both scripts near the end of the HTML, before </body>.
+Step 4: Update the Dashboard JavaScript
+Open:
+public/script.js
+You already have a loadDashboardStats() function from our earlier work.
+Replace the existing loadDashboardStats() function, rather than adding a duplicate.
+Use this version:
+Writing
+let attendanceChartInstance = null;
+let departmentChartInstance = null;
+
+async function loadDashboardStats() {
+  const message = document.getElementById("dashboardMessage");
+
+  if (message) {
+    message.textContent = "Loading dashboard...";
+  }
+
+  try {
+    const response = await fetch("/api/dashboard/stats", {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+
+    const data = await response.json();
+
+    if (!response.ok || !data.success) {
+      throw new Error(
+        data.message || "Failed to load dashboard"
+      );
+    }
+
+    const stats = data.statistics;
+    const attendance = stats.attendance;
+
+    document.getElementById("totalStudents").textContent =
+      stats.totalStudents ?? 0;
+
+    document.getElementById("totalDepartments").textContent =
+      stats.totalDepartments ?? 0;
+
+    document.getElementById("totalSubjects").textContent =
+      stats.totalSubjects ?? 0;
+
+    document.getElementById("totalFaculty").textContent =
+      stats.totalFaculty ?? 0;
+
+    document.getElementById("dashboardTotalClasses").textContent =
+      attendance.totalClasses ?? 0;
+
+    document.getElementById("dashboardPresent").textContent =
+      attendance.present ?? 0;
+
+    document.getElementById("dashboardAbsent").textContent =
+      attendance.absent ?? 0;
+
+    document.getElementById("dashboardLate").textContent =
+      attendance.late ?? 0;
+
+    document.getElementById("dashboardAttendancePercentage").textContent =
+      `${attendance.percentage ?? 0}%`;
+
+    renderAttendanceChart(attendance);
+    renderDepartmentChart(stats.departmentStats || []);
+
+    if (message) {
+      message.textContent = "Dashboard updated successfully.";
+    }
+
+  } catch (error) {
+    console.error("Dashboard error:", error);
+
+    if (message) {
+      message.textContent =
+        error.message || "Unable to load dashboard statistics.";
+    }
+  }
+}
+
+
+// ATTENDANCE DOUGHNUT CHART
+function renderAttendanceChart(attendance) {
+  const canvas = document.getElementById("attendanceChart");
+
+  if (!canvas || typeof Chart === "undefined") {
+    console.warn("Chart.js or attendance chart canvas is missing.");
+    return;
+  }
+
+  if (attendanceChartInstance) {
+    attendanceChartInstance.destroy();
+  }
+
+  attendanceChartInstance = new Chart(canvas, {
+    type: "doughnut",
+
+    data: {
+      labels: ["Present", "Absent", "Late"],
+
+      datasets: [{
+        data: [
+          attendance.present ?? 0,
+          attendance.absent ?? 0,
+          attendance.late ?? 0
+        ]
+      }]
+    },
+
+    options: {
+      responsive: true,
+      maintainAspectRatio: true
+    }
+  });
+}
+
+
+// DEPARTMENT BAR CHART
+function renderDepartmentChart(departmentStats) {
+  const canvas = document.getElementById("departmentChart");
+
+  if (!canvas || typeof Chart === "undefined") {
+    console.warn("Chart.js or department chart canvas is missing.");
+    return;
+  }
+
+  if (departmentChartInstance) {
+    departmentChartInstance.destroy();
+  }
+
+  departmentChartInstance = new Chart(canvas, {
+    type: "bar",
+
+    data: {
+      labels: departmentStats.map(item =>
+        item.departmentName || "Unknown Department"
+      ),
+
+      datasets: [{
+        label: "Number of Students",
+
+        data: departmentStats.map(item =>
+          item.count ?? 0
+        )
+      }]
+    },
+
+    options: {
+      responsive: true,
+
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: {
+            precision: 0
+          }
+        }
+      }
+    }
+  });
+}
+
+
+// REFRESH DASHBOARD
+const refreshDashboardBtn =
+  document.getElementById("refreshDashboardBtn");
+
+if (refreshDashboardBtn) {
+  refreshDashboardBtn.addEventListener(
+    "click",
+    loadDashboardStats
+  );
+}
+Important: Your project may already call loadDashboardStats() during startup or when the Dashboard button is clicked. Keep that existing call; don't create unnecessary duplicate calls.
+If your current dashboard doesn't call it anywhere, add this to your existing startup logic after the token is available:
+loadDashboardStats();
+Save with Ctrl + S.
+Step 5: Fix department names in the backend
+Your existing dashboard controller groups students by department ID. The frontend needs department names to display a meaningful chart.
+const departmentStats = await Student.aggregate([
+  {
+    $group: {
+      _id: "$department",
+      count: { $sum: 1 }
+    }
+  },
+  {
+    $lookup: {
+      from: "departments",
+      localField: "_id",
+      foreignField: "_id",
+      as: "department"
+    }
+  },
+  {
+    $unwind: {
+      path: "$department",
+      preserveNullAndEmptyArrays: true
+    }
+  },
+  {
+    $project: {
+      _id: 0,
+      departmentName: {
+        $ifNull: ["$department.name", "Unknown Department"]
+      },
+      departmentCode: {
+        $ifNull: ["$department.code", ""]
+      },
+      count: 1
+    }
+  },
+  {
+    $sort: {
+      departmentName: 1
+    }
+  }
+]);
+Open:
+controllers/dashboardController.js
+Find the existing departmentStats aggregation and replace it with:
+JavaScript
+This aggregation:
+Counts students in each department.
+Matches each department ID to the Departments collection.
+Retrieves its name and code.
+Returns a clean dataset for the chart.
+Save: Ctrl + S.
+Step 6: Run and test
+1. Start your server
+In VS Code, open Terminal → New Terminal.
+Run:
+npm run dev
+2. Open your application
+In Chrome:
+http://localhost:3000
+Log in using your Admin account.
+3. Click Dashboard
+You should see cards for:
+Card
+Displays
+Total Students
+Number of students
+Total Departments
+Number of departments
+Total Subjects
+Number of subjects
+Total Faculty
+Number of faculty
+Total Attendance Records
+Number of attendance records
+Present
+Present records
+Absent
+Absent records
+Late
+Late records
+Attendance Percentage
+Present records divided by all attendance records
+Below the cards, you should see the Attendance Doughnut Chart and Department-wise Student Bar Chart.
+4. Test Refresh
+Add a test student through the Students section, then return to Dashboard and click Refresh Dashboard.
+The student count should update.
+One important note about your attendance percentage
+Your existing backend calculates attendance percentage as:
+Present records ÷ Total attendance records × 100
+For example, if there are 100 attendance records and 85 are Present, the dashboard displays 85%.
+This is an overall record-based percentage, not an average of individual students' attendance percentages.
