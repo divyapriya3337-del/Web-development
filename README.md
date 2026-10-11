@@ -31582,4 +31582,12 @@ One important note about your attendance percentage
 Your existing backend calculates attendance percentage as:
 Present records ÷ Total attendance records × 100
 For example, if there are 100 attendance records and 85 are Present, the dashboard displays 85%.
-This is an overall record-based percentage, not an average of individual students' attendance percentages.
+This is an overall record-based percentage, not an average of individual students' attendance percentages. let’s continue your College ERP / Student Management System step by step.
+Next Module: Student Dashboard Improvements
+Your Student Dashboard should allow each student to log in and view only their own academic information—not another student's records.
+We’ll improve these features:
+Student profile details.
+Total classes, present, and absent.
+Attendance percentage.
+Subject-wise attendance.
+Subject-wise marks, percentages, and grades.
