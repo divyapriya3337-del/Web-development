@@ -31591,3 +31591,13 @@ Total classes, present, and absent.
 Attendance percentage.
 Subject-wise attendance.
 Subject-wise marks, percentages, and grades.
+Step 5: Fix errors if the dashboard is blank
+If information does not appear:
+Press F12 in the browser.
+Open the Console tab.
+Look for red error messages.
+Open the Network tab and refresh the page.
+Find the request to /api/student-dashboard/me and check its response.
+A 401 usually indicates an authentication problem; a 404 suggests the route or URL may be incorrect. A blank dashboard can also mean the student account is not linked to a Student record.
+Security check: Log in as one student and verify that the dashboard only shows that student's records. Never use a student ID supplied by the browser as the sole authorization check.
+Next after this our next module will be Student Profile Improvements—displaying the student's department, semester, phone number, attendance summary, and academic results in one clean profile page.
