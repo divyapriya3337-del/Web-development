@@ -31600,4 +31600,41 @@ Open the Network tab and refresh the page.
 Find the request to /api/student-dashboard/me and check its response.
 A 401 usually indicates an authentication problem; a 404 suggests the route or URL may be incorrect. A blank dashboard can also mean the student account is not linked to a Student record.
 Security check: Log in as one student and verify that the dashboard only shows that student's records. Never use a student ID supplied by the browser as the sole authorization check.
-Next after this our next module will be Student Profile Improvements—displaying the student's department, semester, phone number, attendance summary, and academic results in one clean profile page.
+Next after this our next module will be Student Profile Improvements—displaying the student's department, semester, phone number, attendance summary, and academic results in one clean profile
+next we’ll improve your Student Profile page in the College ERP / Student Management System. This will help students view their personal details and academic performance in one place.
+Step 1: Open profile.html
+Open your existing project in VS Code.
+In the left Explorer panel, open the public folder.
+Click profile.html.
+Check whether it already contains these fields:
+Student Name
+Roll Number
+Email
+Department
+Semester
+Age and Phone
+Attendance Percentage
+ now let’s build the next module in your College ERP / Student Management System: Admin User Management.
+The admin will be able to view user accounts, identify their roles, and link a student login account to the correct student record.
+Step 1: Understand the module
+View users
+Display name, email, and role.
+Manage roles
+Only authorized admins can manage access.
+Link student accounts
+Connect a login account with its matching Student record.
+Important: Do not add a second route with the same endpoint. First check routes/authRoutes.js and controllers/authController.js to see whether it is already implemented.
+Step 4: Test your server
+Open Terminal → New Terminal in VS Code and run:
+Then open http://localhost:3000 and log in with your admin account.
+Do not promote an ordinary account to admin just to test the screen; use your existing authorized admin account.
+role: {
+  type: String,
+  enum: ["user", "admin"],
+  default: "user"
+},
+studentId: {
+  type: mongoose.Schema.Types.ObjectId,
+  ref: "Student",
+  default: null
+}
