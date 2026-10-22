@@ -31638,3 +31638,45 @@ studentId: {
   ref: "Student",
   default: null
 }
+Step 5: Save and verify
+Press Ctrl + S.
+Start your server in the VS Code terminal:
+Open http://localhost:3000.
+Log in as an authorized admin.
+Verify that the Users section appears and that ordinary student accounts cannot access admin user-management APIs.
+Next step
+ we’ll connect the Users table to the backend and load the real registered accounts. First, we need to match your existing authentication token format and API response so the code works with your project rather than creating another conflicting route.
+
+<!-- Admin User Management -->
+<section id="usersSection" class="content-section" hidden>
+  <h2>Admin User Management</h2>
+  <p>View registered accounts and their access roles.</p>
+
+  <button type="button" id="refreshUsersBtn">
+    Refresh Users
+  </button>
+
+  <p id="usersMessage" role="status"></p>
+
+  <div class="table-responsive">
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Email</th>
+          <th>Role</th>
+          <th>Student Link</th>
+        </tr>
+      </thead>
+      <tbody id="usersTableBody">
+        <tr>
+          <td colspan="4">Click Refresh Users to load accounts.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<button type="button" data-section="usersSection">
+  Users
+</button>
