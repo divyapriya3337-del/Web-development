@@ -31680,3 +31680,11 @@ Next step
 <button type="button" data-section="usersSection">
   Users
 </button>
+Log in as your admin account.
+Open Postman and send a GET request to:
+Select Authorization → Bearer Token and provide your valid admin JWT.
+Click Send.
+Expected result: HTTP 200 and a list of users. Without a valid token or admin privileges, the request should be rejected.
+Next step
+after this works, we’ll display the API response inside your Users table and add safe account-management controls.
+First, test this backend endpoint. If you receive an error, share the error message or screenshot so we can fix the exact issue before continuing.
