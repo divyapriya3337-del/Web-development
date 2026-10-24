@@ -31688,3 +31688,106 @@ Expected result: HTTP 200 and a list of users. Without a valid token or admin pr
 Next step
 after this works, we’ll display the API response inside your Users table and add safe account-management controls.
 First, test this backend endpoint. If you receive an error, share the error message or screenshot so we can fix the exact issue before continuing.
+If this function already exists, replace the existing function rather than adding a duplicate.
+Step 2: Add the Users table functions
+The following code assumes your application stores the JWT in localStorage under the key token. If your login code uses a different key, use that existing key instead.
+
+async function loadUsers() {
+  const tableBody = document.getElementById("usersTableBody");
+  const message = document.getElementById("usersMessage");
+
+  if (!tableBody || !message) return;
+
+  tableBody.innerHTML =
+    '<tr><td colspan="4">Loading users...</td></tr>';
+  message.textContent = "";
+
+  const token = localStorage.getItem("token");
+
+  if (!token) {
+    tableBody.innerHTML =
+      '<tr><td colspan="4">Please log in first.</td></tr>';
+    return;
+  }
+
+  try {
+    const response = await fetch("/api/users", {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || "Unable to load users.");
+    }
+
+    displayUsers(data.users || []);
+  } catch (error) {
+    tableBody.innerHTML =
+      '<tr><td colspan="4">Unable to load users.</td></tr>';
+
+    message.textContent = error.message;
+  }
+}
+
+function displayUsers(users) {
+  const tableBody = document.getElementById("usersTableBody");
+
+  if (!tableBody) return;
+
+  if (users.length === 0) {
+    tableBody.innerHTML =
+      '<tr><td colspan="4">No users found.</td></tr>';
+    return;
+  }
+
+  tableBody.replaceChildren();
+
+  users.forEach((user) => {
+    const row = document.createElement("tr");
+
+    const values = [
+      user.name || "—",
+      user.email || "—",
+      user.role || "user",
+      user.studentLinked
+        ? `${user.studentName || "Linked"} (${user.rollNumber || "No roll number"})`
+        : "Not linked"
+    ];
+
+    values.forEach((value) => {
+      const cell = document.createElement("td");
+      cell.textContent = value;
+      row.appendChild(cell);
+    });
+
+    tableBody.appendChild(row);
+  });
+}
+
+document
+  .getElementById("refreshUsersBtn")
+  ?.addEventListener("click", loadUsers);
+  Important: If your script.js already has a common API helper or a shared navigation setup, reuse it instead of creating duplicate listeners.
+Step 3: Make the Users section visible to admins
+Your public/index.html should contain these IDs:
+Keep your existing section and navigation 
+<section id="usersSection" class="content-section" hidden>
+  <!-- Your existing Users table -->
+</section>
+
+<button type="button" data-section="usersSection">
+  Users
+</button>
+are already present. The data-section attribute must match the navigation logic in your JavaScript.
+Step 4: Test your project
+Save with Ctrl + S.
+Run this command in the VS Code t
+npm run dev
+Open http://localhost:3000.
+Log in as an admin.
+Open Users and click Refresh Users.
+Expected result: the table displays each user's name, email, role, and student-link status.
+If you see 401, check the login token. If you see 403, check the admin role. If you see 404, check that /api/users is mounted in app.js or server.js.
