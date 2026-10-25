@@ -31791,3 +31791,150 @@ Log in as an admin.
 Open Users and click Refresh Users.
 Expected result: the table displays each user's name, email, role, and student-link status.
 If you see 401, check the login token. If you see 403, check the admin role. If you see 404, check that /api/users is mounted in app.js or server.js.
+now we’ll build the next feature in your College ERP project: Student Account Linking.
+This feature allows an admin to connect a registered login account to the correct student record, so the student can see their own attendance, marks, and profile.
+Step 1: Add the linking form
+Open public/index.html in VS Code. Inside your existing usersSection, add this form below the Users table if you don't already have one.
+
+<div class="card" id="linkStudentCard">
+  <h3>Link User to Student</h3>
+
+  <form id="linkStudentForm">
+    <label for="linkUserId">Select User</label>
+    <select id="linkUserId" required>
+      <option value="">Select a user</option>
+    </select>
+
+    <label for="linkStudentId">Select Student</label>
+    <select id="linkStudentId" required>
+      <option value="">Select a student</option>
+    </select>
+
+    <button type="submit">Link Student Account</button>
+  </form>
+
+  <p id="linkStudentMessage" role="status"></p>
+</div>
+Save the file with Ctrl + S.
+Step 2: Load users and students into the dropdowns
+Open public/script.js. Check whether you already have functions that load users or students. Avoid creating duplicate functions or event listeners.
+Add the following functions if equivalent ones do not exist:
+
+async function loadLinkStudentOptions() {
+  const userSelect = document.getElementById("linkUserId");
+  const studentSelect = document.getElementById("linkStudentId");
+  const message = document.getElementById("linkStudentMessage");
+
+  if (!userSelect || !studentSelect || !message) return;
+
+  const token = localStorage.getItem("token");
+
+  if (!token) {
+    message.textContent = "Please log in as an administrator.";
+    return;
+  }
+
+  try {
+    const headers = {
+      Authorization: `Bearer ${token}`
+    };
+
+    const [usersResponse, studentsResponse] = await Promise.all([
+      fetch("/api/users", { headers }),
+      fetch("/api/students", { headers })
+    ]);
+
+    if (!usersResponse.ok || !studentsResponse.ok) {
+      throw new Error("Could not load users or students.");
+    }
+
+    const usersData = await usersResponse.json();
+    const studentsData = await studentsResponse.json();
+
+    userSelect.replaceChildren(new Option("Select a user", ""));
+    studentSelect.replaceChildren(new Option("Select a student", ""));
+
+    (usersData.users || [])
+      .filter(user => user.role !== "admin")
+      .forEach(user => {
+        const option = new Option(
+          `${user.name} (${user.email})`,
+          user.id
+        );
+        userSelect.add(option);
+      });
+
+    (studentsData.students || [])
+      .forEach(student => {
+        const option = new Option(
+          `${student.name} (${student.rollNumber})`,
+          student._id || student.id
+        );
+        studentSelect.add(option);
+      });
+
+    message.textContent = "Users and students loaded.";
+  } catch (error) {
+    message.textContent = error.message;
+  }
+}
+Note: Your student API may return a paginated list. If it returns only the first page, you will need to load all pages or search for the student before linking.
+Step 3: Connect the form to the backend
+Your project has an endpoint planned for:
+POST /api/auth/link-student
+Open public/script.js and add this submit handler only if one doesn't already exist.
+
+document
+  .getElementById("linkStudentForm")
+  ?.addEventListener("submit", async (event) => {
+    event.preventDefault();
+
+    const message = document.getElementById("linkStudentMessage");
+    const token = localStorage.getItem("token");
+
+    const userId = document.getElementById("linkUserId").value;
+    const studentId = document.getElementById("linkStudentId").value;
+
+    if (!token || !userId || !studentId) {
+      message.textContent = "Select both a user and a student.";
+      return;
+    }
+
+    try {
+      const response = await fetch("/api/auth/link-student", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ userId, studentId })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Could not link the account.");
+      }
+
+      message.textContent = "Student account linked successfully.";
+      await loadUsers();
+      await loadLinkStudentOptions();
+    } catch (error) {
+      message.textContent = error.message;
+    }
+  });
+  Make sure loadUsers() is your existing Users-table function and that the endpoint accepts { userId, studentId }. Use your actual token storage key if it differs from token.
+Step 4: Load the dropdowns
+Add this call to your existing admin page initialization logic:
+loadLinkStudentOptions();
+ur app uses navigation sections that load data only when opened, call it when the Users section is opened instead.
+Step 5: Verify the backend security
+Before testing, confirm that the backend:
+Requires authentication and the admin role.
+Checks that the selected user and student records exist.
+Prevents linking an account to the wrong student.
+Does not expose passwords or password hashes.
+Prevents unauthorized users from changing the link.
+npm run dev
+Open http://localhost:3000, log in as an administrator, open Users, select a user and student, and click Link Student Account.
+If you get an error, stop and share the error message or screenshot before changing more code. We should verify the actual backend response rather than guess.
