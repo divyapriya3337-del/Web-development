@@ -31938,3 +31938,69 @@ Prevents unauthorized users from changing the link.
 npm run dev
 Open http://localhost:3000, log in as an administrator, open Users, select a user and student, and click Link Student Account.
 If you get an error, stop and share the error message or screenshot before changing more code. We should verify the actual backend response rather than guess.
+Manage departments and subjects Yes No
+Manage attendance and marks Yes No
+View own profile Yes, if supported Yes
+View own attendance and marks Yes, if authorized Yes
+Important: Hiding a button is not enough. The backend must also verify the user's role on every protected request.
+Step 2: Check your existing middleware
+In VS Code, open:
+middleware/adminMiddleware.js
+If you already have this middleware working, keep it. Otherwise, use this implementation if your authMiddleware sets req.user.role:
+
+module.exports = function adminMiddleware(req, res, next) {
+  if (!req.user || req.user.role !== "admin") {
+    return res.status(403).json({
+      success: false,
+      message: "Administrator access required."
+    });
+  }
+
+  next();
+};
+Your protected admin routes should use both middlewares in this order:
+router.get("/", authMiddleware, adminMiddleware, controllerFunction);
+Use your actual controller function name. Do not add a duplicate route if one already exists.
+Step 3: Protect the frontend navigation
+Open public/index.html. Your admin page should have a navigation area for modules such as Students, Faculty, Subjects, Attendance, Marks, and Users.
+Open public/script.js and find your existing login/token initialization code.
+Add a role check using the role returned by your authenticated profile API. For example, if /api/auth/profile returns { user: { role: "admin" } }, you can use:
+
+async function checkAdminAccess() {
+  const token = localStorage.getItem("token");
+
+  if (!token) {
+    window.location.replace("/login.html");
+    return false;
+  }
+
+  try {
+    const response = await fetch("/api/auth/profile", {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error("Authentication failed.");
+    }
+
+    const data = await response.json();
+    const user = data.user;
+
+    if (!user || user.role !== "admin") {
+      window.location.replace("/student-dashboard.html");
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    window.location.replace("/login.html");
+    return false;
+  }
+}
+Sign in using your admin account. Confirm that the admin dashboard and management pages work.
+Sign out and sign in using a student account.
+Confirm that the student dashboard works and admin navigation is unavailable.
+Try opening an admin API with the student token in Postman. It should return 403 Forbidden.
+If your app uses a different token key, login page, or profile response structure, match the existing code rather than copying assumptions blindly.
