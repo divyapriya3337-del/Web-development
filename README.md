@@ -32004,3 +32004,92 @@ Sign out and sign in using a student account.
 Confirm that the student dashboard works and admin navigation is unavailable.
 Try opening an admin API with the student token in Postman. It should return 403 Forbidden.
 If your app uses a different token key, login page, or profile response structure, match the existing code rather than copying assumptions blindly.
+continue your College ERP / Student Management System with the next important module: Global Error Handling and Form Validation.
+This will make your project more reliable by showing clear messages when a student record is missing, an email already exists, or the server cannot complete a request.
+Step 1: Improve backend error handling
+Open VS Code and find:
+middleware/errorHandler.js
+If this file already exists, replace its contents only if your current implementation is not handling these cases. If it does not exist, create it inside middleware.
+
+module.exports = (err, req, res, next) => {
+  console.error(err);
+
+  if (res.headersSent) {
+    return next(err);
+  }
+
+  if (err.code === 11000) {
+    const field = Object.keys(err.keyPattern || {})[0] || "field";
+
+    return res.status(409).json({
+      success: false,
+      message: `${field} already exists. Please use a different value.`
+    });
+  }
+
+  if (err.name === "ValidationError") {
+    return res.status(400).json({
+      success: false,
+      message: Object.values(err.errors)
+        .map(error => error.message)
+        .join(", ")
+    });
+  }
+
+  if (err.name === "CastError") {
+    return res.status(400).json({
+      success: false,
+      message: "Invalid ID or data format."
+    });
+  }
+
+  res.status(err.statusCode || 500).json({
+    success: false,
+    message:
+      err.statusCode && err.statusCode < 500
+        ? err.message
+        : "An unexpected server error occurred."
+  });
+};
+Why this matters:
+409 Conflict: duplicate email or roll number.
+400 Bad Request: invalid field values or IDs.
+500 Internal Server Error: unexpected server problems.
+The full error is logged on the server, but sensitive details are not sent to the browser.
+Step 2: Register the error handler correctly
+Open app.js or server.js.
+Find your existing route registrations. The error handler must be registered after all routes:
+app.use("/api/students", studentRoutes);
+app.use("/api/departments", departmentRoutes);
+
+// Keep this after all routes.
+app.use(errorHandler);
+Use your project's actual route names and import the middleware if it is not already imported:
+const errorHandler = require("./middleware/errorHandler");
+o not add duplicate imports or duplicate app.use(errorHandler) calls.
+Step 3: Add a reusable frontend error-message helper
+Open public/script.js.
+Add this helper once, near the top-level utility functions:
+
+function showMessage(elementId, message, type = "info") {
+  const element = document.getElementById(elementId);
+
+  if (!element) return;
+
+  element.textContent = message;
+  element.dataset.type = type;
+}
+showMessage("studentsMessage", "Student added successfully.", "success");
+showMessage("studentsMessage", error.message, "error");
+Replace studentsMessage with the ID of the message element in your actual form. Do not add these calls to functions that do not exist in your project.
+Step 4: Test duplicate-record validation
+Save all files using Ctrl + S.
+Start the server in the VS Code terminal:
+npm run dev
+Step 5: Save the working version to GitHub
+Once your existing modules still work and the tests pass, run these commands separately:
+Check that .env and other secrets are excluded before committin
+git status
+git add .
+git commit -m "Improve global error handling"
+git push
