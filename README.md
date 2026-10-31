@@ -32093,3 +32093,98 @@ git status
 git add .
 git commit -m "Improve global error handling"
 git push
+Illustration only – these controls are not connected to your database.
+Showing records 1–10
+Step 2: Understand your existing backend
+Open controllers/studentController.js.
+Your existing student-list API already supports pagination and optional search, department, and semester filters.
+The API URL structure is:
+GET /api/students?page=1&limit=10&search=divya&department=DEPARTMENT_ID&semester=3
+Your existing student-list API already supports pagination and optional search, department, and semester filters.
+The API URL structure is:
+You can use any combination of these query parameters.
+Parameter Purpose
+page Current page
+limit Records per page
+search Search by student details
+department Filter by department ID
+semester Filter by semester
+Step 3: Add search and filter controls
+Open public/index.html.
+Find your existing Students section and add these controls above the students table, if they don't already exist.
+
+<div class="student-filters">
+  <input
+    type="search"
+    id="studentSearch"
+    placeholder="Search name, roll number or email"
+  />
+
+  <select id="studentDepartmentFilter">
+    <option value="">All Departments</option>
+  </select>
+
+  <select id="studentSemesterFilter">
+    <option value="">All Semesters</option>
+    <option value="1">Semester 1</option>
+    <option value="2">Semester 2</option>
+    <option value="3">Semester 3</option>
+    <option value="4">Semester 4</option>
+    <option value="5">Semester 5</option>
+    <option value="6">Semester 6</option>
+    <option value="7">Semester 7</option>
+    <option value="8">Semester 8</option>
+  </select>
+
+  <button type="button" id="clearStudentFilters">
+    Clear Filters
+  </button>
+</div>
+
+<p id="studentPaginationInfo"></p>
+
+<div id="studentPagination">
+  <button type="button" id="previousStudentPage">
+    Previous
+  </button>
+
+  <span id="studentCurrentPage">1</span>
+
+  <button type="button" id="nextStudentPage">
+    Next
+  </button>
+</div>
+
+If these IDs already exist, don't create duplicates.
+Step 4: Prepare the JavaScript
+Open public/script.js.
+Your existing loadStudents() function should send the filters to the backend and update the table.
+The following is the expected API request pattern:
+const params = new URLSearchParams({
+  page: currentStudentPage,
+  limit: 10
+});
+
+if (search) params.set("search", search);
+if (department) params.set("department", department);
+if (semester) params.set("semester", semester);
+
+const response = await fetch(`/api/students?${params}`, {
+  headers: {
+    Authorization: `Bearer ${localStorage.getItem("token")}`
+  }
+});
+Don't paste this as a separate standalone function. Integrate it into your existing loadStudents() so you don't create duplicate API calls or event listeners.
+Step 5: Test the functionality
+Save files using Ctrl + S.
+Start your server:
+Open http://localhost:3000.
+Log in as admin.
+Open Students.
+Search for a student by name.
+Select a department.
+Select a semester.
+Click Next and Previous.
+Expected result: the table should show only records matching your filters, with correct page information.
+Your next development milestone
+npm run dev
