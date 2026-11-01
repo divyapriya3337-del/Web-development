@@ -32188,3 +32188,138 @@ Click Next and Previous.
 Expected result: the table should show only records matching your filters, with correct page information.
 Your next development milestone
 npm run dev
+ next we're building Excel and PDF Report Export for your College ERP / Student Management System.
+This feature lets the administrator download:
+Student details in Excel and PDF.
+Attendance reports in Excel and PDF.
+Marks and academic performance reports in Excel and PDF.
+We'll start with the Student Report Export and then extend the same approach to Attendance and Marks.
+Step 1: Install the required packages
+Open your project in VS Code.
+In the terminal, type:
+npm install xlsx jspdf jspdf-autotable
+Student details in Excel and PDF.
+Attendance reports in Excel and PDF.
+Marks and academic performance reports in Excel and PDF.
+We'll start with the Student Report Export and then extend the same approach to Attendance and Marks.
+Step 1: Install the required packages
+Open your project in VS Code.
+In the terminal, type:
+xlsx creates Excel files.
+jspdf creates PDF files.
+jspdf-autotable formats tables neatly inside PDFs.
+Wait until installation finishes.
+Step 2: Add Export buttons
+Open public/index.html.
+Find your existing Students section and add these buttons above the students table:
+
+<div class="export-buttons">
+  <button type="button" id="exportStudentsExcel">
+    Download Excel
+  </button>
+
+  <button type="button" id="exportStudentsPDF">
+    Download PDF
+  </button>
+</div>
+Find your existing Students section and add these buttons above the students table:
+Find your existing Students table and give it this ID:
+If the table already has an ID, keep it and use that same ID in the JavaScript below.
+Step 3: Include the export libraries
+In public/index.html, find the script tags at the bottom of the page.
+Add these library scripts before your existing script.js script tag:
+<table id="studentsReportTable">
+
+<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.4/jspdf.plugin.autotable.min.js"></script>
+These browser scripts make the libraries available through XLSX and window.jspdf.
+Step 4: Add Excel export functionality
+Open public/script.js.
+Add the following function once:
+
+function exportStudentsToExcel() {
+  const table = document.getElementById("studentsReportTable");
+
+  if (!table) {
+    alert("Students table not found.");
+    return;
+  }
+
+  if (!window.XLSX) {
+    alert("Excel library is not loaded.");
+    return;
+  }
+
+  const workbook = XLSX.utils.table_to_book(table, {
+    sheet: "Students"
+  });
+
+  XLSX.writeFile(workbook, "Student_Report.xlsx");
+}
+Step 5: Add PDF export functionality
+In the same public/script.js file, add:
+
+function exportStudentsToPDF() {
+  const table = document.getElementById("studentsReportTable");
+
+  if (!table) {
+    alert("Students table not found.");
+    return;
+  }
+
+  if (!window.jspdf) {
+    alert("PDF library is not loaded.");
+    return;
+  }
+
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({
+    orientation: "landscape"
+  });
+
+  doc.setFontSize(18);
+  doc.text("College Student Report", 14, 15);
+
+  doc.autoTable({
+    html: "#studentsReportTable",
+    startY: 25,
+    theme: "grid",
+    styles: {
+      fontSize: 8,
+      cellPadding: 3
+    }
+  });
+
+  doc.save("Student_Report.pdf");
+}
+
+Step 6: Connect the buttons
+Add these event listeners once in your existing JavaScript initialization:
+Step 7: Test your project
+Press Ctrl + S.
+Start the server:
+document
+  .getElementById("exportStudentsExcel")
+  ?.addEventListener("click", exportStudentsToExcel);
+
+document
+  .getElementById("exportStudentsPDF")
+  ?.addEventListener("click", exportStudentsToPDF);
+  Add these event listeners once in your existing JavaScript initialization:
+Step 7: Test your project
+Press Ctrl + S.
+Start the server:
+Open http://localhost:3000.
+Log in as admin.
+Open the Students section.
+Click Download Excel.
+Click Download PDF.
+Expected output
+Student_Report.xlsx
+Excel spreadsheet
+Student_Report.pdf
+Formatted PDF report
+npm run dev
