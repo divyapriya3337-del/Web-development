@@ -32323,3 +32323,113 @@ Excel spreadsheet
 Student_Report.pdf
 Formatted PDF report
 npm run dev
+The administrator will be able to download attendance records containing student details, subjects, attendance dates, and Present/Absent/Late status.
+Step 1: Understand the report
+College Attendance Report
+Student Roll No. Subject Status
+Divya CSE001 Python Present
+Ravi CSE002 DBMS Absent
+Priya CSE003 Java Late
+Illustrative records only.
+Step 2: Add export buttons
+Open public/index.html.
+Find your existing Attendance section and add these buttons above the attendance table.
+
+<div class="export-buttons">
+  <button type="button" id="exportAttendanceExcel">
+    Download Attendance Excel
+  </button>
+
+  <button type="button" id="exportAttendancePDF">
+    Download Attendance PDF
+  </button>
+</div>
+Find your existing attendance table. Keep its current ID if it is already attendanceTable.
+If it has no ID, add:
+<table id="attendanceTable">
+Step 3: Add Excel export
+Open public/script.js.
+Add this function once:
+
+function exportAttendanceToExcel() {
+  const table = document.getElementById("attendanceTable");
+
+  if (!table) {
+    alert("Attendance table not found.");
+    return;
+  }
+
+  if (!window.XLSX) {
+    alert("Excel library is not loaded.");
+    return;
+  }
+
+  const workbook = XLSX.utils.table_to_book(table, {
+    sheet: "Attendance"
+  });
+
+  XLSX.writeFile(
+    workbook,
+    "College_Attendance_Report.xlsx"
+  );
+}
+Step 4: Add PDF export
+In the same public/script.js file, add:
+
+function exportAttendanceToPDF() {
+  const table = document.getElementById("attendanceTable");
+
+  if (!table) {
+    alert("Attendance table not found.");
+    return;
+  }
+
+  if (!window.jspdf) {
+    alert("PDF library is not loaded.");
+    return;
+  }
+
+  const { jsPDF } = window.jspdf;
+
+  const doc = new jsPDF({
+    orientation: "landscape"
+  });
+
+  doc.setFontSize(18);
+  doc.text("College Attendance Report", 14, 15);
+
+  doc.autoTable({
+    html: "#attendanceTable",
+    startY: 25,
+    theme: "grid",
+    styles: {
+      fontSize: 8,
+      cellPadding: 3
+    }
+  });
+
+  doc.save("College_Attendance_Report.pdf");
+}
+Step 5: Connect the buttons
+Add these listeners once in your existing JavaScript initialization:
+document
+  .getElementById("exportAttendanceExcel")
+  ?.addEventListener("click", exportAttendanceToExcel);
+
+document
+  .getElementById("exportAttendancePDF")
+  ?.addEventListener("click", exportAttendanceToPDF);
+  Your Excel and PDF library script tags from the previous module should remain in index.html. Do not add them a second time.
+Step 6: Test your project
+Save all files using Ctrl + S.
+Open the VS Code terminal.
+Run:
+npm run dev
+Visit http://localhost:3000.
+Log in as admin.
+Open the Attendance section.
+Click Download Attendance Excel.
+Click Download Attendance PDF.
+College_Attendance_Report.xlsx
+College_Attendance_Report.pdf
+Important: This version exports the records currently displayed in the table. Later, we'll implement complete backend exports with date, department, semester, and subject filters.
