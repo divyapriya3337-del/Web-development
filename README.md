@@ -32433,3 +32433,115 @@ Click Download Attendance PDF.
 College_Attendance_Report.xlsx
 College_Attendance_Report.pdf
 Important: This version exports the records currently displayed in the table. Later, we'll implement complete backend exports with date, department, semester, and subject filters.
+Divya Python Internal 45/50
+Divya DBMS Mid 40/50
+Ravi Java Semester 85/100
+Example records only.
+The report will contain:
+Student name and roll number.
+Subject name and subject code.
+Examination type.
+Obtained marks and maximum marks.
+Percentage and grade.
+Step 2: Add Export Buttons
+Open public/index.html.
+Find your existing Marks section and add these buttons above the Marks table.
+
+<div class="export-buttons">
+  <button type="button" id="exportMarksExcel">
+    Download Marks Excel
+  </button>
+
+  <button type="button" id="exportMarksPDF">
+    Download Marks PDF
+  </button>
+</div>
+Check the existing Marks table. If its ID is marksTable, keep it. Otherwise, give it that ID.
+<table id="marksTable">
+Do not create a second Marks table.
+Step 3: Add Excel Export
+Open public/script.js.
+Add this function once:
+
+function exportMarksToExcel() {
+  const table = document.getElementById("marksTable");
+
+  if (!table) {
+    alert("Marks table not found.");
+    return;
+  }
+
+  if (!window.XLSX) {
+    alert("Excel library is not loaded.");
+    return;
+  }
+
+  const workbook = XLSX.utils.table_to_book(table, {
+    sheet: "Marks Report"
+  });
+
+  XLSX.writeFile(
+    workbook,
+    "College_Marks_Report.xlsx"
+  );
+}
+Step 4: Add PDF Export
+In the same public/script.js file, add:
+
+function exportMarksToPDF() {
+  const table = document.getElementById("marksTable");
+
+  if (!table) {
+    alert("Marks table not found.");
+    return;
+  }
+
+  if (!window.jspdf) {
+    alert("PDF library is not loaded.");
+    return;
+  }
+
+  const { jsPDF } = window.jspdf;
+
+  const doc = new jsPDF({
+    orientation: "landscape"
+  });
+
+  doc.setFontSize(18);
+  doc.text("College Academic Performance Report", 14, 15);
+
+  doc.autoTable({
+    html: "#marksTable",
+    startY: 25,
+    theme: "grid",
+    styles: {
+      fontSize: 8,
+      cellPadding: 3
+    }
+  });
+
+  doc.save("College_Marks_Report.pdf");
+}
+Step 5: Connect the Buttons
+Add these event listeners once in your existing JavaScript initialization:
+Your existing XLSX and jsPDF script imports from the previous modules should remain in index.html. Do not include them again.
+document
+  .getElementById("exportMarksExcel")
+  ?.addEventListener("click", exportMarksToExcel);
+
+document
+  .getElementById("exportMarksPDF")
+  ?.addEventListener("click", exportMarksToPDF);
+  Your existing XLSX and jsPDF script imports from the previous modules should remain in index.html. Do not include them again.
+Step 6: Test Your Project
+Save all files using Ctrl + S.
+Open the VS Code terminal.
+Run:
+npm run dev
+Log in as admin.
+Open the Marks section.
+Click Download Marks Excel.
+Click Download Marks PDF.
+College_Marks_Report.xlsx
+College_Marks_Report.pdf
+Important: This first version exports the rows currently displayed in the Marks table. For complete reports, we should later create backend exports that retrieve all matching records, including records on other pages.
