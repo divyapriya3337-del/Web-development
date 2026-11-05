@@ -32545,3 +32545,347 @@ Click Download Marks PDF.
 College_Marks_Report.xlsx
 College_Marks_Report.pdf
 Important: This first version exports the rows currently displayed in the Marks table. For complete reports, we should later create backend exports that retrieve all matching records, including records on other pages.
+let's build the next major feature in your College ERP / Student Management System: Complete ERP Reports Dashboard.
+This dashboard will bring student, department, attendance, and examination reports together in one place.
+Step 1: Create the Reports section
+Open public/index.html.
+Find your existing navigation menu and add a Reports button, following your existing navigation pattern.
+For example:
+<button type="button" data-section="reportsSection">
+  Reports
+</button>
+Now add this section alongside your other dashboard sections:
+
+<section id="reportsSection" class="content-section" hidden>
+  <h2>College ERP Reports</h2>
+
+  <div class="report-cards">
+    <div class="card">
+      <h3>Total Students</h3>
+      <p id="reportTotalStudents">0</p>
+    </div>
+
+    <div class="card">
+      <h3>Total Departments</h3>
+      <p id="reportTotalDepartments">0</p>
+    </div>
+
+    <div class="card">
+      <h3>Average Attendance</h3>
+      <p id="reportAverageAttendance">0%</p>
+    </div>
+
+    <div class="card">
+      <h3>Average Marks</h3>
+      <p id="reportAverageMarks">0%</p>
+    </div>
+  </div>
+
+  <h3>Department-wise Student Report</h3>
+  <table id="departmentReportTable">
+    <thead>
+      <tr>
+        <th>Department</th>
+        <th>Student Count</th>
+      </tr>
+    </thead>
+    <tbody id="departmentReportBody"></tbody>
+  </table>
+
+  <h3>Attendance Report</h3>
+  <table id="attendanceReportTable">
+    <thead>
+      <tr>
+        <th>Subject</th>
+        <th>Present</th>
+        <th>Absent</th>
+        <th>Late</th>
+        <th>Percentage</th>
+      </tr>
+    </thead>
+    <tbody id="attendanceReportBody"></tbody>
+  </table>
+
+  <h3>Academic Performance Report</h3>
+  <table id="academicReportTable">
+    <thead>
+      <tr>
+        <th>Student</th>
+        <th>Subject</th>
+        <th>Exam</th>
+        <th>Marks</th>
+        <th>Percentage</th>
+      </tr>
+    </thead>
+    <tbody id="academicReportBody"></tbody>
+  </table>
+</section>
+Step 2: Add the Reports API
+We need one backend endpoint that returns authorized report data.
+Create controllers/reportController.js if it doesn't already exist.
+The following is a starter implementation using your existing Student, Department, Attendance, and Mark models.
+
+const Student = require("../models/Student");
+const Department = require("../models/Department");
+const Attendance = require("../models/Attendance");
+const Mark = require("../models/Mark");
+
+exports.getReports = async (req, res, next) => {
+  try {
+    const [
+      totalStudents,
+      totalDepartments,
+      attendanceRecords,
+      marksRecords,
+      departmentStats
+    ] = await Promise.all([
+      Student.countDocuments(),
+      Department.countDocuments(),
+
+      Attendance.find()
+        .populate("subject", "name code")
+        .lean(),
+
+      Mark.find()
+        .populate("student", "name rollNumber")
+        .populate("subject", "name code")
+        .lean(),
+
+      Student.aggregate([
+        {
+          $group: {
+            _id: "$department",
+            count: { $sum: 1 }
+          }
+        },
+        {
+          $lookup: {
+            from: "departments",
+            localField: "_id",
+            foreignField: "_id",
+            as: "department"
+          }
+        },
+        {
+          $unwind: {
+            path: "$department",
+            preserveNullAndEmptyArrays: true
+          }
+        },
+        {
+          $project: {
+            _id: 0,
+            departmentName: {
+              $ifNull: [
+                "$department.name",
+                "Unknown Department"
+              ]
+            },
+            count: 1
+          }
+        }
+      ])
+    ]);
+
+    const attendanceSummary = {};
+
+    attendanceRecords.forEach(record => {
+      const subjectName = record.subject?.name || "Unknown";
+
+      if (!attendanceSummary[subjectName]) {
+        attendanceSummary[subjectName] = {
+          present: 0,
+          absent: 0,
+          late: 0
+        };
+      }
+
+      if (record.status === "Present") {
+        attendanceSummary[subjectName].present++;
+      } else if (record.status === "Absent") {
+        attendanceSummary[subjectName].absent++;
+      } else if (record.status === "Late") {
+        attendanceSummary[subjectName].late++;
+      }
+    });
+
+    const attendanceReport = Object.entries(
+      attendanceSummary
+    ).map(([subject, data]) => {
+      const total =
+        data.present + data.absent + data.late;
+
+      return {
+        subject,
+        ...data,
+        percentage: total
+          ? Number(((data.present / total) * 100).toFixed(2))
+          : 0
+      };
+    });
+
+    let totalObtained = 0;
+    let totalMaximum = 0;
+
+    const academicReport = marksRecords.map(record => {
+      const percentage = record.maxMarks > 0
+        ? (record.marks / record.maxMarks) * 100
+        : 0;
+
+      totalObtained += record.marks;
+      totalMaximum += record.maxMarks;
+
+      return {
+        student: record.student?.name || "Unknown",
+        rollNumber: record.student?.rollNumber || "",
+        subject: record.subject?.name || "Unknown",
+        examType: record.examType,
+        marks: record.marks,
+        maxMarks: record.maxMarks,
+        percentage: Number(percentage.toFixed(2))
+      };
+    });
+
+    const averageAttendanceCount = attendanceReport.reduce(
+      (sum, item) => sum + item.percentage,
+      0
+    );
+
+    const averageAttendance = attendanceReport.length
+      ? Number(
+          (averageAttendanceCount / attendanceReport.length).toFixed(2)
+        )
+      : 0;
+
+    const averageMarks = totalMaximum
+      ? Number(((totalObtained / totalMaximum) * 100).toFixed(2))
+      : 0;
+
+    res.status(200).json({
+      success: true,
+      summary: {
+        totalStudents,
+        totalDepartments,
+        averageAttendance,
+        averageMarks
+      },
+      departmentStats,
+      attendanceReport,
+      academicReport
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+Important calculation note: This starter version calculates average attendance as an unweighted average of subject percentages. For a college-wide attendance percentage, use total present classes divided by total recorded classes. Also, the API currently loads all records into memory, so production reports should use database aggregation and pagination or date filters.
+Step 3: Create the report route
+Create routes/reportRoutes.js if it doesn't exist.
+
+const express = require("express");
+const router = express.Router();
+
+const { getReports } =
+  require("../controllers/reportController");
+
+const authMiddleware =
+  require("../middleware/authMiddleware");
+
+const adminMiddleware =
+  require("../middleware/adminMiddleware");
+
+router.get("/", authMiddleware, adminMiddleware, getReports);
+
+module.exports = router;
+Step 4: Register the route
+Open app.js or server.js.
+Add the import with your other route imports:
+const reportRoutes = require("./routes/reportRoutes");
+Add the route registration:
+app.use("/api/reports", reportRoutes);
+Make sure the global error handler remains after the route registrations.
+Step 5: Connect the frontend
+Open public/script.js.
+Add this function once. It assumes your existing JWT storage key is token.
+
+async function loadReports() {
+  const token = localStorage.getItem("token");
+
+  if (!token) {
+    alert("Please log in first.");
+    return;
+  }
+
+  try {
+    const response = await fetch("/api/reports", {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || "Unable to load reports.");
+    }
+
+    const summary = data.summary;
+
+    document.getElementById("reportTotalStudents").textContent =
+      summary.totalStudents;
+
+    document.getElementById("reportTotalDepartments").textContent =
+      summary.totalDepartments;
+
+    document.getElementById("reportAverageAttendance").textContent =
+      `${summary.averageAttendance}%`;
+
+    document.getElementById("reportAverageMarks").textContent =
+      `${summary.averageMarks}%`;
+
+    document.getElementById("departmentReportBody").innerHTML =
+      data.departmentStats.map(item => `
+        <tr>
+          <td>${escapeHtml(item.departmentName)}</td>
+          <td>${item.count}</td>
+        </tr>
+      `).join("");
+
+    document.getElementById("attendanceReportBody").innerHTML =
+      data.attendanceReport.map(item => `
+        <tr>
+          <td>${escapeHtml(item.subject)}</td>
+          <td>${item.present}</td>
+          <td>${item.absent}</td>
+          <td>${item.late}</td>
+          <td>${item.percentage}%</td>
+        </tr>
+      `).join("");
+
+    document.getElementById("academicReportBody").innerHTML =
+      data.academicReport.map(item => `
+        <tr>
+          <td>${escapeHtml(item.student)}</td>
+          <td>${escapeHtml(item.subject)}</td>
+          <td>${escapeHtml(item.examType)}</td>
+          <td>${item.marks}/${item.maxMarks}</td>
+          <td>${item.percentage}%</td>
+        </tr>
+      `).join("");
+
+  } catch (error) {
+    alert(error.message);
+  }
+}
+The code above uses your existing escapeHtml() utility to safely render database text. If your project doesn't already have it, create a safe HTML escaping helper before using this function.
+Call loadReports() when the admin opens the Reports section, using your existing navigation logic.
+Step 6: Test the Reports Dashboard
+Save all files using Ctrl + S.
+Open the VS Code terminal.
+Run:
+Visit http://localhost:3000.
+Log in as admin.
+Click Reports.
+Check the student count, department report, attendance report, and academic report.
+Expected API response:
+npm run dev
+GET http://localhost:3000/api/reports
