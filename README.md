@@ -32889,3 +32889,218 @@ Check the student count, department report, attendance report, and academic repo
 Expected API response:
 npm run dev
 GET http://localhost:3000/api/reports
+build the next feature in your College ERP project: Interactive Charts and Graphs using Chart.js.
+This will turn your Reports Dashboard into a professional visual analytics dashboard.
+Step 1: Understand the charts
+We will create four charts:
+1. Department-wise Student Distribution
+2. Step 2: Add chart containers
+Open public/index.html.
+Find your existing reportsSection. Add these containers below your report tables:
+
+<div class="report-charts">
+  <div class="card">
+    <h3>Department-wise Students</h3>
+    <canvas id="departmentStudentsChart"></canvas>
+  </div>
+
+  <div class="card">
+    <h3>Attendance Distribution</h3>
+    <canvas id="attendanceDistributionChart"></canvas>
+  </div>
+
+  <div class="card">
+    <h3>Subject-wise Marks</h3>
+    <canvas id="subjectMarksChart"></canvas>
+  </div>
+
+  <div class="card">
+    <h3>Subject-wise Attendance</h3>
+    <canvas id="subjectAttendanceChart"></canvas>
+  </div>
+</div>
+
+Step 3: Include Chart.js
+In public/index.html, find your existing script imports.
+If Chart.js is not already included, add this before script.js:
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+Do not include Chart.js twice if you already added it for the Admin Dashboard.
+Step 4: Create the chart functions
+Open public/script.js.
+Add these functions once. They use the existing /api/reports response structure from the previous module.
+
+let departmentStudentsChartInstance;
+let attendanceDistributionChartInstance;
+let subjectMarksChartInstance;
+let subjectAttendanceChartInstance;
+
+function renderReportCharts(data) {
+  if (!window.Chart) {
+    console.error("Chart.js is not loaded.");
+    return;
+  }
+
+  const departmentStats = data.departmentStats || [];
+  const attendance = data.attendanceReport || [];
+  const academic = data.academicReport || [];
+
+  // 1. Department-wise Students
+  if (departmentStudentsChartInstance) {
+    departmentStudentsChartInstance.destroy();
+  }
+
+  departmentStudentsChartInstance = new Chart(
+    document.getElementById("departmentStudentsChart"),
+    {
+      type: "pie",
+      data: {
+        labels: departmentStats.map(item => item.departmentName),
+        datasets: [{
+          label: "Students",
+          data: departmentStats.map(item => item.count)
+        }]
+      }
+    }
+  );
+
+  // 2. Attendance Distribution
+  if (attendanceDistributionChartInstance) {
+    attendanceDistributionChartInstance.destroy();
+  }
+
+  const totals = attendance.reduce((result, item) => {
+    result.present += item.present;
+    result.absent += item.absent;
+    result.late += item.late;
+    return result;
+  }, { present: 0, absent: 0, late: 0 });
+
+  attendanceDistributionChartInstance = new Chart(
+    document.getElementById("attendanceDistributionChart"),
+    {
+      type: "doughnut",
+      data: {
+        labels: ["Present", "Absent", "Late"],
+        datasets: [{
+          data: [totals.present, totals.absent, totals.late]
+        }]
+      }
+    }
+  );
+
+  // 3. Subject-wise Marks
+  const subjectTotals = {};
+
+  academic.forEach(item => {
+    const name = item.subject;
+
+    if (!subjectTotals[name]) {
+      subjectTotals[name] = {
+        marks: 0,
+        maximum: 0
+      };
+    }
+
+    subjectTotals[name].marks += item.marks;
+    subjectTotals[name].maximum += item.maxMarks;
+  });
+
+  const subjectNames = Object.keys(subjectTotals);
+
+  if (subjectMarksChartInstance) {
+    subjectMarksChartInstance.destroy();
+  }
+
+  subjectMarksChartInstance = new Chart(
+    document.getElementById("subjectMarksChart"),
+    {
+      type: "bar",
+      data: {
+        labels: subjectNames,
+        datasets: [{
+          label: "Average Percentage",
+          data: subjectNames.map(name => {
+            const item = subjectTotals[name];
+
+            return item.maximum
+              ? Number(((item.marks / item.maximum) * 100).toFixed(2))
+              : 0;
+          })
+        }]
+      },
+      options: {
+        scales: {
+          y: {
+            beginAtZero: true,
+            max: 100
+          }
+        }
+      }
+    }
+  );
+
+  // 4. Subject-wise Attendance
+  if (subjectAttendanceChartInstance) {
+    subjectAttendanceChartInstance.destroy();
+  }
+
+  subjectAttendanceChartInstance = new Chart(
+    document.getElementById("subjectAttendanceChart"),
+    {
+      type: "bar",
+      data: {
+        labels: attendance.map(item => item.subject),
+        datasets: [{
+          label: "Attendance Percentage",
+          data: attendance.map(item => item.percentage)
+        }]
+      },
+      options: {
+        scales: {
+          y: {
+            beginAtZero: true,
+            max: 100
+          }
+        }
+      }
+    }
+  );
+}
+
+Step 5: Connect charts to your Reports API
+Find your existing loadReports() function in public/script.js.
+At the end of its successful response handling, add:
+renderReportCharts(data);
+Add this inside the try block, after the report data has been loaded.
+Do not create another loadReports() function.
+Step 6: Add responsive CSS
+Open public/style.css and add:
+
+.report-charts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+  margin-top: 25px;
+}
+
+.report-charts .card {
+  padding: 20px;
+  min-width: 0;
+}
+
+.report-charts canvas {
+  max-width: 100%;
+  max-height: 320px;
+}
+
+@media (max-width: 768px) {
+  .report-charts {
+    grid-template-columns: 1fr;
+  }
+}
+Step 7: Test the dashboard
+Save everything using Ctrl + S.
+Run:
+npm run dev
+Your charts should display real data from MongoDB, not the illustrative values shown above.
+Important: Your current Reports API may return all academic records, including multiple exam types for each subject. The subject-wise marks chart calculates the combined marks-to-maximum ratio across those records, not a student's final official grade.
