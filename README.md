@@ -33104,3 +33104,384 @@ Run:
 npm run dev
 Your charts should display real data from MongoDB, not the illustrative values shown above.
 Important: Your current Reports API may return all academic records, including multiple exam types for each subject. The subject-wise marks chart calculates the combined marks-to-maximum ratio across those records, not a student's final official grade.
+CSE 3
+Subject
+Python Programming
+The tables, summary cards and charts will refresh using the selected filters.
+Step 1: Add filter controls in HTML
+Open VS Code.
+Open your College ERP project.
+Open public/index.html.
+Find the existing <section id="reportsSection">.
+Inside that section, place this block below the Reports heading and above the summary cards.
+
+<div class="report-filters">
+  <h3>Filter Reports</h3>
+
+  <div class="filter-grid">
+    <div>
+      <label for="reportStartDate">From Date</label>
+      <input type="date" id="reportStartDate">
+    </div>
+
+    <div>
+      <label for="reportEndDate">To Date</label>
+      <input type="date" id="reportEndDate">
+    </div>
+
+    <div>
+      <label for="reportDepartment">Department</label>
+      <select id="reportDepartment">
+        <option value="">All Departments</option>
+      </select>
+    </div>
+
+    <div>
+      <label for="reportSemester">Semester</label>
+      <select id="reportSemester">
+        <option value="">All Semesters</option>
+        <option value="1">1</option>
+        <option value="2">2</option>
+        <option value="3">3</option>
+        <option value="4">4</option>
+        <option value="5">5</option>
+        <option value="6">6</option>
+        <option value="7">7</option>
+        <option value="8">8</option>
+      </select>
+    </div>
+
+    <div>
+      <label for="reportSubject">Subject</label>
+      <select id="reportSubject">
+        <option value="">All Subjects</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="filter-actions">
+    <button type="button" id="applyReportFilters">
+      Apply Filters
+    </button>
+
+    <button type="button" id="clearReportFilters">
+      Clear Filters
+    </button>
+  </div>
+
+  <p id="reportFilterMessage" role="status"></p>
+</div>
+Save with Ctrl + S.
+Step 2: Add CSS styling
+Open public/style.css and add this at the bottom. If you already have similar filter classes, update those instead of creating duplicate rules.
+
+.report-filters {
+  background: #fff;
+  padding: 20px;
+  margin: 20px 0;
+  border-radius: 10px;
+  border: 1px solid #ddd;
+}
+
+.filter-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 15px;
+  margin-top: 15px;
+}
+
+.filter-grid label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 600;
+}
+
+.filter-grid input,
+.filter-grid select {
+  width: 100%;
+  padding: 9px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+.filter-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+#reportFilterMessage {
+  margin-top: 10px;
+}
+ the file.
+Step 3: Update the backend report controller
+Our API must receive the selected filters and fetch matching records.
+Open:
+controllers/reportController.js
+First, add this import at the top if it is not already present:
+const mongoose = require("mongoose");
+Inside your existing exports.getReports = async (req, res, next) => { ... }, add the following filter-processing code near the beginning, before fetching report records:
+
+const {
+  startDate,
+  endDate,
+  department,
+  semester,
+  subject
+} = req.query;
+
+// Validate department and subject IDs
+if (
+  department &&
+  !mongoose.Types.ObjectId.isValid(department)
+) {
+  return res.status(400).json({
+    message: "Invalid department ID"
+  });
+}
+
+if (
+  subject &&
+  !mongoose.Types.ObjectId.isValid(subject)
+) {
+  return res.status(400).json({
+    message: "Invalid subject ID"
+  });
+}
+
+// Validate semester
+let semesterNumber;
+
+if (semester) {
+  semesterNumber = Number(semester);
+
+  if (
+    !Number.isInteger(semesterNumber) ||
+    semesterNumber < 1 ||
+    semesterNumber > 12
+  ) {
+    return res.status(400).json({
+      message: "Semester must be between 1 and 12"
+    });
+  }
+}
+
+// Validate dates
+const datePattern = /^\d{4}-\d{2}-\d{2}$/;
+
+function parseDate(value) {
+  if (!datePattern.test(value)) return null;
+
+  const date = new Date(`${value}T00:00:00.000Z`);
+
+  return !Number.isNaN(date.getTime()) &&
+    date.toISOString().slice(0, 10) === value
+    ? date
+    : null;
+}
+
+let dateFilter = {};
+
+if (startDate || endDate) {
+  const start = startDate ? parseDate(startDate) : null;
+  const end = endDate ? parseDate(endDate) : null;
+
+  if (
+    (startDate && !start) ||
+    (endDate && !end)
+  ) {
+    return res.status(400).json({
+      message: "Invalid date. Use YYYY-MM-DD."
+    });
+  }
+
+  if (start && end && start > end) {
+    return res.status(400).json({
+      message: "From date cannot be after To date"
+    });
+  }
+
+  dateFilter.date = {};
+
+  if (start) {
+    dateFilter.date.$gte = start;
+  }
+
+  if (end) {
+    const nextDay = new Date(end);
+    nextDay.setUTCDate(nextDay.getUTCDate() + 1);
+    dateFilter.date.$lt = nextDay;
+  }
+}
+
+// Build student filter
+const studentFilter = {};
+
+if (department) {
+  studentFilter.department = department;
+}
+
+if (semesterNumber) {
+  studentFilter.semester = semesterNumber;
+}
+
+const matchingStudents = await Student.find(studentFilter)
+  .select("_id")
+  .lean();
+
+const matchingStudentIds = matchingStudents.map(
+  student => student._id
+);
+
+// Build filters for Attendance and Mark
+const attendanceFilter = {
+  student: { $in: matchingStudentIds },
+  ...dateFilter
+};
+
+const markFilter = {
+  student: { $in: matchingStudentIds }
+};
+
+if (subject) {
+  attendanceFilter.subject = subject;
+  markFilter.subject = subject;
+}
+For your existing department aggregation, add this as the first stage of its pipeline:
+{
+  $match: studentFilter
+}
+const departmentStats = await Student.aggregate([
+  { $match: studentFilter },
+  // Keep your existing $group, $lookup and $project stages here.
+]);
+ your existing response fields and report calculations, but use totalStudents, attendanceRecords, academicRecords, and the filtered departmentStats above.
+Date-filter limitation: Your current Mark schema has no exam date field. Therefore, date filters can filter attendance records, but cannot accurately filter marks by date yet. Department, semester and subject filters can filter both. We'll add exam dates to marks if you want date-based academic reports later.
+Step 4: Connect the filters to JavaScript
+Open public/script.js.
+Find your existing loadReports() function. Inside it, replace the fetch URL with this approach. Keep your existing table, summary-card and chart-rendering code.
+
+async function loadReports() {
+  const token = localStorage.getItem("token");
+
+  const params = new URLSearchParams();
+
+  const startDate = document.getElementById("reportStartDate").value;
+  const endDate = document.getElementById("reportEndDate").value;
+  const department = document.getElementById("reportDepartment").value;
+  const semester = document.getElementById("reportSemester").value;
+  const subject = document.getElementById("reportSubject").value;
+
+  if (startDate) params.set("startDate", startDate);
+  if (endDate) params.set("endDate", endDate);
+  if (department) params.set("department", department);
+  if (semester) params.set("semester", semester);
+  if (subject) params.set("subject", subject);
+
+  const response = await fetch(
+    `/api/reports?${params.toString()}`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    }
+  );
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.message || "Could not load reports");
+  }
+
+  // Keep your existing code here:
+  // 1. Update summary cards.
+  // 2. Update department report table.
+  // 3. Update attendance report table.
+  // 4. Update academic report table.
+  // 5. Call renderReportCharts(data).
+}
+This is a template for updating the fetch portion, not a second loadReports() function. Do not leave two functions with the same name. Keep your existing rendering code inside it.
+Step 5: Load department and subject dropdowns
+Add these functions to public/script.js only if equivalent functions do not already exist.
+
+async function loadReportFilterOptions() {
+  const token = localStorage.getItem("token");
+
+  const departmentResponse = await fetch("/api/departments", {
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  });
+
+  if (!departmentResponse.ok) {
+    throw new Error("Could not load departments");
+  }
+
+  const departmentData = await departmentResponse.json();
+
+  const departments = Array.isArray(departmentData)
+    ? departmentData
+    : departmentData.departments || [];
+
+  const departmentSelect =
+    document.getElementById("reportDepartment");
+
+  departments.forEach(dept => {
+    const option = document.createElement("option");
+    option.value = dept._id || dept.id;
+    option.textContent = dept.name;
+    departmentSelect.appendChild(option);
+  });
+
+  const subjectResponse = await fetch("/api/subjects", {
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  });
+
+  if (!subjectResponse.ok) {
+    throw new Error("Could not load subjects");
+  }
+
+  const subjectData = await subjectResponse.json();
+
+  const subjects = Array.isArray(subjectData)
+    ? subjectData
+    : subjectData.subjects || [];
+
+  const subjectSelect =
+    document.getElementById("reportSubject");
+
+  subjects.forEach(sub => {
+    const option = document.createElement("option");
+    option.value = sub._id || sub.id;
+    option.textContent = sub.name;
+    subjectSelect.appendChild(option);
+  });
+}
+Make sure the event listeners are registered after the HTML elements exist, such as inside your existing DOMContentLoaded callback. If you already have a DOMContentLoaded callback, add the listener code inside it rather than creating duplicate initialization logic.
+Step 7: Test your project
+Now let's check whether everything works correctly.
+Open VS Code terminal: Terminal → New Terminal.
+Run:
+npm run dev
+Log in using your admin account.
+Open Reports Dashboard.
+Select CSE, Semester 3 and a date range.
+Click Apply Filters.
+Expected result
+Summary cards show filtered student and report totals.
+Department report shows matching departments.
+Attendance report shows records within the selected date range.
+Academic report shows matching department, semester and subject records.
+Charts update using the filtered report data.
+Clear Filters restores all reports.
+One important check: If your Reports section is hidden when loadReports() runs, show the section first and then render or resize the charts. Also verify that /api/departments and /api/subjects return the expected data before testing the dropdowns.
+Step 8: Save your progress in GitHub
+After successful testing, open the VS Code terminal:
+git status
+git add .
+git commit -m "Add advanced report filters"
+git push
+Never commit your .env file or database credentials.
