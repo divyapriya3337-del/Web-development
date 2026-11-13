@@ -33485,3 +33485,468 @@ git add .
 git commit -m "Add advanced report filters"
 git push
 Never commit your .env file or database credentials.
+Support for department, semester, subject and attendance date filters
+Admin-only download access
+Export workflow
+Admin selects report filters
+Express API validates filters
+MongoDB retrieves matching records
+Excel PDF
+Step 1: Install backend packages
+Open VS Code → Terminal → New Terminal.
+Make sure your terminal is inside the main project folder (the folder containing package.json).
+Run:
+npm install exceljs pdfkit
+These packages will generate Excel and PDF files on the server.
+Step 2: Create the export controller
+In VS Code:
+Open your project folder.
+Open the controllers folder.
+Right-click → New File.
+Name it reportExportController.js.
+Paste this code:
+
+const ExcelJS = require("exceljs");
+const PDFDocument = require("pdfkit");
+
+const Student = require("../models/Student");
+const Attendance = require("../models/Attendance");
+const Mark = require("../models/Mark");
+const mongoose = require("mongoose");
+
+function buildFilters(query) {
+  const {
+    startDate,
+    endDate,
+    department,
+    semester,
+    subject
+  } = query;
+
+  const studentFilter = {};
+  const attendanceFilter = {};
+  const markFilter = {};
+
+  if (
+    department &&
+    !mongoose.Types.ObjectId.isValid(department)
+  ) {
+    throw new Error("Invalid department ID");
+  }
+
+  if (
+    subject &&
+    !mongoose.Types.ObjectId.isValid(subject)
+  ) {
+    throw new Error("Invalid subject ID");
+  }
+
+  if (department) studentFilter.department = department;
+
+  if (semester) {
+    const number = Number(semester);
+
+    if (!Number.isInteger(number) || number < 1 || number > 12) {
+      throw new Error("Invalid semester");
+    }
+
+    studentFilter.semester = number;
+  }
+
+  if (subject) {
+    attendanceFilter.subject = subject;
+    markFilter.subject = subject;
+  }
+
+  if (startDate || endDate) {
+    const pattern = /^\d{4}-\d{2}-\d{2}$/;
+
+    function parseDate(value) {
+      if (!pattern.test(value)) return null;
+
+      const date = new Date(`${value}T00:00:00.000Z`);
+
+      return !Number.isNaN(date.getTime()) &&
+        date.toISOString().slice(0, 10) === value
+        ? date
+        : null;
+    }
+
+    const start = startDate ? parseDate(startDate) : null;
+    const end = endDate ? parseDate(endDate) : null;
+
+    if (
+      (startDate && !start) ||
+      (endDate && !end)
+    ) {
+      throw new Error("Invalid date format. Use YYYY-MM-DD.");
+    }
+
+    if (start && end && start > end) {
+      throw new Error("Start date cannot be after end date");
+    }
+
+    attendanceFilter.date = {};
+
+    if (start) attendanceFilter.date.$gte = start;
+
+    if (end) {
+      const nextDay = new Date(end);
+      nextDay.setUTCDate(nextDay.getUTCDate() + 1);
+      attendanceFilter.date.$lt = nextDay;
+    }
+  }
+
+  return {
+    studentFilter,
+    attendanceFilter,
+    markFilter
+  };
+}
+
+async function getExportData(query) {
+  const {
+    studentFilter,
+    attendanceFilter,
+    markFilter
+  } = buildFilters(query);
+
+  const students = await Student.find(studentFilter)
+    .populate("department", "name")
+    .lean();
+
+  const studentIds = students.map(student => student._id);
+
+  attendanceFilter.student = { $in: studentIds };
+  markFilter.student = { $in: studentIds };
+
+  const attendance = await Attendance.find(attendanceFilter)
+    .populate("student", "name rollNumber")
+    .populate("subject", "name code")
+    .lean();
+
+  const marks = await Mark.find(markFilter)
+    .populate("student", "name rollNumber")
+    .populate("subject", "name code")
+    .lean();
+
+  return { students, attendance, marks };
+}
+
+exports.exportExcel = async (req, res, next) => {
+  try {
+    const data = await getExportData(req.query);
+
+    const workbook = new ExcelJS.Workbook();
+
+    const studentSheet = workbook.addWorksheet("Students");
+    studentSheet.columns = [
+      { header: "Name", key: "name", width: 25 },
+      { header: "Roll Number", key: "rollNumber", width: 18 },
+      { header: "Email", key: "email", width: 30 },
+      { header: "Department", key: "department", width: 20 },
+      { header: "Semester", key: "semester", width: 12 }
+    ];
+
+    data.students.forEach(student => {
+      studentSheet.addRow({
+        name: student.name,
+        rollNumber: student.rollNumber,
+        email: student.email,
+        department: student.department?.name || "",
+        semester: student.semester
+      });
+    });
+
+    const attendanceSheet = workbook.addWorksheet("Attendance");
+    attendanceSheet.columns = [
+      { header: "Student", key: "student", width: 25 },
+      { header: "Roll Number", key: "rollNumber", width: 18 },
+      { header: "Subject", key: "subject", width: 25 },
+      { header: "Date", key: "date", width: 18 },
+      { header: "Status", key: "status", width: 15 }
+    ];
+
+    data.attendance.forEach(record => {
+      attendanceSheet.addRow({
+        student: record.student?.name || "",
+        rollNumber: record.student?.rollNumber || "",
+        subject: record.subject?.name || "",
+        date: record.date
+          ? new Date(record.date).toISOString().slice(0, 10)
+          : "",
+        status: record.status
+      });
+    });
+
+    const marksSheet = workbook.addWorksheet("Marks");
+    marksSheet.columns = [
+      { header: "Student", key: "student", width: 25 },
+      { header: "Roll Number", key: "rollNumber", width: 18 },
+      { header: "Subject", key: "subject", width: 25 },
+      { header: "Exam Type", key: "examType", width: 18 },
+      { header: "Marks", key: "marks", width: 12 },
+      { header: "Maximum Marks", key: "maxMarks", width: 18 }
+    ];
+
+    data.marks.forEach(record => {
+      marksSheet.addRow({
+        student: record.student?.name || "",
+        rollNumber: record.student?.rollNumber || "",
+        subject: record.subject?.name || "",
+        examType: record.examType,
+        marks: record.marks,
+        maxMarks: record.maxMarks
+      });
+    });
+
+    [studentSheet, attendanceSheet, marksSheet].forEach(sheet => {
+      sheet.getRow(1).font = { bold: true };
+      sheet.views = [{ state: "frozen", ySplit: 1 }];
+      sheet.autoFilter = {
+        from: "A1",
+        to: {
+          row: 1,
+          column: sheet.columnCount
+        }
+      };
+    });
+
+    res.setHeader(
+      "Content-Type",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    );
+
+    res.setHeader(
+      "Content-Disposition",
+      'attachment; filename="college-erp-report.xlsx"'
+    );
+
+    await workbook.xlsx.write(res);
+    res.end();
+
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.exportPDF = async (req, res, next) => {
+  try {
+    const data = await getExportData(req.query);
+
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader(
+      "Content-Disposition",
+      'attachment; filename="college-erp-report.pdf"'
+    );
+
+    const doc = new PDFDocument({
+      size: "A4",
+      layout: "landscape",
+      margin: 35
+    });
+
+    doc.pipe(res);
+
+    doc.fontSize(18).text("College ERP Report");
+    doc.moveDown();
+
+    doc.fontSize(14).text("Student Report");
+    doc.moveDown(0.5);
+    doc.fontSize(9);
+
+    data.students.forEach(student => {
+      doc.text(
+        `${student.name} | ${student.rollNumber} | ` +
+        `${student.department?.name || ""} | Semester ${student.semester}`
+      );
+    });
+
+    doc.addPage();
+    doc.fontSize(14).text("Attendance Report");
+    doc.moveDown(0.5);
+    doc.fontSize(9);
+
+    data.attendance.forEach(record => {
+      doc.text(
+        `${record.student?.rollNumber || ""} | ` +
+        `${record.subject?.name || ""} | ` +
+        `${record.date ? new Date(record.date).toISOString().slice(0, 10) : ""} | ` +
+        `${record.status}`
+      );
+    });
+
+    doc.addPage();
+    doc.fontSize(14).text("Academic Marks Report");
+    doc.moveDown(0.5);
+    doc.fontSize(9);
+
+    data.marks.forEach(record => {
+      doc.text(
+        `${record.student?.rollNumber || ""} | ` +
+        `${record.subject?.name || ""} | ` +
+        `${record.examType} | ${record.marks}/${record.maxMarks}`
+      );
+    });
+
+    doc.end();
+
+  } catch (error) {
+    next(error);
+  }
+};
+Note: This starter export applies the date filter to attendance, not marks, because the current Mark model has no exam date field. It also retrieves all matching records into memory, so we'll add streaming or pagination for very large colleges before production use.
+Step 3: Create export routes
+Open the routes folder.
+Create a file named reportExportRoutes.js.
+Paste:
+
+const express = require("express");
+const router = express.Router();
+
+const {
+  exportExcel,
+  exportPDF
+} = require("../controllers/reportExportController");
+
+const authMiddleware = require("../middleware/authMiddleware");
+const adminMiddleware = require("../middleware/adminMiddleware");
+
+router.get(
+  "/excel",
+  authMiddleware,
+  adminMiddleware,
+  exportExcel
+);
+
+router.get(
+  "/pdf",
+  authMiddleware,
+  adminMiddleware,
+  exportPDF
+);
+
+module.exports = router;
+Step 4: Connect routes to Express
+Open your main server file: app.js or server.js.
+Add this import near your other route imports:
+const reportExportRoutes = require("./routes/reportExportRoutes");
+Add this route mounting statement near your other app.use() routes:
+app.use("/api/reports/export", reportExportRoutes);
+Do not add a second Express application or duplicate route mounting.
+Your API endpoints are now:
+Export API endpoint
+Excel /api/reports/export/excel
+PDF /api/reports/export/pdf
+Both endpoints require an authenticated admin.
+Step 5: Add download buttons in HTML
+Open public/index.html.
+Find the existing reportsSection. Add these buttons below your report filters:
+
+<div class="report-export-actions">
+  <button type="button" id="downloadReportExcel">
+    Download Excel Report
+  </button>
+
+  <button type="button" id="downloadReportPDF">
+    Download PDF Report
+  </button>
+</div>
+
+Step 6: Connect download buttons to JavaScript
+Open public/script.js.
+Add this function once:
+
+async function downloadBackendReport(format) {
+  const token = localStorage.getItem("token");
+
+  const params = new URLSearchParams();
+
+  const fields = [
+    "reportStartDate",
+    "reportEndDate",
+    "reportDepartment",
+    "reportSemester",
+    "reportSubject"
+  ];
+
+  const queryNames = [
+    "startDate",
+    "endDate",
+    "department",
+    "semester",
+    "subject"
+  ];
+
+  fields.forEach((field, index) => {
+    const value = document.getElementById(field).value;
+
+    if (value) {
+      params.set(queryNames[index], value);
+    }
+  });
+
+  const url =
+    `/api/reports/export/${format}?${params.toString()}`;
+
+  const response = await fetch(url, {
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.message || "Download failed");
+  }
+
+  const blob = await response.blob();
+  const downloadUrl = URL.createObjectURL(blob);
+
+  const link = document.createElement("a");
+  link.href = downloadUrl;
+  link.download = `college-erp-report.${format === "excel" ? "xlsx" : "pdf"}`;
+
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+
+  URL.revokeObjectURL(downloadUrl);
+}
+ register the button events inside your existing DOMContentLoaded callback:
+ document
+  .getElementById("downloadReportExcel")
+  .addEventListener("click", async () => {
+    try {
+      await downloadBackendReport("excel");
+    } catch (error) {
+      alert(error.message);
+    }
+  });
+
+document
+  .getElementById("downloadReportPDF")
+  .addEventListener("click", async () => {
+    try {
+      await downloadBackendReport("pdf");
+    } catch (error) {
+      alert(error.message);
+    }
+  });
+  Step 7: Test the Excel and PDF downloads
+Start your application:
+npm run dev
+http://localhost:3000
+Log in as Admin → Reports Dashboard.
+Expected dashboard actions
+Download Excel Report
+Generates a workbook with Students, Attendance and Marks sheets.
+Download PDF Report
+Generates a PDF containing student, attendance and marks records.
+Test these cases:
+Step 8: Save your progress
+After testing, run:
+git status
+git add .
+git commit -m "Add backend Excel and PDF report exports"
+git push
